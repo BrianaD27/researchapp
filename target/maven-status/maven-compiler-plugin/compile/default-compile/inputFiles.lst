@@ -6,6 +6,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controlle
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\ClubMembershipController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\EncryptedFileController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\EventController.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\HealthController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\MessageController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\ProfessorController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\ResearchOpportunityController.java
@@ -46,8 +47,6 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\re
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\UserProfileRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\ProfessorDto.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\ResearchOpportunityDto.java
-C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\security\config\AppConfig.java
-C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\security\SecurityConfig.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\StudentDto.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\ResearchappApplication.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\AnalyticsService.java

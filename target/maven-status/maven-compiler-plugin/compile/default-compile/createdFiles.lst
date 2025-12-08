@@ -1,6 +1,5 @@
 com\vsu\researchapp\dto\ResearchOpportunityDto.class
 com\vsu\researchapp\domain\repository\ProfessorRepository.class
-com\vsu\researchapp\security\SecurityConfig.class
 com\vsu\researchapp\service\StudentService.class
 com\vsu\researchapp\controller\EncryptedFileController.class
 com\vsu\researchapp\domain\exception\OpportunityNotFoundException.class
@@ -31,7 +30,6 @@ com\vsu\researchapp\domain\repository\UserAccountRepository.class
 com\vsu\researchapp\domain\repository\EventRepository.class
 com\vsu\researchapp\domain\repository\ResearchTeamMemberRepository.class
 com\vsu\researchapp\domain\model\ResearchOpportunity.class
-com\vsu\researchapp\config\AppConfig.class
 com\vsu\researchapp\ai\PromptBuilder.class
 com\vsu\researchapp\service\ProfessorService.class
 com\vsu\researchapp\controller\ProfessorController.class
