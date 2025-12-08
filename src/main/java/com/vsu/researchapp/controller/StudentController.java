@@ -1,10 +1,10 @@
-package com.vsu.researchapp.conttroller;
+package com.vsu.researchapp.controller;
 
 import com.vsu.researchapp.domain.model.Student;
 import com.vsu.researchapp.service.StudentService;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/students")
