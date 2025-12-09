@@ -21,6 +21,7 @@ com\vsu\researchapp\domain\model\UserAccount.class
 com\vsu\researchapp\domain\repository\EncryptedFileShareRepository.class
 com\vsu\researchapp\controller\UserAccountController.class
 com\vsu\researchapp\service\NotificationService.class
+com\vsu\researchapp\controller\AuthController.class
 com\vsu\researchapp\service\ClubService.class
 com\vsu\researchapp\domain\model\EncryptedFileShare.class
 com\vsu\researchapp\controller\StudentController.class
@@ -37,7 +38,6 @@ com\vsu\researchapp\service\ProfessorService.class
 com\vsu\researchapp\controller\ProfessorController.class
 com\vsu\researchapp\domain\model\UserProfile.class
 com\vsu\researchapp\domain\repository\EncryptedFileRepository.class
-com\vsu\researchapp\controller\AdminController.class
 com\vsu\researchapp\security\CustomUserDetailsService.class
 com\vsu\researchapp\controller\ResearchOpportunityController.class
 com\vsu\researchapp\domain\model\ResearchTeamMember.class
@@ -55,6 +55,7 @@ com\vsu\researchapp\domain\model\Notification.class
 com\vsu\researchapp\dto\ProfessorDto.class
 com\vsu\researchapp\domain\repository\NotificationRepository.class
 com\vsu\researchapp\domain\exception\ProfessorNotFoundException.class
+com\vsu\researchapp\controller\DashboardController.class
 com\vsu\researchapp\domain\model\EncryptedFile.class
 com\vsu\researchapp\domain\model\ClubMembership.class
 com\vsu\researchapp\domain\model\Message.class

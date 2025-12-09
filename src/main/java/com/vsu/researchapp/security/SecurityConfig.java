@@ -24,7 +24,6 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/register",
                         "/css/**",
                         "/js/**",
                         "/images/**",
@@ -32,17 +31,15 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
-            // use Spring's built-in login page for now
             .formLogin(form -> form
-                .defaultSuccessUrl("/dashboard", true)
+                // use the DEFAULT Spring Security login page
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")
                 .permitAll()
             );
 
-        // allow H2 console frames (optional)
+        // allow H2 console frames in dev (safe enough locally)
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
