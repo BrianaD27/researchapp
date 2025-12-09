@@ -1,11 +1,13 @@
 com\vsu\researchapp\dto\ResearchOpportunityDto.class
 com\vsu\researchapp\domain\repository\ProfessorRepository.class
+com\vsu\researchapp\security\SecurityConfig.class
 com\vsu\researchapp\service\StudentService.class
 com\vsu\researchapp\controller\EncryptedFileController.class
 com\vsu\researchapp\domain\exception\OpportunityNotFoundException.class
 com\vsu\researchapp\domain\repository\StudentRepository.class
 com\vsu\researchapp\service\AnalyticsService.class
 com\vsu\researchapp\service\EncryptedFileService.class
+com\vsu\researchapp\config\DataInitializer.class
 com\vsu\researchapp\controller\ClubMembershipController.class
 com\vsu\researchapp\domain\model\UserMedia.class
 com\vsu\researchapp\controller\MessageController.class
@@ -36,6 +38,7 @@ com\vsu\researchapp\controller\ProfessorController.class
 com\vsu\researchapp\domain\model\UserProfile.class
 com\vsu\researchapp\domain\repository\EncryptedFileRepository.class
 com\vsu\researchapp\controller\AdminController.class
+com\vsu\researchapp\security\CustomUserDetailsService.class
 com\vsu\researchapp\controller\ResearchOpportunityController.class
 com\vsu\researchapp\domain\model\ResearchTeamMember.class
 com\vsu\researchapp\domain\model\ResumeFile.class
@@ -57,6 +60,7 @@ com\vsu\researchapp\domain\model\ClubMembership.class
 com\vsu\researchapp\domain\model\Message.class
 com\vsu\researchapp\domain\repository\OpportunityRepository.class
 com\vsu\researchapp\service\EncryptionService.class
+com\vsu\researchapp\controller\HealthController.class
 com\vsu\researchapp\domain\repository\MessageRepository.class
 com\vsu\researchapp\service\ClubMembershipService.class
 com\vsu\researchapp\service\EventService.class

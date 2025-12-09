@@ -1,9 +1,11 @@
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\ai\AiClient.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\ai\AiService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\ai\PromptBuilder.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\config\DataInitializer.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\AdminController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\ClubController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\ClubMembershipController.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\DashboardController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\EncryptedFileController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\EventController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\HealthController.java
@@ -49,6 +51,8 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\Profe
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\ResearchOpportunityDto.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\StudentDto.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\ResearchappApplication.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\security\CustomUserDetailsService.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\security\SecurityConfig.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\AnalyticsService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\ClubMembershipService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\ClubService.java
