@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ResearchOpportunityRepository extends JpaRepository<ResearchOpportunity, Long> {
-    // Later we can add filters like:
-    // List<ResearchOpportunity> findByDepartment(String department);
 }
+
