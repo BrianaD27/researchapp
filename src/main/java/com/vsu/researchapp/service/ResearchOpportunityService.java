@@ -1,7 +1,7 @@
 package com.vsu.researchapp.service;
 
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
-import com.vsu.researchapp.domain.repository.OpportunityRepository;
+import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,47 +9,27 @@ import java.util.List;
 @Service
 public class ResearchOpportunityService {
 
-    private final OpportunityRepository opportunityRepository;
+    private final ResearchOpportunityRepository repo;
 
-    // Constructor injection – Spring will give us the repository
-    public ResearchOpportunityService(OpportunityRepository opportunityRepository) {
-        this.opportunityRepository = opportunityRepository;
+    public ResearchOpportunityService(ResearchOpportunityRepository repo) {
+        this.repo = repo;
     }
 
-    // === Methods your controller will call ===
-
-    // GET /api/opportunities  -> list everything
-    public List<ResearchOpportunity> getAllOpportunities() {
-        return opportunityRepository.findAll();
+    public List<ResearchOpportunity> getAll() {
+        return repo.findAll();
     }
 
-    // GET /api/opportunities/{id} -> get one by id
-    public ResearchOpportunity getOpportunityById(Long id) {
-        return opportunityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Opportunity not found: " + id));
+    public ResearchOpportunity getById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Research opportunity not found: " + id));
     }
 
-    // POST /api/opportunities -> create new
-    public ResearchOpportunity createOpportunity(ResearchOpportunity opportunity) {
-        return opportunityRepository.save(opportunity);
+    public ResearchOpportunity create(ResearchOpportunity opportunity) {
+        // later we can enforce who created it, timestamps, etc.
+        return repo.save(opportunity);
     }
 
-    // PUT /api/opportunities/{id} -> update existing
-    public ResearchOpportunity updateOpportunity(Long id, ResearchOpportunity updated) {
-        ResearchOpportunity existing = getOpportunityById(id);
-
-        // copy fields from the updated object into the existing one
-        existing.setTitle(updated.getTitle());
-        existing.setDescription(updated.getDescription());
-        existing.setProfessor(updated.getProfessor());
-        existing.setRequirements(updated.getRequirements());
-        // add/remove fields here as you grow the model
-
-        return opportunityRepository.save(existing);
-    }
-
-    // DELETE /api/opportunities/{id} -> delete by id
-    public void deleteOpportunity(Long id) {
-        opportunityRepository.deleteById(id);
+    public void delete(Long id) {
+        repo.deleteById(id);
     }
 }

@@ -14,6 +14,7 @@ com\vsu\researchapp\controller\MessageController.class
 com\vsu\researchapp\service\UserProfileService.class
 com\vsu\researchapp\domain\model\Professor.class
 com\vsu\researchapp\domain\model\Event.class
+com\vsu\researchapp\domain\repository\ResearchOpportunityRepository.class
 com\vsu\researchapp\domain\repository\UserProfileRepository.class
 com\vsu\researchapp\ResearchappApplication.class
 com\vsu\researchapp\domain\model\Club.class
