@@ -19,16 +19,19 @@ public class ResearchOpportunityController {
         this.service = service;
     }
 
+    // LIST ALL
     @GetMapping
     public List<ResearchOpportunity> listAll() {
         return service.getAll();
     }
 
+    // GET ONE BY ID
     @GetMapping("/{id}")
     public ResearchOpportunity getOne(@PathVariable Long id) {
         return service.getById(id);
     }
 
+    // CREATE NEW
     @PostMapping
     public ResponseEntity<ResearchOpportunity> create(@RequestBody ResearchOpportunity opportunity) {
         ResearchOpportunity saved = service.create(opportunity);
@@ -37,6 +40,14 @@ public class ResearchOpportunityController {
                 .body(saved);
     }
 
+    // UPDATE EXISTING
+    @PutMapping("/{id}")
+    public ResearchOpportunity update(@PathVariable Long id,
+                                      @RequestBody ResearchOpportunity updated) {
+        return service.update(id, updated);
+    }
+
+    // DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

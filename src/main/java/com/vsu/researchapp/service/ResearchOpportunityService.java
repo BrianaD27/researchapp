@@ -1,8 +1,7 @@
 package com.vsu.researchapp.service;
 
-import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
-
+import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,8 +25,16 @@ public class ResearchOpportunityService {
     }
 
     public ResearchOpportunity create(ResearchOpportunity opportunity) {
-        // later we can enforce who created it, timestamps, etc.
         return repo.save(opportunity);
+    }
+
+    public ResearchOpportunity update(Long id, ResearchOpportunity updated) {
+        ResearchOpportunity existing = getById(id);
+        existing.setTitle(updated.getTitle());
+        existing.setDescription(updated.getDescription());
+        existing.setProfessor(updated.getProfessor());
+        existing.setRequirements(updated.getRequirements());
+        return repo.save(existing);
     }
 
     public void delete(Long id) {

@@ -12,6 +12,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controlle
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\MessageController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\ProfessorController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\ResearchOpportunityController.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\StudentApplicationController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\StudentController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\UserAccountController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\controller\UserProfileController.java
@@ -31,6 +32,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\mo
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\ResearchTeamMember.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\ResumeFile.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\Student.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\StudentApplication.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\UserAccount.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\UserMedia.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\UserProfile.java
@@ -43,11 +45,12 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\re
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\NotificationRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\OpportunityRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\ProfessorRepository.java
-C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\ResearchOpportunityRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\ResearchTeamMemberRepository.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\StudentApplicationRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\StudentRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\UserAccountRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\UserProfileRepository.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\ResearchOpportunityRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\ProfessorDto.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\ResearchOpportunityDto.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\dto\StudentDto.java
@@ -64,6 +67,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\M
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\NotificationService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\ProfessorService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\ResearchOpportunityService.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\StudentApplicationService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\StudentService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\UserAccountService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\service\UserProfileService.java
