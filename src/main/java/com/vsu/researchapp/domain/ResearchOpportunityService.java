@@ -1,4 +1,4 @@
-package com.vsu.researchapp.service;
+package com.vsu.researchapp.domain;
 
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
 import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;

@@ -11,6 +11,7 @@ com\vsu\researchapp\config\DataInitializer.class
 com\vsu\researchapp\controller\ClubMembershipController.class
 com\vsu\researchapp\domain\model\UserMedia.class
 com\vsu\researchapp\controller\MessageController.class
+com\vsu\researchapp\domain\ResearchOpportunityService.class
 com\vsu\researchapp\service\UserProfileService.class
 com\vsu\researchapp\domain\model\Professor.class
 com\vsu\researchapp\domain\model\Event.class
@@ -27,7 +28,6 @@ com\vsu\researchapp\service\ClubService.class
 com\vsu\researchapp\domain\model\EncryptedFileShare.class
 com\vsu\researchapp\controller\StudentController.class
 com\vsu\researchapp\controller\StudentApplicationController.class
-com\vsu\researchapp\service\ResearchOpportunityService.class
 com\vsu\researchapp\ai\AiClient.class
 com\vsu\researchapp\controller\ClubController.class
 com\vsu\researchapp\service\MessageService.class

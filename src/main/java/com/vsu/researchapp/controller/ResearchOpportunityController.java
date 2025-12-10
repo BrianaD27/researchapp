@@ -1,7 +1,8 @@
 package com.vsu.researchapp.controller;
 
+import com.vsu.researchapp.domain.ResearchOpportunityService;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
-import com.vsu.researchapp.service.ResearchOpportunityService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
