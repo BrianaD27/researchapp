@@ -27,19 +27,19 @@ public class SecurityConfig {
                         "/css/**",
                         "/js/**",
                         "/images/**",
-                        "/h2-console/**"
+                        "/h2-console/**",
+                        "/api/**"      // 👈 allow your API endpoints without login
                 ).permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                // use the DEFAULT Spring Security login page
                 .permitAll()
             )
             .logout(logout -> logout
                 .permitAll()
             );
 
-        // allow H2 console frames in dev (safe enough locally)
+        // allow H2 console frames in dev
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();

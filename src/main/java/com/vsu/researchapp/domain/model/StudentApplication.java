@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 @Entity
 public class StudentApplication {
 
+    public StudentApplication() {
+        this.status = "PENDING";
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
