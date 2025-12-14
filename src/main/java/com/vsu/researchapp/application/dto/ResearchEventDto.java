@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import com.vsu.researchapp.domain.model.Professor;
-
 public class ResearchEventDto {
     private Long id;
     private String title;
@@ -122,6 +120,4 @@ public class ResearchEventDto {
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
-
 }
-
