@@ -3,7 +3,6 @@ com/vsu/researchapp/application/service/ProfessorService.class
 com/vsu/researchapp/application/service/MessageService.class
 com/vsu/researchapp/infrastructure/config/DataInitializer.class
 com/vsu/researchapp/domain/repository/UserProfileRepository.class
-com/vsu/researchapp/presentation/config/SwaggerConfig.class
 com/vsu/researchapp/domain/model/ResumeFile.class
 com/vsu/researchapp/domain/repository/ClubRepository.class
 com/vsu/researchapp/domain/model/ResearchOpportunity.class

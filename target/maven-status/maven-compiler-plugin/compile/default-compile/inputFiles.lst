@@ -56,7 +56,6 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/email/emailService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/CustomUserDetailsService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/SecurityConfig.java
-/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/config/SwaggerConfig.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/AuthController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ClubController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ClubMembershipController.java
