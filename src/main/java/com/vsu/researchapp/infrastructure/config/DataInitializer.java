@@ -1,4 +1,4 @@
-package com.vsu.researchapp.config;
+package com.vsu.researchapp.infrastructure.config;
 
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
