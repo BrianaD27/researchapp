@@ -12,9 +12,9 @@ public class DashboardController {
         return "dashboard";
     }
 
-    // Optional: send "/" to dashboard too
-    @GetMapping("/")
-    public String home() {
-        return "dashboard";
-    }
+   @GetMapping("/home")
+public String homeAlias() {
+    return "dashboard";
+}
+
 }

@@ -18,30 +18,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/css/**",
-                        "/js/**",
-                        "/images/**",
-                        "/h2-console/**",
-                        "/api/**"      // 👈 allow your API endpoints without login
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .permitAll()
+                .requestMatchers("/api/**").permitAll()
+                .anyRequest().permitAll()
             );
-
-        // allow H2 console frames in dev
-        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
 }
+
