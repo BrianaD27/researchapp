@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import com.vsu.researchapp.domain.model.Professor;
 
 public class UpdateResearchEventDto {
     private String title;

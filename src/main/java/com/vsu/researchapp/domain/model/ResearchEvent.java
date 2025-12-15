@@ -36,6 +36,7 @@ public class ResearchEvent {
     @JoinColumn(name = "created_by_id")
     private Professor createdBy;
 
+    
     public ResearchEvent() {
     }
 
