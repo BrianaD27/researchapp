@@ -26,12 +26,16 @@ public class ResearchEventService {
     }
 
 
-    public ResearchEvent getResearchEventById(Long eventId) {
-        return researchEventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("There is no Research event with the id: " + eventId));
+    public ResearchEventDto getResearchEventById(Long eventId) {
+        ResearchEvent event = researchEventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("There is no Research event with the id: " + eventId));
+
+        return entityToDto(event);
     }
 
-    public List<ResearchEvent> getAllResearchEvents() {
-        return researchEventRepository.findAll();
+    public List<ResearchEventDto> getAllResearchEvents() {
+        List<ResearchEvent> events = researchEventRepository.findAll();
+
+        return events.stream().map(this::entityToDto).toList();
     }
 
     public List<ResearchEventDto> getResearchEventsByUpcoming() {
