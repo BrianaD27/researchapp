@@ -2,9 +2,12 @@ package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.repository.ProfessorRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import com.vsu.researchapp.application.dto.ProfessorDto;
 
 @Service
 public class ProfessorService {
@@ -15,9 +18,13 @@ public class ProfessorService {
         this.professorRepository = professorRepository;
     }
 
-    public List<Professor> getAllProfessors() {
-        return professorRepository.findAll();
+    public List<ProfessorDto> getAllProfessors() {
+        List<Professor> professors = professorRepository.findAll();
+
+        return professors.stream().map(this::entityToDto).toList();
+
     }
+
 
     public Professor getProfessorById(Long id) {
         return professorRepository.findById(id)
@@ -39,5 +46,15 @@ public class ProfessorService {
 
     public void deleteProfessor(Long id) {
         professorRepository.deleteById(id);
+    }
+
+    private ProfessorDto entityToDto(Professor professor) {
+        return new ProfessorDto(
+            professor.getId(),
+            professor.getName(),
+            professor.getEmail(),
+            professor.getDepartment(),
+            professor.getTitle()
+        );
     }
 }
