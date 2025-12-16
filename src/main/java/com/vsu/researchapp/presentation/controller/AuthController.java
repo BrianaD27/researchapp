@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AuthController {
 
+
     // Just a preview page now, NOT used by security
     @GetMapping("/preview-login")
     public String login() {
