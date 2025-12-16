@@ -19,13 +19,10 @@ import com.vsu.researchapp.application.dto.CreateResearchEventDto;
 import com.vsu.researchapp.application.dto.ResearchEventDto;
 import com.vsu.researchapp.application.dto.UpdateResearchEventDto;
 import com.vsu.researchapp.application.service.ResearchEventService;
-import com.vsu.researchapp.domain.model.Student;
-
 
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.vsu.researchapp.domain.model.ResearchEvent;
-
+//TODO: Fix all Controllers and Services and add correct Dtos
 
 @RestController
 @RequestMapping("/api/research-events")

@@ -1,7 +1,7 @@
-package com.vsu.researchapp.controller;
+package com.vsu.researchapp.presentation.controller;
 
+import com.vsu.researchapp.application.service.StudentApplicationService;
 import com.vsu.researchapp.domain.model.StudentApplication;
-import com.vsu.researchapp.service.StudentApplicationService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
