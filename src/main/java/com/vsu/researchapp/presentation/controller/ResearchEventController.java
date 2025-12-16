@@ -52,14 +52,14 @@ public class ResearchEventController {
         return eventService.getResearchEventsByUpcoming();
     }
 
-    @GetMapping("date-range")
+    @GetMapping("/date-range")
     public List<ResearchEventDto> getResearchEventsByDateRange(@RequestParam LocalDate earliestDate, @RequestParam LocalDate latestDate) {
         return eventService.getResearchEventsByDateRange(earliestDate, latestDate);
     }
 
     @PostMapping
-    public ResponseEntity<ResearchEventDto> createResearchEvent(@RequestBody CreateResearchEventDto dto,  @PathVariable Long eventId) {
-        ResearchEventDto event = eventService.createResearchEvent(dto, eventId);
+    public ResponseEntity<ResearchEventDto> createResearchEvent(@RequestBody CreateResearchEventDto dto, @RequestParam Long professorId) {
+        ResearchEventDto event = eventService.createResearchEvent(dto, professorId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(event);
     }
