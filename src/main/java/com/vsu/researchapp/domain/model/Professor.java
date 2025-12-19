@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+// TODO: Boolean Acepting Students (T or F)
 @Entity
 public class Professor {
 
