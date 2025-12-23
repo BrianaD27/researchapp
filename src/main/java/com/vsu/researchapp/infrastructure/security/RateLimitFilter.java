@@ -64,14 +64,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
             bucket.count++;
 
-            if (bucket.count > LIMIT) {
-                response.setStatus(429);
-                response.setContentType("application/json");
-                response.getWriter()
-                        .write("{\"error\":\"Too many requests. Try again later.\"}");
-                return;mvn -DskipTests spring-boot:run
+          if (bucket.count > LIMIT) {
+    response.setStatus(429);
+    response.setContentType("application/json");
+    response.getWriter().write("{\"error\":\"Too many requests. Try again later.\"}");
+    return;
+}
 
-            }
         }
 
         filterChain.doFilter(request, response);
