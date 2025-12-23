@@ -2,6 +2,7 @@ package com.vsu.researchapp.presentation.controller;
 
 import com.vsu.researchapp.application.service.ProfessorService;
 import com.vsu.researchapp.domain.model.Professor;
+import org.springframework.http.ResponseEntity;  
 
 import org.springframework.web.bind.annotation.*;
 
@@ -18,15 +19,21 @@ public class ProfessorController {
         this.professorService = professorService;
     }
 
-    // @GetMapping
-    // public List<Professor> getAllProfessors() {
-    //     return professorService.getAllProfessors();
-    // }
+    //  KEEP THIS COMMENTED OUT (as you requested)
+     @GetMapping
+     public List<Professor> getAllProfessors() {
+         return professorService.getAllProfessors();
+     }
+
 
     @GetMapping("/{id}")
-    public Professor getProfessor(@PathVariable Long id) {
-        return professorService.getProfessorById(id);
+public ResponseEntity<Professor> getProfessor(@PathVariable Long id) {
+    Professor professor = professorService.getProfessorById(id);
+    if (professor == null) {
+        return ResponseEntity.notFound().build();
     }
+    return ResponseEntity.ok(professor);
+}
 
     @PostMapping
     public Professor createProfessor(@RequestBody Professor professor) {
@@ -34,8 +41,10 @@ public class ProfessorController {
     }
 
     @PutMapping("/{id}")
-    public Professor updateProfessor(@PathVariable Long id,
-                                     @RequestBody Professor professor) {
+    public Professor updateProfessor(
+            @PathVariable Long id,
+            @RequestBody Professor professor
+    ) {
         return professorService.updateProfessor(id, professor);
     }
 
