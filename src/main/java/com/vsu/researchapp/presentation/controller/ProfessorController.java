@@ -18,10 +18,10 @@ public class ProfessorController {
         this.professorService = professorService;
     }
 
-    @GetMapping
-    public List<Professor> getAllProfessors() {
-        return professorService.getAllProfessors();
-    }
+    // @GetMapping
+    // public List<Professor> getAllProfessors() {
+    //     return professorService.getAllProfessors();
+    // }
 
     @GetMapping("/{id}")
     public Professor getProfessor(@PathVariable Long id) {
