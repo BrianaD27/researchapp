@@ -51,6 +51,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastru
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\config\DataInitializer.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\externalServices\email\emailService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\CustomUserDetailsService.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\LoginSecurityService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\RateLimitFilter.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\SecurityConfig.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\AuthController.java

@@ -14,6 +14,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private final LoginSecurityService loginSecurityService;
+
+    public SecurityConfig(LoginSecurityService loginSecurityService) {
+        this.loginSecurityService = loginSecurityService;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -23,43 +29,97 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // For now (dev/testing): disable CSRF so POST/PUT work easily in browser/tests.
+            // Dev mode: CSRF off (OK for now)
             .csrf(csrf -> csrf.disable())
 
-            // Use sessions for browser login pages (you have login.html/dashboard.html)
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            //  Security Headers
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(contentType -> {})
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives(
+                        "default-src 'self'; " +
+                        "img-src 'self' data:; " +
+                        "script-src 'self'; " +
+                        "style-src 'self' 'unsafe-inline'"
+                    )
+                )
+                .httpStrictTransportSecurity(hsts -> hsts.disable())
+            )
+
+            //  Session hardening
+            .sessionManagement(sm -> sm
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionFixation(session -> session.migrateSession())
+            )
 
             .authorizeHttpRequests(auth -> auth
 
-                // Allow health + swagger if you have them
+                // Health + actuator
                 .requestMatchers("/actuator/health", "/health").permitAll()
+
+                // Swagger (if enabled)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                // Allow login + static assets if you have them
+                // Auth pages + static files
                 .requestMatchers("/login", "/logout").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
 
-                // IMPORTANT: allow Professor API without authentication
+                // Public API
                 .requestMatchers("/api/professors/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // Admin zone
+                // Admin-only
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                // Everything else under /api requires a logged-in user
+                //  All other API calls require login
                 .requestMatchers("/api/**").authenticated()
 
-                // Non-api paths: keep open (or lock later)
+                //  UI pages that REQUIRE login
+                .requestMatchers("/dashboard", "/home").authenticated()
+
+                // Everything else open for now
                 .anyRequest().permitAll()
             )
 
-            //  THIS removes the browser popup (Basic Auth prompt)
+            // Disable browser basic auth popup
             .httpBasic(basic -> basic.disable())
 
-            // Keep form login (so browser redirects to login page instead of popup)
-            .formLogin(form -> form.permitAll());
+            //  Logout hardening
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessUrl("/login?logout")
+            )
+
+            //  Login handling
+            .formLogin(form -> form
+                .loginPage("/login")
+                .permitAll()
+                .successHandler((request, response, authentication) -> {
+                    String username = authentication.getName();
+                    loginSecurityService.onLoginSuccess(username);
+                    response.sendRedirect("/dashboard");
+                })
+                .failureHandler((request, response, exception) -> {
+                    String username = request.getParameter("username");
+                    if (username != null && !username.isBlank()) {
+                        loginSecurityService.onLoginFailure(username);
+                    }
+
+                    String redirect = "/login?error";
+                    if (exception instanceof org.springframework.security.authentication.LockedException) {
+                        redirect = "/login?locked";
+                    } else if (exception instanceof org.springframework.security.authentication.DisabledException) {
+                        redirect = "/login?disabled";
+                    }
+
+                    response.sendRedirect(redirect);
+                })
+            );
 
         return http.build();
     }
 }
-

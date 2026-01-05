@@ -16,6 +16,15 @@ public class UserAccount {
     private String passwordHash;
     private String role;
     private boolean active = true;
+
+    // NEW FIELDS (Feature #1: lockout)
+    @Column(nullable = false)
+    private int failedAttempts = 0;
+
+    private LocalDateTime lockUntil;
+
+    private LocalDateTime lastFailedLogin;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,69 +39,55 @@ public class UserAccount {
         this.updatedAt = LocalDateTime.now();
     }
 
-public String getPasswordHash() {
-    return passwordHash;
-}
+    // Helper methods for lockout
+    @Transient
+    public boolean isLocked() {
+        return lockUntil != null && lockUntil.isAfter(LocalDateTime.now());
+    }
 
-public void setPasswordHash(String passwordHash) {
-    this.passwordHash = passwordHash;
-}
+    public void resetLock() {
+        this.failedAttempts = 0;
+        this.lockUntil = null;
+        this.lastFailedLogin = null;
+    }
+
+    // Password hash
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
 
     // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getUsername() {
-        return username;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 
-    public String getEmail() {
-        return email;
-    }
+    public int getFailedAttempts() { return failedAttempts; }
+    public void setFailedAttempts(int failedAttempts) { this.failedAttempts = failedAttempts; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public LocalDateTime getLockUntil() { return lockUntil; }
+    public void setLockUntil(LocalDateTime lockUntil) { this.lockUntil = lockUntil; }
 
-    public String getRole() {
-        return role;
-    }
+    public LocalDateTime getLastFailedLogin() { return lastFailedLogin; }
+    public void setLastFailedLogin(LocalDateTime lastFailedLogin) { this.lastFailedLogin = lastFailedLogin; }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

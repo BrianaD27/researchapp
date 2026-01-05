@@ -5,6 +5,7 @@ com\vsu\researchapp\application\dto\UpdateResearchEventDto.class
 com\vsu\researchapp\domain\exception\OpportunityNotFoundException.class
 com\vsu\researchapp\domain\repository\StudentRepository.class
 com\vsu\researchapp\application\service\MessageService.class
+com\vsu\researchapp\infrastructure\security\LoginSecurityService.class
 com\vsu\researchapp\application\service\StudentService.class
 com\vsu\researchapp\presentation\controller\DashboardController.class
 com\vsu\researchapp\application\dto\ProfessorDto.class
