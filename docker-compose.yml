@@ -1,0 +1,24 @@
+version: '3.8'
+
+# DB Container
+services:
+
+  # Service name
+  postgres:
+    # Lightweight version that doesn't take too much to run (need to update later)
+    image: postgres:15-alpine
+    container_name: vsu-research-db
+    environment:
+      POSTGRES_DB: vsu_research_app
+      # user account creation for running
+      POSTGRES_USER: vsu_user
+      POSTGRES_PASSWORD: vsu_password
+    ports:
+      - "5432:5432"
+    # Saves db data to a volume so data is stored when container is not running
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# Name of the volume docker will manage
+volumes:
+  postgres_data:
