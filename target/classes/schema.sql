@@ -1,19 +1,17 @@
+-- ROLES TABLE
 CREATE TABLE IF NOT EXISTS roles (
-  id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(50) NOT NULL UNIQUE,
-  description TEXT
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
 );
 
+-- USER ↔ ROLE JOIN TABLE
 CREATE TABLE IF NOT EXISTS user_roles (
-  user_id BIGINT NOT NULL,
-  role_id BIGINT NOT NULL,
-  PRIMARY KEY (user_id, role_id),
-  FOREIGN KEY (user_id) REFERENCES user_account(id) ON DELETE CASCADE,
-  FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+    user_id BIGINT NOT NULL,
+    role_id BIGINT NOT NULL,
+    PRIMARY KEY (user_id, role_id),
+    CONSTRAINT fk_user_roles_user
+        FOREIGN KEY (user_id) REFERENCES user_accounts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_role
+        FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
-INSERT INTO roles (name, description) VALUES
-  ('ADMIN','Full access'),
-  ('USER','Standard access'),
-  ('PROFESSOR','Professor access'),
-  ('STUDENT','Student access');
