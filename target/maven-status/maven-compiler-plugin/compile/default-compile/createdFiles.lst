@@ -55,6 +55,7 @@ com\vsu\researchapp\infrastructure\security\RateLimitFilter.class
 com\vsu\researchapp\application\dto\CreateResearchEventDto.class
 com\vsu\researchapp\domain\repository\StudentApplicationRepository.class
 com\vsu\researchapp\domain\exception\StudentNotFoundException.class
+com\vsu\researchapp\domain\model\Role.class
 com\vsu\researchapp\domain\model\Notification.class
 com\vsu\researchapp\infrastructure\config\DataInitializer.class
 com\vsu\researchapp\application\service\UserProfileService.class
