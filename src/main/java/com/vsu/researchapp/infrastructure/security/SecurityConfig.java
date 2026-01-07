@@ -29,63 +29,46 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // Dev mode: CSRF off (OK for now)
-            .csrf(csrf -> csrf.disable())
+            // --- H2 Console requires: allow frames + don't CSRF-block its POST ---
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
 
-            //  Security Headers
-            .headers(headers -> headers
-                .frameOptions(frame -> frame.deny())
-                .contentTypeOptions(contentType -> {})
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives(
-                        "default-src 'self'; " +
-                        "img-src 'self' data:; " +
-                        "script-src 'self'; " +
-                        "style-src 'self' 'unsafe-inline'"
-                    )
-                )
-                .httpStrictTransportSecurity(hsts -> hsts.disable())
-            )
-
-            //  Session hardening
+            // --- Session hardening ---
             .sessionManagement(sm -> sm
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .sessionFixation(session -> session.migrateSession())
             )
 
+            // --- Authorization rules ---
             .authorizeHttpRequests(auth -> auth
-
-                // Health + actuator
+                // Health + swagger (optional)
                 .requestMatchers("/actuator/health", "/health").permitAll()
-
-                // Swagger (if enabled)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // H2 console
+                .requestMatchers("/h2-console/**").permitAll()
 
                 // Auth pages + static files
                 .requestMatchers("/login", "/logout").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
 
-                // Public API
-                .requestMatchers("/api/professors/**").permitAll()
+                // CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // Public API (keep if you want public read access)
+                .requestMatchers("/api/professors/**").permitAll()
 
                 // Admin-only
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                //  All other API calls require login
-                .requestMatchers("/api/**").authenticated()
-
-                //  UI pages that REQUIRE login
-                .requestMatchers("/dashboard", "/home").authenticated()
-
-                // Everything else open for now
-                .anyRequest().permitAll()
+                // Everything else requires login
+                .anyRequest().authenticated()
             )
 
-            // Disable browser basic auth popup
+            // Disable browser popup basic auth
             .httpBasic(basic -> basic.disable())
 
-            //  Logout hardening
+            // --- Logout hardening ---
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .invalidateHttpSession(true)
@@ -94,7 +77,7 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/login?logout")
             )
 
-            //  Login handling
+            // --- Form login + lockout handling hooks ---
             .formLogin(form -> form
                 .loginPage("/login")
                 .permitAll()
