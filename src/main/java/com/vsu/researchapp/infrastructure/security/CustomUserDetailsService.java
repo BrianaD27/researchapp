@@ -39,7 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new LockedException("Account locked until " + acc.getLockUntil());
         }
 
-        // ✅ Feature #2: real roles (USER vs ADMIN)
+        //  Feature #2: real roles (USER vs ADMIN)
         String role = acc.getRole();
         if (role == null || role.isBlank()) {
             role = "USER"; // default
