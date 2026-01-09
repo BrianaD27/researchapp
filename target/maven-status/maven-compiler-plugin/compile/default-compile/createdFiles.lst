@@ -10,6 +10,7 @@ com\vsu\researchapp\application\service\StudentService.class
 com\vsu\researchapp\presentation\controller\DashboardController.class
 com\vsu\researchapp\application\dto\ProfessorDto.class
 com\vsu\researchapp\domain\model\UserMedia.class
+com\vsu\researchapp\infrastructure\security\SecurityConfigDev.class
 com\vsu\researchapp\presentation\controller\MessageController.class
 com\vsu\researchapp\infrastructure\ai\AiClient.class
 com\vsu\researchapp\domain\model\Professor.class
@@ -24,6 +25,7 @@ com\vsu\researchapp\application\service\ResearchOpportunityService.class
 com\vsu\researchapp\presentation\controller\ProfessorController.class
 com\vsu\researchapp\presentation\controller\StudentApplicationController.class
 com\vsu\researchapp\domain\repository\ResearchEventRepository.class
+com\vsu\researchapp\infrastructure\security\AesEncryptor.class
 com\vsu\researchapp\presentation\controller\StudentController.class
 com\vsu\researchapp\domain\model\EncryptedFileShare.class
 com\vsu\researchapp\infrastructure\security\RateLimitFilter$Bucket.class
@@ -34,17 +36,18 @@ com\vsu\researchapp\domain\repository\ResearchTeamMemberRepository.class
 com\vsu\researchapp\application\dto\ResearchOpportunityDto.class
 com\vsu\researchapp\domain\model\ResearchOpportunity.class
 com\vsu\researchapp\application\service\NotificationService.class
+com\vsu\researchapp\infrastructure\security\SecurityConfigProd.class
 com\vsu\researchapp\domain\model\UserProfile.class
 com\vsu\researchapp\presentation\controller\StudentApplicationAdminController.class
 com\vsu\researchapp\application\service\StudentApplicationService.class
 com\vsu\researchapp\application\service\ProfessorService.class
 com\vsu\researchapp\infrastructure\ai\AiService.class
+com\vsu\researchapp\infrastructure\security\EncryptedStringConverter.class
 com\vsu\researchapp\domain\model\ResearchTeamMember.class
 com\vsu\researchapp\domain\model\ResumeFile.class
 com\vsu\researchapp\presentation\controller\ClubController.class
 com\vsu\researchapp\application\service\EncryptionService.class
 com\vsu\researchapp\domain\model\Student.class
-com\vsu\researchapp\infrastructure\security\SecurityConfig.class
 com\vsu\researchapp\presentation\controller\HealthController.class
 com\vsu\researchapp\presentation\controller\ResearchOpportunityController.class
 com\vsu\researchapp\presentation\controller\UserProfileController.class
@@ -66,6 +69,7 @@ com\vsu\researchapp\presentation\controller\UserAccountController.class
 com\vsu\researchapp\domain\exception\ProfessorNotFoundException.class
 com\vsu\researchapp\application\dto\StudentDto.class
 com\vsu\researchapp\domain\model\EncryptedFile.class
+com\vsu\researchapp\domain\model\Application.class
 com\vsu\researchapp\domain\model\Message.class
 com\vsu\researchapp\domain\repository\OpportunityRepository.class
 com\vsu\researchapp\domain\repository\MessageRepository.class
