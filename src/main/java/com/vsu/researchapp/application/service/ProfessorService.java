@@ -82,7 +82,9 @@ public class ProfessorService {
             professor.getName(),
             professor.getEmail(),
             professor.getDepartment(),
-            professor.getTitle()
+            professor.getTitle(),
+            professor.getCreatedAt(),
+            professor.getUpdatedAt()
         );
     }
 }
