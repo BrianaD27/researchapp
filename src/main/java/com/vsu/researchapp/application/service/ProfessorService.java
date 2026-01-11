@@ -1,11 +1,14 @@
 package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.Professor;
+import com.vsu.researchapp.domain.model.ResearchEvent;
 import com.vsu.researchapp.domain.repository.ProfessorRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import com.vsu.researchapp.application.dto.ProfessorDto;
 
@@ -25,26 +28,52 @@ public class ProfessorService {
 
     }
 
+    public ProfessorDto getProfessorById(Long id) {
+        Professor professor = professorRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Professor with the id: " + id));
 
-    public Professor getProfessorById(Long id) {
-        return professorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Professor not found: " + id));
+        return entityToDto(professor);
     }
 
-    public Professor createProfessor(Professor professor) {
-        return professorRepository.save(professor);
+
+    public ProfessorDto createProfessor(ProfessorDto dto) {
+
+        //Validate Email
+        if (!dto.email().endsWith("@vsu.edu")) {
+            throw new IllegalArgumentException("A valid VSU email is required");
+        }
+
+        Professor professor = new Professor();
+        professor.setName(dto.name());
+        professor.setEmail(dto.email());
+        professor.setDepartment(dto.department());
+        professor.setTitle(dto.title());
+
+       Professor saved = professorRepository.save(professor);
+       return entityToDto(saved);
     }
 
-    public Professor updateProfessor(Long id, Professor updated) {
-        Professor existing = getProfessorById(id);
-        existing.setName(updated.getName());
-        existing.setEmail(updated.getEmail());
-        existing.setDepartment(updated.getDepartment());
-        existing.setTitle(updated.getTitle());
-        return professorRepository.save(existing);
+    public ProfessorDto updateProfessor(Long id, ProfessorDto updated) {
+        Professor professor = professorRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Professor with the id: " + id));
+
+        //Validate Email
+        if (!updated.email().endsWith("@vsu.edu")) {
+            throw new IllegalArgumentException("A valid VSU email is required");
+        }
+
+        Optional.ofNullable(updated.name()).ifPresent(professor::setName);
+        Optional.ofNullable(updated.email()).ifPresent(professor::setEmail);
+        Optional.ofNullable(updated.department()).ifPresent(professor::setDepartment);
+        Optional.ofNullable(updated.title()).ifPresent(professor::setTitle);
+
+        Professor saved = professorRepository.save(professor);
+        return entityToDto(saved);
     }
 
     public void deleteProfessor(Long id) {
+        if (!professorRepository.existsById(id)) {
+            throw new RuntimeException("There is no Professor with the id: " + id);
+        }
+
         professorRepository.deleteById(id);
     }
 
