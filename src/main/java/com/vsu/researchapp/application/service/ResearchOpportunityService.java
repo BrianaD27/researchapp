@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+// TODO: Fix all methods to use DTOs instead of entities directly
 @Service
 public class ResearchOpportunityService {
 
