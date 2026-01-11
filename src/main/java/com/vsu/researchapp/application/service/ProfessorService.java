@@ -1,12 +1,11 @@
 package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.Professor;
-import com.vsu.researchapp.domain.model.ResearchEvent;
 import com.vsu.researchapp.domain.repository.ProfessorRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+
 import java.util.List;
 import java.util.Optional;
 

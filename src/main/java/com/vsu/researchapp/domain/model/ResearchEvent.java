@@ -32,6 +32,7 @@ public class ResearchEvent {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Foreign Key to Professor ID who created the event
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id")
     private Professor createdBy;

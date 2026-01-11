@@ -2,7 +2,8 @@ package com.vsu.researchapp.application.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public record ProfessorDto (
+// TODO: Add create and update DTOs for Professor
+public record ProfessorDto(
     Long id,
 
     @NotBlank(message = "A name is required")
