@@ -1,16 +1,11 @@
 package com.vsu.researchapp.application.service;
-
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
 import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
-
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 import com.vsu.researchapp.application.dto.CreateResearchOpportunityDto;
 import com.vsu.researchapp.application.dto.ResearchOpportunityDto;
 import com.vsu.researchapp.application.dto.UpdateResearchOpportunityDto;

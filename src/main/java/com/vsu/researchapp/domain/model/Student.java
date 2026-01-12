@@ -21,7 +21,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Student {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,6 +28,7 @@ public class Student {
     private String name;
     private String email;
     private String major;
+    private Integer graduateYear;
     private String description;
     private String skills;
     private LocalDateTime createdAt;

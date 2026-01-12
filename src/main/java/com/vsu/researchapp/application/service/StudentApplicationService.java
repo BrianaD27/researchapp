@@ -1,11 +1,9 @@
 package com.vsu.researchapp.application.service;
-
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
 import com.vsu.researchapp.domain.model.StudentApplication;
 import com.vsu.researchapp.domain.repository.StudentApplicationRepository;
 import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service

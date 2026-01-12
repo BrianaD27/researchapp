@@ -1,48 +1,86 @@
 package com.vsu.researchapp.application.service;
-
 import com.vsu.researchapp.domain.model.Student;
 import com.vsu.researchapp.domain.repository.StudentRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import com.vsu.researchapp.application.dto.CreateStudentDto;
+import com.vsu.researchapp.application.dto.StudentDto;
+import com.vsu.researchapp.application.dto.UpdateStudentDto;
 
 @Service
 public class StudentService {
-
     private final StudentRepository studentRepository;
 
-    // constructor injection
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
-    // this is what your controller is calling
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    public List<StudentDto> getAllStudents() {
+        List<Student> students = studentRepository.findAll();
+        return students.stream().map(this::entityToDto).toList();
     }
 
-    // this is what getStudentById() in the controller calls
-    public Student getStudentById(Long id) {
-        return studentRepository.findById(id)
+    public StudentDto getStudentById(Long id) {
+        Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found: " + id));
+        return entityToDto(student);
     }
 
-    // create a new student (if you need it later)
-    public Student createStudent(Student student) {
-        return studentRepository.save(student);
+    public List<StudentDto> searchStudents(String term) {
+        List<Student> students = studentRepository.searchStudents(term);
+        return students.stream().map(this::entityToDto).toList();
     }
 
-    // update an existing student (add/remove fields as your Student model has)
-    public Student updateStudent(Long id, Student updated) {
-        Student existing = getStudentById(id);
-        existing.setName(updated.getName());
-        existing.setEmail(updated.getEmail());
-        // add any other fields you have on Student here
-        return studentRepository.save(existing);
+    public StudentDto createStudent(CreateStudentDto student) {
+        if (student.graduateYear() < 2000 || student.graduateYear() > 2100) {
+            throw new IllegalArgumentException("Graduate year must be between 2000 and 2100");
+        }
+
+        Student newStudent = new Student();
+        newStudent.setName(student.name());
+        newStudent.setEmail(student.email());
+        newStudent.setMajor(student.major());
+        newStudent.setGraduateYear(student.graduateYear());
+        newStudent.setDescription(student.description());
+        newStudent.setSkills(student.skills());
+
+        Student savedStudent = studentRepository.save(newStudent);
+        return entityToDto(savedStudent);
     }
 
-    // delete by id
+    public StudentDto updateStudent(UpdateStudentDto updated, Long id) {
+        Student existingStudent = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found: " + id));
+
+        if (updated.graduateYear() < 2000 || updated.graduateYear() > 2100) {
+            throw new IllegalArgumentException("Graduate year must be between 2000 and 2100");
+        }
+
+        existingStudent.setName(updated.name());
+        existingStudent.setMajor(updated.major());
+        existingStudent.setGraduateYear(updated.graduateYear());
+        existingStudent.setDescription(updated.description());
+        existingStudent.setSkills(updated.skills());
+
+        Student savedStudent = studentRepository.save(existingStudent);
+        return entityToDto(savedStudent);
+    }
+
     public void deleteStudent(Long id) {
         studentRepository.deleteById(id);
+    }
+
+    private StudentDto entityToDto(Student student) {
+        return new StudentDto(
+                student.getId(),
+                student.getName(),
+                student.getEmail(),
+                student.getGraduateYear(),
+                student.getMajor(),
+                student.getDescription(),
+                student.getSkills(),
+                student.getCreatedAt(),
+                student.getUpdatedAt()
+        );
     }
 }
