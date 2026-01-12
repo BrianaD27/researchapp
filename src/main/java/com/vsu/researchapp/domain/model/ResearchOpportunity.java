@@ -38,7 +38,6 @@ public class ResearchOpportunity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // TODO: Update to createdById
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id")
     private Professor createdBy;

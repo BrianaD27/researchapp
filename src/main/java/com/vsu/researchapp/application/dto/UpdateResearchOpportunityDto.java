@@ -4,11 +4,12 @@ import java.time.LocalDate;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record  UpdateResearchOpportunity(
+public record  UpdateResearchOpportunityDto(
     String title,
     String description,
     String requirements,
 
+    
     @Schema(example = "2025-12-25", type = "string", format = "date")
     LocalDate beginDate,
     
