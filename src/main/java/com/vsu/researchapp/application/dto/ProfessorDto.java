@@ -1,9 +1,12 @@
 package com.vsu.researchapp.application.dto;
+import java.time.LocalDateTime;
 
-public record ProfessorDto (
+public record ProfessorDto(
     Long id,
     String name,
     String email,
     String department,
-    String title
+    String title,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {}
