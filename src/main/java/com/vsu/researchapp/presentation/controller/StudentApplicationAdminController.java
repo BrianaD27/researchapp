@@ -1,7 +1,11 @@
 package com.vsu.researchapp.presentation.controller;
 
 import com.vsu.researchapp.application.service.StudentApplicationService;
+import com.vsu.researchapp.application.service.AdminAuditLogService;
 import com.vsu.researchapp.domain.model.StudentApplication;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -9,27 +13,38 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/applications")
 @CrossOrigin(origins = "*")
+@PreAuthorize("hasRole('ADMIN')") // <-- locks down everything in this controller
 public class StudentApplicationAdminController {
 
     private final StudentApplicationService service;
+    private final AdminAuditLogService audit;
 
-    public StudentApplicationAdminController(StudentApplicationService service) {
+    public StudentApplicationAdminController(StudentApplicationService service, AdminAuditLogService audit) {
         this.service = service;
+        this.audit = audit;
     }
 
-    // 1) Admin: get ALL applications in the system
     @GetMapping
-    public List<StudentApplication> getAllApplications() {
+    public List<StudentApplication> all() {
+        audit.log("ADMIN_VIEW_ALL_APPLICATIONS");
         return service.getAllApplications();
     }
 
-    // 2) Admin: update the status of ONE application
-    // Example: PATCH /api/admin/applications/5/status?status=ACCEPTED
     @PatchMapping("/{applicationId}/status")
-    public StudentApplication updateStatus(
+    public ResponseEntity<StudentApplication> updateStatus(
             @PathVariable Long applicationId,
-            @RequestParam String status) {
+            @RequestBody UpdateStatusRequest body
+    ) {
+        String status = body.status == null ? "" : body.status.trim().toUpperCase();
+        if (!(status.equals("PENDING") || status.equals("ACCEPTED") || status.equals("REJECTED"))) {
+            return ResponseEntity.badRequest().build();
+        }
 
-        return service.updateStatus(applicationId, status);
+        audit.log("ADMIN_UPDATE_APPLICATION_STATUS id=" + applicationId + " status=" + status);
+        return ResponseEntity.ok(service.updateStatus(applicationId, status));
+    }
+
+    public static class UpdateStatusRequest {
+        public String status;
     }
 }
