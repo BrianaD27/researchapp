@@ -1,31 +1,25 @@
 package com.vsu.researchapp.presentation.controller;
 
 import java.net.URI;
-
-import com.vsu.researchapp.application.service.ProfessorService;
-import com.vsu.researchapp.domain.model.Professor;
-
-import jakarta.validation.Valid;
-
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import com.vsu.researchapp.application.dto.ProfessorDto;
-
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.vsu.researchapp.application.dto.CreateProfessorDto;
-
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
+import com.vsu.researchapp.application.dto.ProfessorDto;
 import com.vsu.researchapp.application.dto.UpdateProfessorDto;
+import com.vsu.researchapp.application.service.ProfessorService;
+
+import jakarta.validation.Valid;
 
 
 

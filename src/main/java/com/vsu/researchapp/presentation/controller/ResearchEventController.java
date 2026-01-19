@@ -22,8 +22,6 @@ import com.vsu.researchapp.application.service.ResearchEventService;
 
 import org.springframework.web.bind.annotation.RequestParam;
 
-//TODO: Fix all Controllers and Services and add correct Dtos
-
 @RestController
 @RequestMapping("/api/research-events")
 @CrossOrigin(origins = "*")

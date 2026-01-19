@@ -1,11 +1,21 @@
 package com.vsu.researchapp.presentation.controller;
-
-import com.vsu.researchapp.application.service.StudentService;
-import com.vsu.researchapp.domain.model.Student;
-
-import org.springframework.web.bind.annotation.*;
 import java.util.List;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import com.vsu.researchapp.application.dto.CreateStudentDto;
+import com.vsu.researchapp.application.dto.StudentDto;
+import com.vsu.researchapp.application.dto.UpdateStudentDto;
+import com.vsu.researchapp.application.service.StudentService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/students")
@@ -18,29 +28,39 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @GetMapping
-    public List<Student> getAllStudents() {
-        return studentService.getAllStudents();
+    @GetMapping()
+    public ResponseEntity<List<StudentDto>> getAllStudents() {
+        List<StudentDto> students = studentService.getAllStudents();
+        return ResponseEntity.ok(students);
     }
 
     @GetMapping("/{id}")
-    public Student getStudent(@PathVariable Long id) {
-        return studentService.getStudentById(id);
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
+        StudentDto student = studentService.getStudentById(id);
+        return ResponseEntity.ok(student);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<StudentDto>> searchStudents(@RequestParam String term) {
+        List<StudentDto> students = studentService.searchStudents(term);
+        return ResponseEntity.ok(students);
     }
 
     @PostMapping
-    public Student createStudent(@RequestBody Student student) {
-        return studentService.createStudent(student);
+    public ResponseEntity<StudentDto> createStudent(@Valid @RequestBody CreateStudentDto student) {
+        StudentDto created = studentService.createStudent(student);
+        return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
-    public Student updateStudent(@PathVariable Long id, @RequestBody Student student) {
-        return studentService.updateStudent(id, student);
+    public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentDto student) {
+        StudentDto updated = studentService.updateStudent(student, id);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
+        return ResponseEntity.noContent().build();
     }
-    
 }
