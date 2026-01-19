@@ -1,11 +1,28 @@
 package com.vsu.researchapp.presentation.controller;
 
-import com.vsu.researchapp.application.service.ProfessorService;
-import com.vsu.researchapp.domain.model.Professor;
-
-import org.springframework.web.bind.annotation.*;
-
+import java.net.URI;
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.vsu.researchapp.application.dto.CreateProfessorDto;
+import com.vsu.researchapp.application.dto.ProfessorDto;
+import com.vsu.researchapp.application.dto.UpdateProfessorDto;
+import com.vsu.researchapp.application.service.ProfessorService;
+
+import jakarta.validation.Valid;
+
+
+
 
 @RestController
 @RequestMapping("/api/professors")
@@ -13,34 +30,41 @@ import java.util.List;
 public class ProfessorController {
 
     private final ProfessorService professorService;
+    private static final String BASE_URL = "/api/professors/";
 
     public ProfessorController(ProfessorService professorService) {
         this.professorService = professorService;
     }
 
-    // @GetMapping
-    // public List<Professor> getAllProfessors() {
-    //     return professorService.getAllProfessors();
-    // }
+    @GetMapping()
+    public List<ProfessorDto> getAllProfessors() {
+        return professorService.getAllProfessors();
+    }
 
     @GetMapping("/{id}")
-    public Professor getProfessor(@PathVariable Long id) {
+    public ProfessorDto getProfessorById(@PathVariable Long id) {
         return professorService.getProfessorById(id);
     }
 
     @PostMapping
-    public Professor createProfessor(@RequestBody Professor professor) {
-        return professorService.createProfessor(professor);
+    public ResponseEntity<ProfessorDto> createProfessor(@Valid @RequestBody CreateProfessorDto dto) {
+        ProfessorDto created = professorService.createProfessor(dto);
+
+        // Returns url location of newly created Professor
+        return ResponseEntity.created(URI.create(BASE_URL + created.id())).body(created);
     }
 
     @PutMapping("/{id}")
-    public Professor updateProfessor(@PathVariable Long id,
-                                     @RequestBody Professor professor) {
-        return professorService.updateProfessor(id, professor);
+    public ResponseEntity<ProfessorDto> updateProfessor(@PathVariable Long id, @Valid @RequestBody UpdateProfessorDto updated) {
+        return ResponseEntity.ok(professorService.updateProfessor(id, updated));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteProfessor(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProfessor(@Valid @PathVariable Long id) {
         professorService.deleteProfessor(id);
+        return ResponseEntity.noContent().build();
     }
+    
+    
+    
 }
