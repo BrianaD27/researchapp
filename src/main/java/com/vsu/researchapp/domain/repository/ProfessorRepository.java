@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProfessorRepository extends JpaRepository<Professor, Long> {
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END Professor p WHERE p.email = :email")
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Professor p WHERE p.email = :email")
     boolean existsByEmail(String email);
 }
