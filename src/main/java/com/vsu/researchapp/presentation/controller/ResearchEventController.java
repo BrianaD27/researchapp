@@ -33,23 +33,23 @@ public class ResearchEventController {
     }
 
     @GetMapping("/{eventId}")
-    public ResearchEventDto getResearchEventById(@PathVariable Long eventId) {
-        return eventService.getResearchEventById(eventId);
+    public ResponseEntity<ResearchEventDto> getResearchEventById(@PathVariable Long eventId) {
+        return ResponseEntity.ok(eventService.getResearchEventById(eventId));
     }
 
     @GetMapping
-    public List<ResearchEventDto> getAllResearchEvents() {
-        return eventService.getAllResearchEvents();
+    public ResponseEntity<List<ResearchEventDto>> getAllResearchEvents() {
+        return ResponseEntity.ok(eventService.getAllResearchEvents());
     }
 
     @GetMapping("/upcoming")
-    public List<ResearchEventDto> getResearchEventsByUpcoming() {
-        return eventService.getResearchEventsByUpcoming();
+    public ResponseEntity<List<ResearchEventDto>> getResearchEventsByUpcoming() {
+        return ResponseEntity.ok(eventService.getResearchEventsByUpcoming());
     }
 
     @GetMapping("/date-range")
-    public List<ResearchEventDto> getResearchEventsByDateRange(@RequestParam LocalDate earliestDate, @RequestParam LocalDate latestDate) {
-        return eventService.getResearchEventsByDateRange(earliestDate, latestDate);
+    public ResponseEntity<List<ResearchEventDto>> getResearchEventsByDateRange(@RequestParam LocalDate earliestDate, @RequestParam LocalDate latestDate) {
+        return ResponseEntity.ok(eventService.getResearchEventsByDateRange(earliestDate, latestDate));
     }
 
     @PostMapping
@@ -60,8 +60,8 @@ public class ResearchEventController {
     }
 
     @PutMapping("/{eventId}")
-    public ResearchEventDto updateResearchEvent(@RequestBody UpdateResearchEventDto dto,  @PathVariable Long eventId) {
-        return eventService.updateResearchEvent(dto, eventId);
+    public ResponseEntity<ResearchEventDto> updateResearchEvent(@RequestBody UpdateResearchEventDto dto,  @PathVariable Long eventId) {
+        return ResponseEntity.ok(eventService.updateResearchEvent(dto, eventId));
     }
 
     @DeleteMapping("/{eventId}")

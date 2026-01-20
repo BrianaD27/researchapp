@@ -21,9 +21,6 @@ import com.vsu.researchapp.application.service.ProfessorService;
 
 import jakarta.validation.Valid;
 
-
-
-
 @RestController
 @RequestMapping("/api/professors")
 @CrossOrigin(origins = "*")
@@ -37,13 +34,13 @@ public class ProfessorController {
     }
 
     @GetMapping()
-    public List<ProfessorDto> getAllProfessors() {
-        return professorService.getAllProfessors();
+    public ResponseEntity<List<ProfessorDto>> getAllProfessors() {
+        return ResponseEntity.ok(professorService.getAllProfessors());
     }
 
     @GetMapping("/{id}")
-    public ProfessorDto getProfessorById(@PathVariable Long id) {
-        return professorService.getProfessorById(id);
+    public ResponseEntity<ProfessorDto> getProfessorById(@PathVariable Long id) {
+        return ResponseEntity.ok(professorService.getProfessorById(id));
     }
 
     @PostMapping
@@ -64,7 +61,5 @@ public class ProfessorController {
         professorService.deleteProfessor(id);
         return ResponseEntity.noContent().build();
     }
-    
-    
     
 }
