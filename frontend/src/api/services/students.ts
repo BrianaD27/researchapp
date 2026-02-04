@@ -3,7 +3,7 @@ import apiClient from "../client";
 import type { studentDto, createStudentDto, updateStudentDto } from './../../types/dtos';
 
 
-export const studentService = {
+export const studentsService = {
 
     getallStudents: async(): Promise<studentDto[]> => {
         const response = await apiClient.get<studentDto[]>('/students');

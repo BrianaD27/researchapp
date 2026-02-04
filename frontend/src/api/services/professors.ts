@@ -32,6 +32,4 @@ export const professorsService = {
     deleteProfessor: async(id: number): Promise<void> => {
         await apiClient.delete<void>(`/professors/${id}`)
     }
-
-
 }
