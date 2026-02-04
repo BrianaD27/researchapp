@@ -112,3 +112,14 @@ export interface createResearchEventDto {
     startTime: string,
     endTime: string
 }
+
+export interface updateResearchEventDto {
+    title: string,
+    description: string,
+    address: string,
+    registrationLink: string,
+    beginDate: string,
+    endDate: string,
+    startTime: string,
+    endTime: string
+}
