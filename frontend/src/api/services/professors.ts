@@ -1,9 +1,9 @@
-import apiClient from "./client";
+import apiClient from "../client";
 
-import type { professorDto, createProfessorDto, updateProfessorDto } from '../types/dtos';
+import type { professorDto, createProfessorDto, updateProfessorDto } from '../../types/dtos';
 
 // Object with API functions for professors
-export const professorsApi = {
+export const professorsService = {
     // Get all professors
     getAllProfessors: async(): Promise<professorDto[]> => {
         const response = await apiClient.get<professorDto[]>('/professors');
