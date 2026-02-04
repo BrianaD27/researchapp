@@ -9,6 +9,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/applications")
 @CrossOrigin(origins = "*")
+
+//TODO: Add Resume Review via AI
 public class StudentApplicationAdminController {
 
     private final StudentApplicationService service;
