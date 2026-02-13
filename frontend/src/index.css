@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+@theme base {
+  /* Custom base styles can go here */
+  --color-vsu-orange: #EE7623;
+  --color-vsu-blue: #0047BA;
+}
