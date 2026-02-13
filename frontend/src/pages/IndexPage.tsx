@@ -1,12 +1,12 @@
 import StudentLogin from "./auth/StudentLogin"
 
 
-const HomePage = () => {
+const IndexPage = () => {
   return (
     <div>
-        <StudentLogin />
+        <StudentLogin/>
     </div>
   )
 }
 
-export default HomePage
+export default IndexPage

@@ -1,11 +1,12 @@
-import React from 'react'
+import React from "react";
+import NavBar from "../../components/common/NavBar";
 
 const StudentHomePage = () => {
   return (
-    <div>
-      <h1>Hi</h1>
+    <div className="h-screen bg-vsu-blue">
+      <NavBar />
     </div>
-  )
-}
+  );
+};
 
-export default StudentHomePage
+export default StudentHomePage;

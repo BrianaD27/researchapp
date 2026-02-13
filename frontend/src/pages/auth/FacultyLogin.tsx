@@ -1,13 +1,12 @@
 import React from "react";
-import NavBar from "../../components/common/NavBar";
+import AuthNavBar from "../../components/common/AuthNavBar";
 import AuthForm from "../../components/common/AuthForm";
-
 
 const FacultyLogin = () => {
   return (
     <div className="h-screen bg-gray-100 flex flex-col">
       <div className="relative z-50">
-        <NavBar />
+        <AuthNavBar />
       </div>
 
       <img

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
-const NavBar = () => {
+const AuthNavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isOpportunitiesDropdownOpen, setIsOpportunitiesDropdownOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isFacultyDropdownOpen, setIsFacultyDropdownOpen] = useState(false);
+  const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
 
   return (
     <div className=" flex items-center justify-between p-3 px-7 bg-white text-black drop-shadow-lg">
@@ -27,18 +27,10 @@ const NavBar = () => {
       {/* PC Menu */}
       <ul className="flex space-x-4 hidden md:flex">
         <li className="nav-item items-center flex">
-            <div className="Dropdown flex items-center cursor-pointer">
-              <a className="nav-link" href="/StudentHomePage">
-                Home
-              </a>
-            </div>
-        </li>
-
-        <li className="nav-item items-center flex">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
               <a className="nav-link" href="">
-                My Opportunities
+                Faculty
               </a>
               <img
                 src="/src/assets/orangeDd.png"
@@ -49,13 +41,10 @@ const NavBar = () => {
 
             <div className="dropdown-content hidden group-hover:flex flex-col absolute bg-white border border-gray-300">
               <a href="/FacultyLogin" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
-                Saved
+                Log In
               </a>
               <a href="/FacultySignUp" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
-                Applied
-              </a>
-              <a href="/FacultySignUp" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
-                Completed
+                Sign Up
               </a>
             </div>
           </div>
@@ -65,7 +54,7 @@ const NavBar = () => {
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
               <a className="nav-link" href="/faculty-login">
-                Profile
+                Student
               </a>
               <img
                 src="/src/assets/orangeDd.png"
@@ -75,14 +64,11 @@ const NavBar = () => {
             </div>
 
             <div className="dropdown-content hidden group-hover:flex flex-col absolute bg-white border border-gray-300">
-              <a href="/StudentAccount" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
-                Account
+              <a href="/StudentLogin" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
+                Log In
               </a>
-              <a href="/StudentSettings" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
-                Settings
-              </a>
-              <a href="/StudentLogin" className="hover:bg-gray-100 text-red-500 pr-4 pl-4 pt-2 pb-2">
-                Logout
+              <a href="/StudentSignUp" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
+                Sign Up
               </a>
             </div>
           </div>
@@ -107,9 +93,9 @@ const NavBar = () => {
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <button
                 className="Dropdown flex items-center cursor-pointer"
-                onClick={() => setIsOpportunitiesDropdownOpen(!isOpportunitiesDropdownOpen)}
+                onClick={() => setIsFacultyDropdownOpen(!isFacultyDropdownOpen)}
               >
-                My Opportunities
+                Faculty
                 <img
                   src="/src/assets/orangeDd.png"
                   alt=""
@@ -118,27 +104,20 @@ const NavBar = () => {
               </button>
             </div>
 
-            {isOpportunitiesDropdownOpen && (
+            {isFacultyDropdownOpen && (
               <div className="flex flex-col items-center w-full">
                 <a
-                  href="/StudentSaved"
+                  href="/"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
-                  Saved
+                  Log In
                 </a>
 
                 <a
-                  href="/StudentApplied"
+                  href="/"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
-                  Applied
-                </a>
-
-                <a
-                  href="/StudentCompleted"
-                  className="px-4 py-2 w-full text-center hover:bg-gray-100"
-                >
-                  Completed
+                  Sign Up
                 </a>
               </div>
             )}
@@ -146,9 +125,9 @@ const NavBar = () => {
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <button
                 className="Dropdown flex items-center cursor-pointer"
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
               >
-                Profile
+                Students
                 <img
                   src="/src/assets/orangeDd.png"
                   alt=""
@@ -157,27 +136,20 @@ const NavBar = () => {
               </button>
             </div>
 
-            {isProfileDropdownOpen && (
+            {isStudentDropdownOpen && (
               <div className="flex flex-col items-center w-full">
                 <a
-                  href="/StudentAccount"
+                  href="/"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
-                  Account
+                  Log In
                 </a>
 
                 <a
-                  href="/StudentSettings"
+                  href="/"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
-                  Settings
-                </a>
-
-                <a
-                  href="/StudentLogin"
-                  className="px-4 py-2 w-full text-center text-red-500 hover:bg-gray-100"
-                >
-                  Logout
+                  Sign Up
                 </a>
               </div>
             )}
@@ -188,4 +160,4 @@ const NavBar = () => {
   );
 };
 
-export default NavBar;
+export default AuthNavBar;

@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 
-import HomePage from "./pages/index.tsx";
+import IndexPage from "./pages/IndexPage.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import FacultyLogin from "./pages/auth/FacultyLogin.tsx";
 import FacultySignUp from "./pages/auth/FacultySignUp.tsx";
@@ -14,7 +14,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<IndexPage />} />
         <Route path="/FacultyLogin" element={<FacultyLogin/>}/>
         <Route path="/FacultySignUp" element={<FacultySignUp/>}/>
         <Route path="/StudentLogin" element={<StudentLogin/>}/>
