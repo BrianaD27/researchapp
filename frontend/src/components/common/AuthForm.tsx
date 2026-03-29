@@ -14,7 +14,9 @@ const AuthForm: React.FC<AuthFormProps> = ({
   buttonText,
   buttonUrl
 }) => {
+
   const navigate = useNavigate();
+
   return (
     <div>
       <div className="absolute bg-white md:w-108 w-84 h-auto rounded-lg shadow-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">

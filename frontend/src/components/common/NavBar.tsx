@@ -25,7 +25,7 @@ const NavBar = () => {
       </div>
 
       {/* PC Menu */}
-      <ul className="flex space-x-4 hidden md:flex">
+      <ul className="space-x-4 hidden md:flex">
         <li className="nav-item items-center flex">
             <div className="Dropdown flex items-center cursor-pointer">
               <a className="nav-link" href="/StudentHomePage">
