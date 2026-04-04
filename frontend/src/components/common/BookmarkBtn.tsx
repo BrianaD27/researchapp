@@ -6,7 +6,7 @@ export default function BookmarkBtn() {
   return (
     <button
       onClick={() => setSaved(!saved)}
-      className="p-1 rounded-xl transition-colors"
+      className="p-1 rounded-xl transition-colors cursor-pointer"
       aria-label={saved ? "Remove bookmark" : "Bookmark"}
     >
       <svg
