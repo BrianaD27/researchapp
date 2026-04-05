@@ -1,17 +1,28 @@
 import React from "react";
 
-const StudentInfoCard = ({
-  name = "Student Name",
-  major = "Computer Science",
-  classification = "Junior",
-  graduationYear = 2024,
-  email = "student@example.com",
+const AppliedCompletedStudentsInfoCard = ({
+  name = "Professor Name",
+  department = "Computer Science",
+  availability = "Open",
+  commitment = "10 hrs / week",
+  gpa = "3.5+",
+  spots = "3/5",
+  classification = "Junior+",
+  email = "professor@example.com",
+  process = "Pending",
+  duration = "3/5/2024 - 8/15/2024",
 }: {
   name?: string;
-  major?: string;
+  department?: string;
+  availability?: string;
+  commitment?: string;
+  gpa?: string;
+  spots?: string;
   classification?: string;
-  graduationYear?: number;
   email?: string;
+  savedBtn?: string;
+  duration?: string;
+  process?: string;
 }) => {
   const skills = [
     "Python",
@@ -21,6 +32,7 @@ const StudentInfoCard = ({
     "Data Analysis",
     "Web Development",
   ];
+  const majors = ["Computer Science", "Computer Engineering", "Engineering"];
   return (
     <div className="hidden md:flex md:flex-col h-173 xl:w-130 lg:w-100 md:w-80 w-30 bg-white scroll-auto rounded-lg shadow-lg items-center p-4 gap-1">
       <div className="w-full overflow-scroll">
@@ -34,7 +46,7 @@ const StudentInfoCard = ({
           <div>
             <h1 className="font-semibold text-2xl">{name}</h1>
             <div className="flex flex-row flex-wrap items-center">
-              <p className="pr-2 text-lg">{major}</p>
+              <p className="pr-2 text-lg">{department}</p>
               <svg
                 width="5"
                 height="5"
@@ -49,26 +61,21 @@ const StudentInfoCard = ({
                   opacity="0.4"
                 />
               </svg>
-              <p className="px-2 text-lg">{classification}</p>
-              <svg
-                width="5"
-                height="5"
-                viewBox="0 0 5 5"
-                xmlns="http://www.w3.org/2000/svg"
+              <p
+                className={`px-2 text-lg font-semibold ${availability === "Open" ? "text-green-500" : "text-red-500"}`}
               >
-                <circle
-                  cx="2.5"
-                  cy="2.5"
-                  r="2.5"
-                  fill="currentColor"
-                  opacity="0.4"
-                />
-              </svg>
-              <p className="px-2 text-lg">{graduationYear}</p>
+                {availability}
+              </p>
             </div>
+
             <a href={`mailto:${email}`} className="text-blue-500 underline">
               {email}
             </a>
+            <div
+              className={`text-white font-semibold text-md ${process === "Pending" ? "bg-amber-400" : process === "Completed" ? "bg-emerald-500" : process === "Accepted" ? "bg-green-500" : "bg-red-500"} border rounded-3xl py-1 px-4 w-fit mt-2`}
+            >
+              {process}
+            </div>
           </div>
         </div>
 
@@ -87,36 +94,60 @@ const StudentInfoCard = ({
         <div className="w-full grid grid-cols-2 gap-3 px-5 mt-5">
           <div className="bg-gray-100 py-2 w-full px-6 rounded-lg flex flex-col items-start justify-center">
             <p className="uppercase font-semibold text-md text-slate-400">
-              GPA
+              Minimal GPA
             </p>
-            <p className="text-lg font-bold">3.8 / 4.0</p>
+            <p className="text-lg font-bold">{gpa}</p>
           </div>
           <div className="bg-gray-100 py-2 w-full px-6 rounded-lg flex flex-col items-start justify-center">
             <p className="uppercase font-semibold text-md text-slate-400">
-              applied
+              classification
             </p>
-            <p className="text-lg font-bold">April 3, 2023</p>
+            <p className="text-lg font-bold">{classification}</p>
           </div>
           <div className="bg-gray-100 py-2 w-full px-6 rounded-lg flex flex-col items-start justify-center">
             <p className="uppercase font-semibold text-md text-slate-400">
-              availability
+              time commitment
             </p>
-            <p className="text-lg font-bold">10 hrs / week</p>
+            <p className="text-lg font-bold">{commitment}</p>
           </div>
           <div className="bg-gray-100 py-2 w-full px-6 rounded-lg flex flex-col items-start justify-center">
             <p className="uppercase font-semibold text-md text-slate-400">
-              Has Experience
+              Spots Available
             </p>
-            <p className="text-lg font-bold">Yes</p>
+            <p className="text-lg font-bold">{spots}</p>
           </div>
+        </div>
+
+        <div className="bg-gray-100 mt-3 w-ful mx-4.5 py-2 px-6 rounded-lg flex flex-col items-start justify-center">
+          <p className="uppercase font-semibold text-md text-slate-400">
+            Duration
+          </p>
+          <p className="text-lg font-bold">{duration}</p>
         </div>
 
         <div></div>
 
+        {/* Required Majors */}
+        <div className="px-6 flex flex-col my-5 gap-1">
+          <p className="text-start text-xl uppercase text-slate-400 font-semibold">
+            Target Majors
+          </p>
+          <div className="flex flex-row gap-2 flex-wrap">
+            {majors.map((major) => (
+              <p className="px-4 text-normal bg-[#E3F1FC] rounded-full py-1 font-medium border border-[#B7D0E8]">
+                {major}
+              </p>
+            ))}
+            <div>
+              <p className="px-6 text-lg"></p>
+            </div>
+          </div>
+        </div>
+
         {/* Student Skills */}
         <div className="px-6 flex flex-col my-5 gap-1">
           <p className="text-start text-xl uppercase text-slate-400 font-semibold">
-            Skills
+            Required Skills
           </p>
           <div className="flex flex-row gap-2 flex-wrap">
             {skills.map((skill) => (
@@ -150,18 +181,17 @@ const StudentInfoCard = ({
       </div>
 
       <div className="flex flex-row gap-4 mt-2">
-        <button className="text-white hover:cursor-pointer font-semibold text-xl bg-green-500 border rounded-3xl py-2 px-6">
-          Accept
+        <button
+          className={`text-white ${process === "Completed" ? "hidden" : ""} font-semibold text-xl bg-red-500 border hover:cursor-pointer rounded-3xl py-2 px-6`}
+        >
+          Remove Application
         </button>
-        <button className="text-white hover:cursor-pointer font-semibold text-xl bg-red-500 border rounded-3xl py-2 px-6">
-          Reject
-        </button>
-        <button className="text-white hover:cursor-pointer font-semibold text-xl bg-blue-500 border rounded-3xl py-2 px-6">
-          Resume
+        <button className="text-white font-semibold text-xl bg-blue-500 border hover:cursor-pointer rounded-3xl py-2 px-6">
+          Email
         </button>
       </div>
     </div>
   );
 };
 
-export default StudentInfoCard;
+export default AppliedCompletedStudentsInfoCard;

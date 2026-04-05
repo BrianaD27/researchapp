@@ -5,7 +5,10 @@ export default function BookmarkBtn() {
 
   return (
     <button
-      onClick={() => setSaved(!saved)}
+      onClick={(e) => {
+        e.stopPropagation(); // Prevents the click from bubbling up to the card
+        setSaved(!saved)
+      }}
       className="p-1 rounded-xl transition-colors cursor-pointer"
       aria-label={saved ? "Remove bookmark" : "Bookmark"}
     >

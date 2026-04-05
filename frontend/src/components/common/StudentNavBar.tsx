@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
-const FacultyNavBar = () => {
+const StudentNavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOpportunitiesDropdownOpen, setIsOpportunitiesDropdownOpen] =
     useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   const location = useLocation();
   const currentPath = location.pathname;
@@ -14,7 +13,7 @@ const FacultyNavBar = () => {
     `nav-link ${currentPath === path ? "text-vsu-orange font-bold border-b-2 border-vsu-orange" : ""}`;
 
   // Active if on /my-opportunities OR any of its children
-  const opportunitiesPaths = ["/my-opportunities", "/faculty-view-all", "/faculty-applicants"];
+  const opportunitiesPaths = ["/my-opportunities", "/saved-opportunities", "/applied-opportunities", "/completed-opportunities"];
   const isOpportunitiesActive = opportunitiesPaths.includes(currentPath);
 
   return (
@@ -29,7 +28,7 @@ const FacultyNavBar = () => {
         <div className="w-0.75 h-14 bg-black"></div>
 
         <div>
-          <h4 className="lg:text-lg text-sm font-bold">Trojan Faculty </h4>
+          <h4 className="lg:text-lg text-sm font-bold">Trojan Undergrad </h4>
           <h4 className="lg:text-lg text-sm font-bold">
             Research Network
           </h4>
@@ -40,20 +39,8 @@ const FacultyNavBar = () => {
       <ul className="space-x-4 hidden md:flex">
         <li className="nav-item items-center flex">
           <div className="Dropdown text-sm lg:text-base flex items-center cursor-pointer">
-            <Link className={navLinkClass("/discover-students")} to="/discover-students">
-              Discover Students
-            </Link>
-          </div>
-        </li>
-
-        <li className="nav-item items-center flex">
-          <div className="Dropdown flex items-center cursor-pointer text-sm lg:text-base ">
-            <Link className={navLinkClass("/post-new")} to="/post-new">
-              <div className="flex flex-row gap-2 items-center">
-                <p className="">Post New</p>
-                <p className="text-4xl mb-2 text-[#F29D38] font-light">+</p>
-              </div>
-              
+            <Link className={navLinkClass("/discover-opportunities")} to="/discover-opportunities">
+              Discover Opportunities
             </Link>
           </div>
         </li>
@@ -76,16 +63,22 @@ const FacultyNavBar = () => {
 
             <div className="dropdown-content hidden group-hover:flex flex-col absolute bg-white border border-gray-300">
               <Link
-                to="/faculty-view-all"
-                className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/faculty-view-all" ? "text-vsu-orange font-bold" : ""}`}
+                to="/saved-opportunities"
+                className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/saved-opportunities" ? "text-vsu-orange font-bold" : ""}`}
               >
-                View All
+                Saved
               </Link>
               <Link
-                to="/faculty-applicants"
-                className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/faculty-applicants" ? "text-vsu-orange font-bold" : ""}`}
+                to="/applied-opportunities"
+                className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/applied-opportunities" ? "text-vsu-orange font-bold" : ""}`}
               >
-                Applicants
+                Applied
+              </Link>
+              <Link
+                to="/completed-opportunities"
+                className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/completed-opportunities" ? "text-vsu-orange font-bold" : ""}`}
+              >
+                Completed
               </Link>
             </div>
           </div>
@@ -119,19 +112,10 @@ const FacultyNavBar = () => {
           <div className="flex flex-col items-center">
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link
-                to="/discover-students"
-                className={`px-4 py-2 w-full text-center ${currentPath === "/discover-students" ? "text-vsu-orange font-bold" : ""}`}
+                to="/discover-opportunities"
+                className={`px-4 py-2 w-full text-center ${currentPath === "/discover-opportunities" ? "text-vsu-orange font-bold" : ""}`}
               >
-                Discover Students
-              </Link>
-            </div>
-
-            <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
-              <Link
-                to="/post-new"
-                className={`px-4 py-2 w-full text-center ${currentPath === "/post-new" ? "text-vsu-orange font-bold" : ""}`}
-              >
-                Post New
+                Discover
               </Link>
             </div>
 
@@ -155,58 +139,37 @@ const FacultyNavBar = () => {
               <div className="flex flex-col items-center w-full">
                 <Link
                   to="/faculty-view-all"
-                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-view-all" ? "text-vsu-orange font-bold" : ""}`}
+                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/applied-opportunities" ? "text-vsu-orange font-bold" : ""}`}
                 >
-                  View All
+                  Applied
+                </Link>
+
+                <Link
+                  to="/faculty-view-all"
+                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/saved-opportunities" ? "text-vsu-orange font-bold" : ""}`}
+                >
+                  Saved
                 </Link>
 
                 <Link
                   to="/faculty-applicants"
-                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-applicants" ? "text-vsu-orange font-bold" : ""}`}
+                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/completed-opportunities" ? "text-vsu-orange font-bold" : ""}`}
                 >
-                  Applicants
+                  Completed
                 </Link>
               </div>
             )}
 
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
-              <button
-                className="Dropdown flex items-center cursor-pointer"
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              <Link
+                to="/profile"
+                className={`px-4 py-2 w-full text-center ${currentPath === "/profile" ? "text-vsu-orange font-bold" : ""}`}
               >
                 Profile
-                <img
-                  src="/src/assets/orangeDd.png"
-                  alt=""
-                  className="w-10 h-auto"
-                />
-              </button>
+              </Link>
             </div>
 
-            {isProfileDropdownOpen && (
-              <div className="flex flex-col items-center w-full">
-                <Link
-                  to="/faculty-account"
-                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-account" ? "text-vsu-orange font-bold" : ""}`}
-                >
-                  Account
-                </Link>
-
-                <Link
-                  to="/faculty-settings"
-                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-settings" ? "text-vsu-orange font-bold" : ""}`}
-                >
-                  Settings
-                </Link>
-
-                <Link
-                  to="/faculty-login"
-                  className="px-4 py-2 w-full text-center text-red-500 hover:bg-gray-100"
-                >
-                  Logout
-                </Link>
-              </div>
-            )}
+          
           </div>
         </div>
       )}
@@ -214,4 +177,4 @@ const FacultyNavBar = () => {
   );
 };
 
-export default FacultyNavBar;
+export default StudentNavBar;

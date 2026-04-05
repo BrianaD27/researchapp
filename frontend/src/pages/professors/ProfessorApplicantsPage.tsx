@@ -1,28 +1,23 @@
-import OpportunityCard from "../../components/cards/OpportunityCard";
 import React from "react";
 import FacultyOpportunityCard from "../../components/cards/FacultyOpportunityCard";
 import StudentInfoCard from "../../components/cards/StudentInfoCard";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
+import StudentCard from "../../components/cards/StudentCard";
 
-const ProfessorHomePage = () => {
+const ProfessorApplicantsPage = () => {
   // const [isSortedByOpen, setIsSortedByOpen] = React.useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = React.useState(Number);
   const [selectedApplicant, setSelectedApplicant] = React.useState(Number);
   const [selectedFilter, setSelectedFilter] = React.useState("All (1)");
 
-  const filters = [
-    "All (1)",
-    "New (0)",
-    "Accepted (4)",
-    "Rejected (10)",
-  ];
+  const filters = ["All (1)", "New (0)", "Accepted (4)", "Rejected (10)"];
   const applicants = [
     {
       availability: "Closed",
-      title: "Biology",
-      department: "Computer Science",
-      date: "3/15/2023",
-      professor: "Dr. Smith",
+      student: "James",
+      major: "Computer Science",
+      graduateYear: "2023",
+      applied: "Not Applied",
     },
     {},
     {},
@@ -146,7 +141,9 @@ const ProfessorHomePage = () => {
             </svg>
           </div> */}
 
-          <p className="text-white/70 text-xl pb-2 uppercase">My Opportunities</p>
+          <p className="text-white/70 text-xl pb-2 uppercase">
+            My Opportunities
+          </p>
 
           {/* Opportunity Results Box */}
           <div className="h-55  xl:w-190 lg:w-150 md:w-130 w-100 gap-2 mb-3 shadow-lg flex flex-col justify-start overflow-scroll">
@@ -183,13 +180,12 @@ const ProfessorHomePage = () => {
           {/* Search Results Box */}
           <div className="h-85  xl:w-190 lg:w-150 md:w-130 w-100 gap-2 shadow-lg flex flex-col justify-start overflow-scroll">
             {applicants.map((applicant, index) => (
-              <OpportunityCard
+              <StudentCard
                 key={index}
-                title={applicant.title}
-                department={applicant.department}
-                date={applicant.date}
-                professor={applicant.professor}
-                availability={applicant.availability}
+                graduateYear={applicant.graduateYear}
+                student={applicant.student}
+                major={applicant.major}
+                applied={applicant.applied}
                 isSelected={selectedApplicant === index}
                 onSelect={() => setSelectedApplicant(index)}
               />
@@ -197,13 +193,13 @@ const ProfessorHomePage = () => {
           </div>
         </div>
 
-        {/* Opportunity Info Box */}
+        {/* Student Info Box */}
         <div>
-            <StudentInfoCard/>
+          <StudentInfoCard />
         </div>
       </div>
     </div>
   );
 };
 
-export default ProfessorHomePage;
+export default ProfessorApplicantsPage;

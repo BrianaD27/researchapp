@@ -1,6 +1,6 @@
 import React from "react";
 
-const StudentInfoCard = ({
+const DiscoverStudentInfoCard = ({
   name = "Student Name",
   major = "Computer Science",
   classification = "Junior",
@@ -150,13 +150,10 @@ const StudentInfoCard = ({
       </div>
 
       <div className="flex flex-row gap-4 mt-2">
-        <button className="text-white hover:cursor-pointer font-semibold text-xl bg-green-500 border rounded-3xl py-2 px-6">
-          Accept
+        <button className="text-white font-semibold hover:cursor-pointer text-xl bg-orange-500 border rounded-3xl py-2 px-8">
+          Email
         </button>
-        <button className="text-white hover:cursor-pointer font-semibold text-xl bg-red-500 border rounded-3xl py-2 px-6">
-          Reject
-        </button>
-        <button className="text-white hover:cursor-pointer font-semibold text-xl bg-blue-500 border rounded-3xl py-2 px-6">
+        <button className="text-white font-semibold hover:cursor-pointer text-xl bg-blue-500 border rounded-3xl py-2 px-6">
           Resume
         </button>
       </div>
@@ -164,4 +161,4 @@ const StudentInfoCard = ({
   );
 };
 
-export default StudentInfoCard;
+export default DiscoverStudentInfoCard;

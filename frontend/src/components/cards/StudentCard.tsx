@@ -1,26 +1,25 @@
 import React from "react";
 import BookmarkBtn from "../common/BookmarkBtn";
 
-const OpportunityCard = ({
-  availability = "Open",
+const StudentCard = ({
+  applied = "Applied",
   isSelected = false,
-  title = "Research Opportunity Title",
-  department = "Department Name",
-  professor = "Professor Name",
-  date = "Date Added",
+  graduateYear = "Graduate Year",
+  major = "Major Name",
+  student = "Student Name",
+  classification = "Junior",
   onSelect = () => {},
 }: {
-  availability?: string;
+  applied?: string;
   isSelected?: boolean;
-  title?: string;
-  department?: string;
-  professor?: string;
-  date?: string;
+    graduateYear?: string;
+  major?: string;
+  student?: string;
+  classification?: string;
   onSelect?: () => void;
 }) => {
   return (
-    <div
-      role="button"
+    <button
       className={`cursor-pointer ${isSelected ? "" : "hover:bg-white/90"} hover:border-4 text-start w-full h-25 flex flex-row justify-between items-center p-4  border rounded-2xl bg-white border-gray-300 ${isSelected ? "border-vsu-orange border-4" : ""} `}
       onClick={onSelect}
     >
@@ -35,9 +34,9 @@ const OpportunityCard = ({
 
         {/* Opportunity Description */}
         <div className="flex flex-col gap-2">
-          <h1 className="font-normal text-2xl ">{title}</h1>
+          <h1 className="font-normal text-2xl ">{student}</h1>
           <div className="flex flex-row gap-2 items-center">
-            <p className="text-base text-gray-600">{professor}</p>
+            <p className="text-base text-gray-600">{major}</p>
             <svg
               width="5"
               height="5"
@@ -52,7 +51,7 @@ const OpportunityCard = ({
                 opacity="0.4"
               />
             </svg>
-            <p className="text-base text-gray-600">{department}</p>
+            <p className="text-base text-gray-600">{classification}</p>
             <svg
               width="5"
               height="5"
@@ -67,7 +66,7 @@ const OpportunityCard = ({
                 opacity="0.4"
               />
             </svg>
-            <p className="text-base text-gray-600">{date}</p>
+            <p className="text-base text-gray-600">{graduateYear}</p>
             <svg
               width="5"
               height="5"
@@ -83,9 +82,9 @@ const OpportunityCard = ({
               />
             </svg>
             <p
-              className={`text-base font-bold ${availability === "Open" ? "text-green-500" : "text-red-500"}`}
+              className={`text-base font-bold ${applied === "Applied" ? "text-green-500" : "text-red-500"}`}
             >
-              {availability}
+              {applied}
             </p>
           </div>
         </div>
@@ -95,8 +94,8 @@ const OpportunityCard = ({
       <div className="flex flex-row justify-center items-center">
         <BookmarkBtn />
       </div>
-    </div>
+    </button>
   );
 };
 
-export default OpportunityCard;
+export default StudentCard;

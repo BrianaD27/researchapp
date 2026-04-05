@@ -11,15 +11,15 @@ const AuthNavBar = () => {
         <img
           src="/src/assets/vsuLogo.png"
           alt="VSU Logo"
-          className="md:w-28 h-auto w-18"
+          className="md:w-24 h-auto w-18"
         />
 
         <div className="w-0.75 h-14 bg-black"></div>
 
         <div>
-          <h4 className="md:text-lg text-base font-bold">Research</h4>
+          <h4 className="md:text-lg text-base font-bold">Trojan Undergrad</h4>
           <h4 className="md:text-lg text-base font-bold">
-            Opportunities Portal
+             Research Network
           </h4>
         </div>
       </div>

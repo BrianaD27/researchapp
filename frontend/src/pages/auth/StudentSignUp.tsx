@@ -18,7 +18,7 @@ const StudentSignUp = () => {
       <AuthForm
         title="Student SignUp"
         buttonText="Log In"
-        buttonUrl="/StudentHomePage"
+        buttonUrl="/discover-opportunities"
         textFields={[
           { label: "Email", type: "email", id: "student-email" },
           { label: "Password", type: "password", id: "student-password" },
