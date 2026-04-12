@@ -15,6 +15,8 @@ import StudentDiscoverPage from "./pages/students/StudentDiscoverPage.tsx";
 import StudentBookmarksPage from "./pages/students/StudentBookmarksPage.tsx";
 import StudentAppliedPage from "./pages/students/StudentAppliedPage.tsx";
 import StudentCompletedPage from "./pages/students/StudentCompletedPage.tsx";
+import ProfessorViewAllPage from "./pages/professors/ProfessorViewAllPage.tsx";
+import ProfessorProfilePage from "./pages/professors/ProfessorProfilePage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -46,13 +48,13 @@ createRoot(document.getElementById("root")!).render(
         />
         <Route
           path="/faculty-view-all"
-          element={<div>Faculty View All Opportunities Page</div>}
+          element={<ProfessorViewAllPage />}
         />
         <Route
           path="/faculty-applicants"
           element={<ProfessorApplicantsPage />}
         />
-        <Route path="/profile" element={<div>Profile Page</div>} />
+        <Route path="/faculty-profile" element={<ProfessorProfilePage />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

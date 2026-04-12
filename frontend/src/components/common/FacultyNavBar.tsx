@@ -62,7 +62,7 @@ const FacultyNavBar = () => {
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer text-sm lg:text-base ">
               <Link
-                to="/my-opportunities"
+                to="/faculty-view-all"
                 className={`nav-link ${isOpportunitiesActive ? "text-vsu-orange font-bold border-b-2 border-vsu-orange" : ""}`}
               >
                 My Opportunities
@@ -94,7 +94,7 @@ const FacultyNavBar = () => {
         <li className="nav-item items-center flex text-sm lg:text-base ">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <Link className={navLinkClass("/profile")} to="/profile">
+              <Link className={navLinkClass("/faculty-profile")} to="/faculty-profile">
                 Profile
               </Link>
             </div>

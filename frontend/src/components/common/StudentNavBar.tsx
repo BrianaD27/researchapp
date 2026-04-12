@@ -49,7 +49,7 @@ const StudentNavBar = () => {
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer text-sm lg:text-base ">
               <Link
-                to="/my-opportunities"
+                to="/saved-opportunities"
                 className={`nav-link ${isOpportunitiesActive ? "text-vsu-orange font-bold border-b-2 border-vsu-orange" : ""}`}
               >
                 My Opportunities
