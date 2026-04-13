@@ -1,14 +1,9 @@
 import React, { useState } from "react";
 import AuthNavBar from "../../components/common/AuthNavBar";
-import MajorInput from "../../components/forms/MajorInput";
 import SkillInput from "../../components/forms/SkillInput";
 import { useNavigate } from "react-router-dom";
 
 const StudentInfoPage = () => {
-  const [majors, setMajors] = React.useState<string[]>([
-    "Computer Science",
-    "Engineering",
-  ]);
   const [skills, setSkills] = React.useState<string[]>([
     "Python",
     "Machine Learning",
@@ -24,19 +19,17 @@ const StudentInfoPage = () => {
   const [graduationYear, setGraduationYear] = React.useState("");
   const [resumeUrl, setResumeUrl] = useState<string>("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-//   const handleResumeUpload = async () => {
-//     if (!resumeFile) return;
+    const handleResumeUpload = async () => {
+      if (!resumeFile) return;
 
-//     const resumeData = new FormData();
-//     resumeData.append("resume", resumeFile);
+      const resumeData = new FormData();
+      resumeData.append("resume", resumeFile);
+      console.log("Resume url ready for upload:", resumeUrl); // Line not needed. Remove later
 
-//     // TODO: Implement API call to upload resume
-//   };
-  const [startDate, setStartDate] = React.useState("");
-  const [endDate, setEndDate] = React.useState("");
-  const [description, setDescription] = React.useState(
-    "This is a description of the research opportunity. It provides details about the project, expectations, and any other relevant information that potential applicants should know.",
-  );
+      // TODO: Implement API call to upload resume
+    };
+
+  const [description, setDescription] = React.useState("");
 
   const [classification, setClassification] = React.useState("");
   const classificationOptions = ["Freshman", "Sophomore", "Junior", "Senior"];
@@ -290,7 +283,14 @@ const StudentInfoPage = () => {
 
               {/* Buttons */}
               <div className="flex flex-row justify-center items-center mb-4 gap-4">
-                <button onClick={() => navigate("/discover-opportunities")}className="text-white font-semibold hover:cursor-pointer text-xl bg-vsu-blue hover:bg-vsu-blue/60 border rounded-3xl py-2 px-8">
+                <button
+                  onClick={() => {
+                    navigate("/discover-opportunities");
+                    handleResumeUpload();
+
+                  }}
+                  className="text-white font-semibold hover:cursor-pointer text-xl bg-vsu-blue hover:bg-vsu-blue/60 border rounded-3xl py-2 px-8"
+                >
                   Continue
                 </button>
                 <button className="text-white font-semibold hover:cursor-pointer text-xl bg-red-500 border rounded-3xl py-2 px-6">
