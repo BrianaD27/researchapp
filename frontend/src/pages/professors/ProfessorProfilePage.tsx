@@ -158,7 +158,7 @@ const ProfessorProfilePage = () => {
         <FacultyNavBar />
       </div>
 
-      <div className="flex-1 my-5 mx-10 rounded-2xl items-center justify-center overflow-scroll">
+      <div className="flex-1 my-10 mx-10 rounded-2xl items-center justify-center overflow-scroll">
         <div>
           <p className="text-white/70 text-xl pb-2 uppercase">
             Account Settings
@@ -188,7 +188,7 @@ const ProfessorProfilePage = () => {
           </div>
         </div>
 
-        <div className="mt-5">
+        <div className="my-5">
           <p className="text-white/70 text-xl pb-2 uppercase">Exit</p>
           <div className="flex h-auto justify-start p-8 items-start rounded-lg bg-white">
             <div className="flex flex-col items-start w-full gap-5">

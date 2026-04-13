@@ -5,7 +5,7 @@ const FacultyNavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOpportunitiesDropdownOpen, setIsOpportunitiesDropdownOpen] =
     useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  // const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   const location = useLocation();
   const currentPath = location.pathname;
@@ -94,7 +94,7 @@ const FacultyNavBar = () => {
         <li className="nav-item items-center flex text-sm lg:text-base ">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <Link className={navLinkClass("/faculty-profile")} to="/faculty-profile">
+              <Link className={navLinkClass("/faculty-settings")} to="/faculty-settings">
                 Profile
               </Link>
             </div>
@@ -170,24 +170,19 @@ const FacultyNavBar = () => {
             )}
 
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
-              <button
-                className="Dropdown flex items-center cursor-pointer"
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              <Link
+                className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-settings" ? "text-vsu-orange font-bold" : ""}`}
+                to="/faculty-settings"
               >
                 Profile
-                <img
-                  src="/src/assets/orangeDd.png"
-                  alt=""
-                  className="w-10 h-auto"
-                />
-              </button>
+              </Link>
             </div>
 
-            {isProfileDropdownOpen && (
+            {/* {isProfileDropdownOpen && (
               <div className="flex flex-col items-center w-full">
                 <Link
-                  to="/faculty-account"
-                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-account" ? "text-vsu-orange font-bold" : ""}`}
+                  to="/faculty-settings"
+                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-settings" ? "text-vsu-orange font-bold" : ""}`}
                 >
                   Account
                 </Link>
@@ -206,7 +201,7 @@ const FacultyNavBar = () => {
                   Logout
                 </Link>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       )}

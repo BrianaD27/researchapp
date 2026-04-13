@@ -18,7 +18,7 @@ const FacultySignUp = () => {
       <AuthForm
         title="Faculty SignUp"
         buttonText="Sign Up"
-        buttonUrl="/discover-students"
+        buttonUrl="/faculty-info"
         textFields={[
           { label: "Email", type: "email", id: "faculty-email" },
           { label: "Password", type: "password", id: "faculty-password" },

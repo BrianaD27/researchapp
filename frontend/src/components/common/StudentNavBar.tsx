@@ -87,7 +87,7 @@ const StudentNavBar = () => {
         <li className="nav-item items-center flex text-sm lg:text-base ">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <Link className={navLinkClass("/profile")} to="/profile">
+              <Link className={navLinkClass("/student-settings")} to="/student-settings">
                 Profile
               </Link>
             </div>
@@ -162,8 +162,8 @@ const StudentNavBar = () => {
 
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link
-                to="/profile"
-                className={`px-4 py-2 w-full text-center ${currentPath === "/profile" ? "text-vsu-orange font-bold" : ""}`}
+                to="/student-settings"
+                className={`px-4 py-2 w-full text-center ${currentPath === "/student-settings" ? "text-vsu-orange font-bold" : ""}`}
               >
                 Profile
               </Link>
