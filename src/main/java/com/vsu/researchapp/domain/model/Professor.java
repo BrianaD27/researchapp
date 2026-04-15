@@ -30,7 +30,8 @@ public class Professor {
     private String name;
     private String email;
     private String department;
-    private String title;
+    private String office_location;
+    private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
