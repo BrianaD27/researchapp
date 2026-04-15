@@ -1,16 +1,19 @@
 package com.vsu.researchapp.domain.repositoryinterfaces;
 
-import com.vsu.researchapp.domain.model.Student;
-
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
+import com.vsu.researchapp.domain.model.Student;
 
-@Repository
-public interface StudentRepository extends JpaRepository<Student, Long> {
-    @Query("SELECT s FROM Student s WHERE " + "LOWER(s.name) LIKE LOWER(CONCAT('%', :term, '%')) OR " + "LOWER(s.major) LIKE LOWER(CONCAT('%', :term, '%')) OR " + "LOWER(s.skills) LIKE LOWER(CONCAT('%', :term, '%')) OR " + "CAST(s.graduateYear AS string) LIKE CONCAT('%', :term, '%')")
-    List<Student> searchStudents(@Param("term") String term);
+public interface StudentRepository {
+    Student createStudent(Student student);
+    Student getStudentById(Long id);
+    Student updateStudent(Student student);
+    void deleteStudent(Long id);
+    List<Student> getAllStudents();
+    List<Student> searchStudentsByName(String name);
+    List<Student> searchStudentsByMajor(String major);
+    List<Student> searchStudentsBySkills(String skill);
+    List<Student> searchStudentsByClassification(String classification);
+    List<Student> searchStudentsByAvailability(Integer availability);
+
 } 
