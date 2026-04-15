@@ -1,7 +1,7 @@
 package com.vsu.researchapp.infrastructure.security;
 
 import com.vsu.researchapp.domain.model.UserAccount;
-import com.vsu.researchapp.domain.repository.UserAccountRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

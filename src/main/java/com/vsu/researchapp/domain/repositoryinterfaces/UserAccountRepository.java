@@ -1,4 +1,4 @@
-package com.vsu.researchapp.domain.repository;
+package com.vsu.researchapp.domain.repositoryinterfaces;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

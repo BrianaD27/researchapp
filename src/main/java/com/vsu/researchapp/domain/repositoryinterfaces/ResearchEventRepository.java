@@ -1,4 +1,4 @@
-package com.vsu.researchapp.domain.repository;
+package com.vsu.researchapp.domain.repositoryinterfaces;
 
 import java.time.LocalDate;
 import java.util.List;

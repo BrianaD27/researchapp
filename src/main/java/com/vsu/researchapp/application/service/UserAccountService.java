@@ -1,7 +1,8 @@
 package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.UserAccount;
-import com.vsu.researchapp.domain.repository.UserAccountRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.Professor;
-import com.vsu.researchapp.domain.repository.ProfessorRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepository;
 
 import org.springframework.stereotype.Service;
 

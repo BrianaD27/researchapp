@@ -11,8 +11,8 @@ import com.vsu.researchapp.application.dto.ResearchEventDto;
 import com.vsu.researchapp.application.dto.UpdateResearchEventDto;
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchEvent;
-import com.vsu.researchapp.domain.repository.ProfessorRepository;
-import com.vsu.researchapp.domain.repository.ResearchEventRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ResearchEventRepository;
 
 @Service
 public class ResearchEventService {

@@ -1,4 +1,4 @@
-package com.vsu.researchapp.domain.repository;
+package com.vsu.researchapp.domain.repositoryinterfaces;
 
 import com.vsu.researchapp.domain.model.Professor;
 

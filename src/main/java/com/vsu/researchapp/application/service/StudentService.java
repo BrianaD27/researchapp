@@ -1,6 +1,7 @@
 package com.vsu.researchapp.application.service;
 import com.vsu.researchapp.domain.model.Student;
-import com.vsu.researchapp.domain.repository.StudentRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepository;
+
 import org.springframework.stereotype.Service;
 import java.util.List;
 import com.vsu.researchapp.application.dto.CreateStudentDto;

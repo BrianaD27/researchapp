@@ -1,9 +1,10 @@
 package com.vsu.researchapp.infrastructure.config;
 
 import com.vsu.researchapp.domain.model.UserAccount;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
-import com.vsu.researchapp.domain.repository.UserAccountRepository;
-import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.vsu.researchapp.domain.model.Professor;
-import com.vsu.researchapp.domain.repository.ProfessorRepository;
 
 @Configuration
 public class DataInitializer {
