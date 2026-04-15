@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.persistence.Column;
 
 @Entity
 @Table(name = "students")
@@ -30,32 +31,33 @@ public class Student {
     private String name;
     private String email;
     private String major;
-    private Integer graduation_year;
+    private Integer graduationYear;
     private String classification;
     private String description;
-    private String previous_experience;
+    private String previousExperience;
     private Float gpa;
-    private Integer available_hours_per_week;
+    private Integer availableHoursPerWeek;
     private String resumeUrl;
-    private String profile_picture_url;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
+    private String profilePictureUrl;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // Stores Skills as a separate table (Without creating a new entity table) with a foreign key to Student, allowing for multiple skills per student
     @ElementCollection
     @CollectionTable(name = "studentSkills", joinColumns = @JoinColumn(name = "student_id"))
+    @Column(name = "skill")
     private List<String> skills;
 
     // Automatically Sets CreatedAt and Updated At on Created
     @PrePersist
     protected void onCreate() {
-        this.created_at = LocalDateTime.now();
-        this.updated_at = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Automatically sets UpdatedAt only when Updated
     @PreUpdate
     protected void onUpdate() {
-        this.updated_at = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }
