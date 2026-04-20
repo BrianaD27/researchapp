@@ -1,7 +1,7 @@
 package com.vsu.researchapp.infrastructure.config;
 
 import com.vsu.researchapp.domain.model.UserAccount;
-import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
 import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
@@ -18,7 +18,7 @@ public class DataInitializer {
 
     @Bean
     CommandLineRunner initData(UserAccountRepository userRepo,
-                               ResearchOpportunityRepository oppRepo, ProfessorRepository proRepo,
+                               ResearchOpportunityRepository oppRepo, ProfessorRepositoryInterface proRepo,
                                PasswordEncoder encoder) {
         return args -> {
 

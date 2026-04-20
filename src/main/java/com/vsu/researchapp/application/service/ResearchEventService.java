@@ -11,16 +11,16 @@ import com.vsu.researchapp.application.dto.ResearchEventDto;
 import com.vsu.researchapp.application.dto.UpdateResearchEventDto;
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchEvent;
-import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
 import com.vsu.researchapp.domain.repositoryinterfaces.ResearchEventRepository;
 
 @Service
 public class ResearchEventService {
     private final ResearchEventRepository researchEventRepository;
 
-    private final ProfessorRepository professorRepository;
+    private final ProfessorRepositoryInterface professorRepository;
 
-    public ResearchEventService(ResearchEventRepository researchEventRepository, ProfessorRepository professorRepository) {
+    public ResearchEventService(ResearchEventRepository researchEventRepository, ProfessorRepositoryInterface professorRepository) {
         this.researchEventRepository = researchEventRepository;
         this.professorRepository = professorRepository;
     }

@@ -1,7 +1,7 @@
 package com.vsu.researchapp.application.service;
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
-import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
 import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityRepository;
 
 import org.springframework.stereotype.Service;
@@ -16,9 +16,9 @@ import com.vsu.researchapp.application.dto.UpdateResearchOpportunityDto;
 public class ResearchOpportunityService {
 
     private final ResearchOpportunityRepository repo;
-    private final ProfessorRepository professorRepo;
+    private final ProfessorRepositoryInterface professorRepo;
 
-    public ResearchOpportunityService(ResearchOpportunityRepository repo, ProfessorRepository professorRepo) {
+    public ResearchOpportunityService(ResearchOpportunityRepository repo, ProfessorRepositoryInterface professorRepo) {
         this.repo = repo;
         this.professorRepo = professorRepo;
     }

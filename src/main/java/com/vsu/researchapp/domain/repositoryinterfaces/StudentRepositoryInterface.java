@@ -5,7 +5,7 @@ import java.util.List;
 import com.vsu.researchapp.domain.model.Student;
 import com.vsu.researchapp.domain.queryObjects.StudentSearchCriteria;
 
-public interface StudentRepository {
+public interface StudentRepositoryInterface {
     Student createStudent(Student student);
     Student getStudentById(Long id);
     Student updateStudent(Student student);

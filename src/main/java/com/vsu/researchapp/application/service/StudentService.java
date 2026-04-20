@@ -1,6 +1,6 @@
 package com.vsu.researchapp.application.service;
 import com.vsu.researchapp.domain.model.Student;
-import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepositoryInterface;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -10,9 +10,9 @@ import com.vsu.researchapp.application.dto.UpdateStudentDto;
 
 @Service
 public class StudentService {
-    private final StudentRepository studentRepository;
+    private final StudentRepositoryInterface studentRepository;
 
-    public StudentService(StudentRepository studentRepository) {
+    public StudentService(StudentRepositoryInterface studentRepository) {
         this.studentRepository = studentRepository;
     }
 
