@@ -2,6 +2,8 @@ package com.vsu.researchapp.domain.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "user_accounts")
@@ -16,8 +18,31 @@ public class UserAccount {
     private String passwordHash;
     private String role;
     private boolean active = true;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Brute force protection
+    private int failedAttempts = 0;
+    private boolean accountLocked = false;
+    private LocalDateTime lockTime;
+
+    // 2FA
+    private boolean twoFactorEnabled = false;
+    private String twoFactorCode;
+    private LocalDateTime twoFactorExpiry;
+
+    // Remember me / session support marker
+    private LocalDateTime lastLoginAt;
+
+    // Password reuse prevention
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+        name = "user_password_history",
+        joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "password_hash")
+    private List<String> passwordHistory = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -29,16 +54,6 @@ public class UserAccount {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-public String getPasswordHash() {
-    return passwordHash;
-}
-
-public void setPasswordHash(String passwordHash) {
-    this.passwordHash = passwordHash;
-}
-
-    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -62,6 +77,14 @@ public void setPasswordHash(String passwordHash) {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getRole() {
@@ -94,5 +117,69 @@ public void setPasswordHash(String passwordHash) {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public int getFailedAttempts() {
+        return failedAttempts;
+    }
+
+    public void setFailedAttempts(int failedAttempts) {
+        this.failedAttempts = failedAttempts;
+    }
+
+    public boolean isAccountLocked() {
+        return accountLocked;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public LocalDateTime getLockTime() {
+        return lockTime;
+    }
+
+    public void setLockTime(LocalDateTime lockTime) {
+        this.lockTime = lockTime;
+    }
+
+    public boolean isTwoFactorEnabled() {
+        return twoFactorEnabled;
+    }
+
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
+    }
+
+    public String getTwoFactorCode() {
+        return twoFactorCode;
+    }
+
+    public void setTwoFactorCode(String twoFactorCode) {
+        this.twoFactorCode = twoFactorCode;
+    }
+
+    public LocalDateTime getTwoFactorExpiry() {
+        return twoFactorExpiry;
+    }
+
+    public void setTwoFactorExpiry(LocalDateTime twoFactorExpiry) {
+        this.twoFactorExpiry = twoFactorExpiry;
+    }
+
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
+    }
+
+    public List<String> getPasswordHistory() {
+        return passwordHistory;
+    }
+
+    public void setPasswordHistory(List<String> passwordHistory) {
+        this.passwordHistory = passwordHistory;
     }
 }
