@@ -183,13 +183,24 @@ public class UserAccountService {
 
     private void validatePasswordStrength(String password) {
         if (password == null || password.length() < 8) {
-            throw new RuntimeException("Password must be at least 8 characters");
+            throw new RuntimeException(
+                "Password must be at least 8 characters");
         }
         if (!password.matches(".*[A-Z].*")) {
-            throw new RuntimeException("Password must contain at least one uppercase letter");
+            throw new RuntimeException(
+                "Password must contain at least one uppercase letter");
+        }
+        if (!password.matches(".*[a-z].*")) {
+            throw new RuntimeException(
+                "Password must contain at least one lowercase letter");
         }
         if (!password.matches(".*\\d.*")) {
-            throw new RuntimeException("Password must contain at least one number");
+            throw new RuntimeException(
+                "Password must contain at least one number");
+        }
+        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
+            throw new RuntimeException(
+                "Password must contain at least one special character");
         }
     }
 
