@@ -2,24 +2,28 @@ package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.repository.UserAccountRepository;
+import com.vsu.researchapp.infrastructure.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class UserAccountService {
 
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              JwtUtil jwtUtil) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     // 1) Create a new user (used by /register)
@@ -37,10 +41,8 @@ public class UserAccountService {
 
         String encodedPassword = passwordEncoder.encode(password);
         user.setPasswordHash(encodedPassword);
-
         user.getPasswordHistory().add(encodedPassword);
 
-        // Spring Security hasRole("ADMIN") expects ROLE_ADMIN format underneath
         if (role == null || role.isBlank()) {
             user.setRole("ROLE_USER");
         } else if (role.startsWith("ROLE_")) {
@@ -57,7 +59,7 @@ public class UserAccountService {
         return userAccountRepository.save(user);
     }
 
-    // 2) Login step 1: username/password
+    // 2) Login - returns JWT token on success
     public String login(String username, String rawPassword) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
@@ -93,15 +95,11 @@ public class UserAccountService {
             user.setTwoFactorCode(code);
             user.setTwoFactorExpiry(LocalDateTime.now().plusMinutes(5));
             userAccountRepository.save(user);
-
-            // Placeholder until Okta/email is wired in
-            System.out.println("2FA CODE for " + user.getUsername() + ": " + code);
-
             return "2FA_REQUIRED";
         }
 
         userAccountRepository.save(user);
-        return "LOGIN_SUCCESS";
+        return jwtUtil.generateToken(user.getUsername(), user.getRole());
     }
 
     // 3) Verify 2FA code
@@ -133,30 +131,28 @@ public class UserAccountService {
         user.setLastLoginAt(LocalDateTime.now());
         userAccountRepository.save(user);
 
-        return "2FA_SUCCESS";
+        return jwtUtil.generateToken(user.getUsername(), user.getRole());
     }
 
-    // 4) Enable 2FA for a user
+    // 4) Enable 2FA
     public UserAccount enableTwoFactor(String username) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         user.setTwoFactorEnabled(true);
         return userAccountRepository.save(user);
     }
 
-    // 5) Disable 2FA for a user
+    // 5) Disable 2FA
     public UserAccount disableTwoFactor(String username) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         user.setTwoFactorEnabled(false);
         user.setTwoFactorCode(null);
         user.setTwoFactorExpiry(null);
         return userAccountRepository.save(user);
     }
 
-    // 6) Change password with password history check
+    // 6) Change password with history check
     public UserAccount changePassword(String username, String newPassword) {
         validatePasswordStrength(newPassword);
 
@@ -172,7 +168,6 @@ public class UserAccountService {
         String newHash = passwordEncoder.encode(newPassword);
         user.setPasswordHash(newHash);
         user.getPasswordHistory().add(newHash);
-
         return userAccountRepository.save(user);
     }
 
@@ -190,11 +185,9 @@ public class UserAccountService {
         if (password == null || password.length() < 8) {
             throw new RuntimeException("Password must be at least 8 characters");
         }
-
         if (!password.matches(".*[A-Z].*")) {
             throw new RuntimeException("Password must contain at least one uppercase letter");
         }
-
         if (!password.matches(".*\\d.*")) {
             throw new RuntimeException("Password must contain at least one number");
         }
@@ -202,9 +195,8 @@ public class UserAccountService {
 
     private void handleAutoUnlockIfNeeded(UserAccount user) {
         if (user.isAccountLocked() && user.getLockTime() != null) {
-            LocalDateTime unlockTime = user.getLockTime().plusMinutes(15);
-
-            if (LocalDateTime.now().isAfter(unlockTime)) {
+            if (LocalDateTime.now().isAfter(
+                    user.getLockTime().plusMinutes(15))) {
                 user.setAccountLocked(false);
                 user.setFailedAttempts(0);
                 user.setLockTime(null);
@@ -214,6 +206,7 @@ public class UserAccountService {
     }
 
     private String generate2FACode() {
-        return String.valueOf(100000 + new Random().nextInt(900000));
+        SecureRandom secureRandom = new SecureRandom();
+        return String.valueOf(100000 + secureRandom.nextInt(900000));
     }
 }

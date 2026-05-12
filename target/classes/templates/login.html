@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Research App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .welcome {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .nav-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        .card h2 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+        
+        .card p {
+            opacity: 0.9;
+        }
+        
+        .logout-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #ee5a52;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Dashboard</h1>
+        <p class="welcome">Welcome back! Manage your research opportunities below.</p>
+        
+        <div class="nav-links">
+            <a href="/api/opportunities" class="card">
+                <h2>📋 View Opportunities</h2>
+                <p>Browse all research opportunities</p>
+            </a>
+            
+            <a href="/applications" class="card">
+                <h2>📝 Applications</h2>
+                <p>View student applications</p>
+            </a>
+            
+            <a href="/profile" class="card">
+                <h2>👤 Profile</h2>
+                <p>Manage your account</p>
+            </a>
+        </div>
+        
+        <form action="/logout" method="post" style="margin-top: 40px;">
+            <button type="submit" class="logout-btn">🚪 Logout</button>
+        </form>
+    </div>
+</body>
+</html>
