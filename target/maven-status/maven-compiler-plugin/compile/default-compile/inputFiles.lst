@@ -79,6 +79,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastru
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\RateLimitFilter.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\SecurityConfig.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\SwaggerSecurityConfig.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\TokenBlacklistService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\AuthController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\DashboardController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\EncryptedFileController.java

@@ -1,6 +1,7 @@
 package com.vsu.researchapp.presentation.controller;
 
 import com.vsu.researchapp.application.service.UserAccountService;
+import com.vsu.researchapp.infrastructure.security.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +14,12 @@ import java.util.Map;
 public class AuthController {
 
     private final UserAccountService userAccountService;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public AuthController(UserAccountService userAccountService) {
+    public AuthController(UserAccountService userAccountService,
+            TokenBlacklistService tokenBlacklistService) {
         this.userAccountService = userAccountService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @PostMapping("/login")
@@ -48,7 +52,15 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
-            @RequestParam String username) {
+            @RequestParam String username,
+            HttpServletRequest request) {
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.blacklist(token, 86400000);
+        }
+
         userAccountService.logout(username);
         return ResponseEntity.ok(Map.of(
             "message", "Logged out successfully"

@@ -17,9 +17,12 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    public JwtFilter(JwtUtil jwtUtil,
+            TokenBlacklistService tokenBlacklistService) {
         this.jwtUtil = jwtUtil;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -36,6 +39,15 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
+
+        // Check if token has been blacklisted (logged out)
+        if (tokenBlacklistService.isBlacklisted(token)) {
+            response.setStatus(401);
+            response.setHeader("Content-Type", "application/json");
+            response.getWriter().write(
+                "{\"error\": \"Token has been invalidated\"}");
+            return;
+        }
 
         if (!jwtUtil.validateToken(token)) {
             response.setStatus(401);
