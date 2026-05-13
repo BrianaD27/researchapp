@@ -28,6 +28,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\applicati
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\exception\OpportunityNotFoundException.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\exception\ProfessorNotFoundException.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\exception\StudentNotFoundException.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\LoginHistoryRepository.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\EncryptedFile.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\EncryptedFileShare.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\Message.java
@@ -40,6 +41,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\mo
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\Student.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\StudentApplication.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\UserAccount.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\UserAccountService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\UserMedia.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\model\UserProfile.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\repository\MessageRepository.java
