@@ -15,7 +15,6 @@ com\vsu\researchapp\domain\repository\ResearchEventRepository.class
 com\vsu\researchapp\domain\model\PasswordResetToken.class
 com\vsu\researchapp\domain\model\EncryptedFileShare.class
 com\vsu\researchapp\application\dto\UpdateProfessorDto.class
-com\vsu\researchapp\infrastructure\security\RateLimitFilter$RequestInfo.class
 com\vsu\researchapp\domain\model\ResearchOpportunity.class
 com\vsu\researchapp\application\dto\UpdateStudentDto.class
 com\vsu\researchapp\application\dto\UpdateResearchOpportunityDto.class
@@ -56,6 +55,7 @@ com\vsu\researchapp\domain\model\UserAccount.class
 com\vsu\researchapp\application\service\ResearchOpportunityService.class
 com\vsu\researchapp\presentation\controller\ProfessorController.class
 com\vsu\researchapp\presentation\controller\StudentApplicationController.class
+com\vsu\researchapp\infrastructure\cache\RedisConfig.class
 com\vsu\researchapp\presentation\controller\StudentController.class
 com\vsu\researchapp\application\service\EventService.class
 com\vsu\researchapp\infrastructure\externalServices\email\emailService.class

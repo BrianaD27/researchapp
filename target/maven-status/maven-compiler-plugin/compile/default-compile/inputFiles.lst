@@ -64,6 +64,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\domain\re
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\ai\AiClient.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\ai\AiService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\ai\PromptBuilder.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\cache\RedisConfig.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\config\DataInitializer.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\externalServices\email\emailService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\AuditLogFilter.java

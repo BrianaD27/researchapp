@@ -2,6 +2,7 @@ package com.vsu.researchapp.infrastructure.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,26 +25,31 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
-    private final RateLimitFilter rateLimitFilter;
     private final IpAllowlistFilter ipAllowlistFilter;
     private final AuditLogFilter auditLogFilter;
     private final OAuth2SuccessHandler oauth2SuccessHandler;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public SecurityConfig(JwtFilter jwtFilter,
-                          RateLimitFilter rateLimitFilter,
                           IpAllowlistFilter ipAllowlistFilter,
                           AuditLogFilter auditLogFilter,
-                          OAuth2SuccessHandler oauth2SuccessHandler) {
+                          OAuth2SuccessHandler oauth2SuccessHandler,
+                          RedisTemplate<String, Object> redisTemplate) {
         this.jwtFilter = jwtFilter;
-        this.rateLimitFilter = rateLimitFilter;
         this.ipAllowlistFilter = ipAllowlistFilter;
         this.auditLogFilter = auditLogFilter;
         this.oauth2SuccessHandler = oauth2SuccessHandler;
+        this.redisTemplate = redisTemplate;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RateLimitFilter rateLimitFilter() {
+        return new RateLimitFilter(redisTemplate);
     }
 
     @Bean
@@ -109,7 +115,6 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
 
-            // Microsoft OAuth2 SSO
             .oauth2Login(oauth2 -> oauth2
                 .successHandler(oauth2SuccessHandler)
                 .failureUrl("/api/v1/auth/login?error=oauth2")
@@ -117,7 +122,7 @@ public class SecurityConfig {
 
             .addFilterBefore(ipAllowlistFilter,
                 UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(rateLimitFilter,
+            .addFilterBefore(rateLimitFilter(),
                 UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(auditLogFilter,
                 UsernamePasswordAuthenticationFilter.class)
