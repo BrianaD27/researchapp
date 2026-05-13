@@ -18,7 +18,6 @@ public class AuthController {
         this.userAccountService = userAccountService;
     }
 
-    // POST /api/auth/login
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestParam String username,
@@ -27,7 +26,6 @@ public class AuthController {
 
         String ip = getClientIp(request);
         String userAgent = request.getHeader("User-Agent");
-
         String result = userAccountService.login(
             username, password, ip, userAgent);
 
@@ -44,38 +42,52 @@ public class AuthController {
         ));
     }
 
-    // POST /api/auth/verify-2fa
     @PostMapping("/verify-2fa")
     public ResponseEntity<?> verify2FA(
             @RequestParam String username,
             @RequestParam String code) {
-
         String token = userAccountService.verify2FA(username, code);
-
         return ResponseEntity.ok(Map.of(
             "token", token,
             "type", "Bearer"
         ));
     }
 
-    // POST /api/auth/register
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @RequestParam String username,
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam(defaultValue = "STUDENT") String role) {
-
         var user = userAccountService.createUser(
             username, email, password, role);
-
         return ResponseEntity.ok(Map.of(
             "message", "User created successfully",
             "username", user.getUsername()
         ));
     }
 
-    // GET /api/auth/preview-login
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(
+            @RequestParam String username) {
+        String token = userAccountService
+            .generatePasswordResetToken(username);
+        return ResponseEntity.ok(Map.of(
+            "message", "Password reset token generated",
+            "token", token
+        ));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword) {
+        userAccountService.resetPassword(token, newPassword);
+        return ResponseEntity.ok(Map.of(
+            "message", "Password reset successfully"
+        ));
+    }
+
     @GetMapping("/preview-login")
     public String previewLogin() {
         return "login";

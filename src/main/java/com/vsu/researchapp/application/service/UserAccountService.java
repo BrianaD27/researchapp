@@ -1,8 +1,10 @@
 package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.LoginHistory;
+import com.vsu.researchapp.domain.model.PasswordResetToken;
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.repository.LoginHistoryRepository;
+import com.vsu.researchapp.domain.repository.PasswordResetTokenRepository;
 import com.vsu.researchapp.domain.repository.UserAccountRepository;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +14,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserAccountService {
@@ -20,15 +23,18 @@ public class UserAccountService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final LoginHistoryRepository loginHistoryRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
                               PasswordEncoder passwordEncoder,
                               JwtUtil jwtUtil,
-                              LoginHistoryRepository loginHistoryRepository) {
+                              LoginHistoryRepository loginHistoryRepository,
+                              PasswordResetTokenRepository passwordResetTokenRepository) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.loginHistoryRepository = loginHistoryRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 
     public UserAccount createUser(String username, String email,
@@ -182,6 +188,59 @@ public class UserAccountService {
     public List<LoginHistory> getLoginHistory(String username) {
         return loginHistoryRepository
             .findTop10ByUsernameOrderByLoginTimeDesc(username);
+    }
+
+    // Password reset step 1 - generate token
+    public String generatePasswordResetToken(String username) {
+        userAccountRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        passwordResetTokenRepository.deleteByUsername(username);
+
+        String token = UUID.randomUUID().toString() +
+            UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setUsername(username);
+        passwordResetTokenRepository.save(resetToken);
+
+        return token;
+    }
+
+    // Password reset step 2 - use token to set new password
+    public void resetPassword(String token, String newPassword) {
+        validatePasswordStrength(newPassword);
+
+        PasswordResetToken resetToken = passwordResetTokenRepository
+            .findByToken(token)
+            .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        if (resetToken.isUsed()) {
+            throw new RuntimeException("Reset token already used");
+        }
+
+        if (LocalDateTime.now().isAfter(resetToken.getExpiresAt())) {
+            throw new RuntimeException("Reset token expired");
+        }
+
+        UserAccount user = userAccountRepository
+            .findByUsername(resetToken.getUsername())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        for (String oldHash : user.getPasswordHistory()) {
+            if (passwordEncoder.matches(newPassword, oldHash)) {
+                throw new RuntimeException("Cannot reuse an old password");
+            }
+        }
+
+        String newHash = passwordEncoder.encode(newPassword);
+        user.setPasswordHash(newHash);
+        user.getPasswordHistory().add(newHash);
+        userAccountRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
     }
 
     private void saveLoginHistory(String username, String ip,
