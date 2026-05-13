@@ -27,15 +27,18 @@ public class SecurityConfig {
     private final RateLimitFilter rateLimitFilter;
     private final IpAllowlistFilter ipAllowlistFilter;
     private final AuditLogFilter auditLogFilter;
+    private final OAuth2SuccessHandler oauth2SuccessHandler;
 
     public SecurityConfig(JwtFilter jwtFilter,
                           RateLimitFilter rateLimitFilter,
                           IpAllowlistFilter ipAllowlistFilter,
-                          AuditLogFilter auditLogFilter) {
+                          AuditLogFilter auditLogFilter,
+                          OAuth2SuccessHandler oauth2SuccessHandler) {
         this.jwtFilter = jwtFilter;
         this.rateLimitFilter = rateLimitFilter;
         this.ipAllowlistFilter = ipAllowlistFilter;
         this.auditLogFilter = auditLogFilter;
+        this.oauth2SuccessHandler = oauth2SuccessHandler;
     }
 
     @Bean
@@ -79,6 +82,8 @@ public class SecurityConfig {
                     "/api/v1/auth/**",
                     "/auth/**",
                     "/api/auth/**",
+                    "/login/oauth2/**",
+                    "/oauth2/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"
@@ -102,6 +107,12 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").denyAll()
                 .anyRequest().authenticated()
+            )
+
+            // Microsoft OAuth2 SSO
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oauth2SuccessHandler)
+                .failureUrl("/api/v1/auth/login?error=oauth2")
             )
 
             .addFilterBefore(ipAllowlistFilter,
