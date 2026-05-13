@@ -283,6 +283,35 @@ public class UserAccountService {
         passwordResetTokenRepository.save(resetToken);
     }
 
+    // Admin — assign role
+    public UserAccount assignRole(String username, String role) {
+        UserAccount user = userAccountRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role.toUpperCase();
+        }
+        user.setRole(role);
+        return userAccountRepository.save(user);
+    }
+
+    // Admin — activate or deactivate user
+    public UserAccount setActiveStatus(String username, boolean active) {
+        UserAccount user = userAccountRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setActive(active);
+        return userAccountRepository.save(user);
+    }
+
+    // Admin — unlock account
+    public UserAccount unlockAccount(String username) {
+        UserAccount user = userAccountRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setAccountLocked(false);
+        user.setFailedAttempts(0);
+        user.setLockTime(null);
+        return userAccountRepository.save(user);
+    }
+
     private String generateRefreshToken(String username) {
         refreshTokenRepository.deleteByUsername(username);
 

@@ -48,6 +48,7 @@ com\vsu\researchapp\application\service\StudentService.class
 com\vsu\researchapp\domain\model\UserMedia.class
 com\vsu\researchapp\domain\repository\LoginHistoryRepository.class
 com\vsu\researchapp\presentation\controller\MessageController.class
+com\vsu\researchapp\presentation\controller\AdminController.class
 com\vsu\researchapp\application\dto\LoginRequest.class
 com\vsu\researchapp\application\service\ResearchEventService.class
 com\vsu\researchapp\domain\model\ResearchEvent.class
