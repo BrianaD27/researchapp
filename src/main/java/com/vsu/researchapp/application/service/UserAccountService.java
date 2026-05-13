@@ -1,8 +1,8 @@
 package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.LoginHistory;
-import com.vsu.researchapp.domain.repository.LoginHistoryRepository;
 import com.vsu.researchapp.domain.model.UserAccount;
+import com.vsu.researchapp.domain.repository.LoginHistoryRepository;
 import com.vsu.researchapp.domain.repository.UserAccountRepository;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,20 +19,24 @@ public class UserAccountService {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final LoginHistoryRepository loginHistoryRepository;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
                               PasswordEncoder passwordEncoder,
-                              JwtUtil jwtUtil) {
+                              JwtUtil jwtUtil,
+                              LoginHistoryRepository loginHistoryRepository) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.loginHistoryRepository = loginHistoryRepository;
     }
 
-    // 1) Create a new user (used by /register)
-    public UserAccount createUser(String username, String email, String password, String role) {
+    public UserAccount createUser(String username, String email,
+            String password, String role) {
         validatePasswordStrength(password);
 
-        UserAccount existing = userAccountRepository.findByUsername(username).orElse(null);
+        UserAccount existing = userAccountRepository
+            .findByUsername(username).orElse(null);
         if (existing != null) {
             throw new RuntimeException("Username already exists");
         }
@@ -61,31 +65,32 @@ public class UserAccountService {
         return userAccountRepository.save(user);
     }
 
-    // 2) Login - returns JWT token on success
-    public String login(String username, String rawPassword) {
+    public String login(String username, String rawPassword,
+            String ip, String userAgent) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
         if (!user.isActive()) {
+            saveLoginHistory(username, ip, userAgent, "FAILED");
             throw new RuntimeException("Account is inactive");
         }
 
         handleAutoUnlockIfNeeded(user);
 
         if (user.isAccountLocked()) {
+            saveLoginHistory(username, ip, userAgent, "LOCKED");
             throw new RuntimeException("Account locked. Try again later.");
         }
 
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
             int attempts = user.getFailedAttempts() + 1;
             user.setFailedAttempts(attempts);
-
             if (attempts >= 5) {
                 user.setAccountLocked(true);
                 user.setLockTime(LocalDateTime.now());
             }
-
             userAccountRepository.save(user);
+            saveLoginHistory(username, ip, userAgent, "FAILED");
             throw new RuntimeException("Invalid credentials");
         }
 
@@ -97,23 +102,23 @@ public class UserAccountService {
             user.setTwoFactorCode(code);
             user.setTwoFactorExpiry(LocalDateTime.now().plusMinutes(5));
             userAccountRepository.save(user);
+            saveLoginHistory(username, ip, userAgent, "2FA_REQUIRED");
             return "2FA_REQUIRED";
         }
 
         userAccountRepository.save(user);
+        saveLoginHistory(username, ip, userAgent, "SUCCESS");
         return jwtUtil.generateToken(user.getUsername(), user.getRole());
     }
 
-    // 3) Verify 2FA code
     public String verify2FA(String username, String code) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!user.isTwoFactorEnabled()) {
-            return "2FA_NOT_ENABLED";
-        }
+        if (!user.isTwoFactorEnabled()) return "2FA_NOT_ENABLED";
 
-        if (user.getTwoFactorCode() == null || user.getTwoFactorExpiry() == null) {
+        if (user.getTwoFactorCode() == null ||
+                user.getTwoFactorExpiry() == null) {
             throw new RuntimeException("No active 2FA code");
         }
 
@@ -132,11 +137,9 @@ public class UserAccountService {
         user.setTwoFactorExpiry(null);
         user.setLastLoginAt(LocalDateTime.now());
         userAccountRepository.save(user);
-
         return jwtUtil.generateToken(user.getUsername(), user.getRole());
     }
 
-    // 4) Enable 2FA
     public UserAccount enableTwoFactor(String username) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -144,7 +147,6 @@ public class UserAccountService {
         return userAccountRepository.save(user);
     }
 
-    // 5) Disable 2FA
     public UserAccount disableTwoFactor(String username) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -154,56 +156,55 @@ public class UserAccountService {
         return userAccountRepository.save(user);
     }
 
-    // 6) Change password with history check
     public UserAccount changePassword(String username, String newPassword) {
         validatePasswordStrength(newPassword);
-
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         for (String oldHash : user.getPasswordHistory()) {
             if (passwordEncoder.matches(newPassword, oldHash)) {
                 throw new RuntimeException("Cannot reuse an old password");
             }
         }
-
         String newHash = passwordEncoder.encode(newPassword);
         user.setPasswordHash(newHash);
         user.getPasswordHistory().add(newHash);
         return userAccountRepository.save(user);
     }
 
-    // 7) Get all users
     public List<UserAccount> findAll() {
         return userAccountRepository.findAll();
     }
 
-    // 8) Get one user by id
     public Optional<UserAccount> findById(Long id) {
         return userAccountRepository.findById(id);
     }
 
+    public List<LoginHistory> getLoginHistory(String username) {
+        return loginHistoryRepository
+            .findTop10ByUsernameOrderByLoginTimeDesc(username);
+    }
+
+    private void saveLoginHistory(String username, String ip,
+            String userAgent, String status) {
+        LoginHistory history = new LoginHistory();
+        history.setUsername(username);
+        history.setIpAddress(ip);
+        history.setUserAgent(userAgent);
+        history.setStatus(status);
+        loginHistoryRepository.save(history);
+    }
+
     private void validatePasswordStrength(String password) {
-        if (password == null || password.length() < 8) {
-            throw new RuntimeException(
-                "Password must be at least 8 characters");
-        }
-        if (!password.matches(".*[A-Z].*")) {
-            throw new RuntimeException(
-                "Password must contain at least one uppercase letter");
-        }
-        if (!password.matches(".*[a-z].*")) {
-            throw new RuntimeException(
-                "Password must contain at least one lowercase letter");
-        }
-        if (!password.matches(".*\\d.*")) {
-            throw new RuntimeException(
-                "Password must contain at least one number");
-        }
-        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
-            throw new RuntimeException(
-                "Password must contain at least one special character");
-        }
+        if (password == null || password.length() < 8)
+            throw new RuntimeException("Password must be at least 8 characters");
+        if (!password.matches(".*[A-Z].*"))
+            throw new RuntimeException("Password must contain at least one uppercase letter");
+        if (!password.matches(".*[a-z].*"))
+            throw new RuntimeException("Password must contain at least one lowercase letter");
+        if (!password.matches(".*\\d.*"))
+            throw new RuntimeException("Password must contain at least one number");
+        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*"))
+            throw new RuntimeException("Password must contain at least one special character");
     }
 
     private void handleAutoUnlockIfNeeded(UserAccount user) {
