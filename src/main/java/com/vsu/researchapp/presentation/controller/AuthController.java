@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @CrossOrigin(origins = "*")
 public class AuthController {
 
@@ -26,19 +26,32 @@ public class AuthController {
 
         String ip = getClientIp(request);
         String userAgent = request.getHeader("User-Agent");
-        String result = userAccountService.login(
+        Map<String, String> result = userAccountService.login(
             username, password, ip, userAgent);
 
-        if ("2FA_REQUIRED".equals(result)) {
+        if ("2FA_REQUIRED".equals(result.get("status"))) {
             return ResponseEntity.ok(Map.of(
                 "status", "2FA_REQUIRED",
                 "message", "Check your email for a verification code"
             ));
         }
 
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(
+            @RequestParam String refreshToken) {
+        return ResponseEntity.ok(
+            userAccountService.refreshAccessToken(refreshToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            @RequestParam String username) {
+        userAccountService.logout(username);
         return ResponseEntity.ok(Map.of(
-            "token", result,
-            "type", "Bearer"
+            "message", "Logged out successfully"
         ));
     }
 

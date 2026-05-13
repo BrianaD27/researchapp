@@ -46,25 +46,20 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of(
             "http://localhost:3000",
             "https://researchapp.vsu.edu"
         ));
-
         config.setAllowedMethods(List.of(
             "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
-
         config.setAllowedHeaders(List.of(
             "Authorization",
             "Content-Type",
             "X-Requested-With"
         ));
-
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
-
         UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -75,25 +70,35 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-
             .cors(Customizer.withDefaults())
-
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+                    "/api/v1/auth/**",
                     "/auth/**",
                     "/api/auth/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"
                 ).permitAll()
-                .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/professors/**").hasAnyRole("ADMIN", "PROFESSOR")
-                .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "PROFESSOR")
-                .requestMatchers("/api/research-events/**").authenticated()
-                .requestMatchers("/api/encrypted-files/**").authenticated()
+                .requestMatchers(
+                    "/api/v1/admin/**",
+                    "/admin/**",
+                    "/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(
+                    "/api/v1/professors/**",
+                    "/api/professors/**").hasAnyRole("ADMIN", "PROFESSOR")
+                .requestMatchers(
+                    "/api/v1/students/**",
+                    "/api/students/**").hasAnyRole("ADMIN", "PROFESSOR")
+                .requestMatchers(
+                    "/api/v1/research-events/**",
+                    "/api/research-events/**").authenticated()
+                .requestMatchers(
+                    "/api/v1/encrypted-files/**",
+                    "/api/encrypted-files/**").authenticated()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").denyAll()
                 .anyRequest().authenticated()

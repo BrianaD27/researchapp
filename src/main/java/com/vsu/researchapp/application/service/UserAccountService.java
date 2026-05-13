@@ -2,9 +2,11 @@ package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.LoginHistory;
 import com.vsu.researchapp.domain.model.PasswordResetToken;
+import com.vsu.researchapp.domain.model.RefreshToken;
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.repository.LoginHistoryRepository;
 import com.vsu.researchapp.domain.repository.PasswordResetTokenRepository;
+import com.vsu.researchapp.domain.repository.RefreshTokenRepository;
 import com.vsu.researchapp.domain.repository.UserAccountRepository;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,17 +26,20 @@ public class UserAccountService {
     private final JwtUtil jwtUtil;
     private final LoginHistoryRepository loginHistoryRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
                               PasswordEncoder passwordEncoder,
                               JwtUtil jwtUtil,
                               LoginHistoryRepository loginHistoryRepository,
-                              PasswordResetTokenRepository passwordResetTokenRepository) {
+                              PasswordResetTokenRepository passwordResetTokenRepository,
+                              RefreshTokenRepository refreshTokenRepository) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.loginHistoryRepository = loginHistoryRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public UserAccount createUser(String username, String email,
@@ -71,8 +76,8 @@ public class UserAccountService {
         return userAccountRepository.save(user);
     }
 
-    public String login(String username, String rawPassword,
-            String ip, String userAgent) {
+    public java.util.Map<String, String> login(String username,
+            String rawPassword, String ip, String userAgent) {
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
@@ -109,12 +114,49 @@ public class UserAccountService {
             user.setTwoFactorExpiry(LocalDateTime.now().plusMinutes(5));
             userAccountRepository.save(user);
             saveLoginHistory(username, ip, userAgent, "2FA_REQUIRED");
-            return "2FA_REQUIRED";
+            return java.util.Map.of("status", "2FA_REQUIRED");
         }
 
         userAccountRepository.save(user);
         saveLoginHistory(username, ip, userAgent, "SUCCESS");
-        return jwtUtil.generateToken(user.getUsername(), user.getRole());
+
+        String accessToken = jwtUtil.generateToken(
+            user.getUsername(), user.getRole());
+        String refreshToken = generateRefreshToken(username);
+
+        return java.util.Map.of(
+            "token", accessToken,
+            "refreshToken", refreshToken,
+            "type", "Bearer"
+        );
+    }
+
+    public java.util.Map<String, String> refreshAccessToken(
+            String refreshToken) {
+        RefreshToken stored = refreshTokenRepository
+            .findByToken(refreshToken)
+            .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if (LocalDateTime.now().isAfter(stored.getExpiresAt())) {
+            refreshTokenRepository.delete(stored);
+            throw new RuntimeException("Refresh token expired");
+        }
+
+        UserAccount user = userAccountRepository
+            .findByUsername(stored.getUsername())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String newAccessToken = jwtUtil.generateToken(
+            user.getUsername(), user.getRole());
+
+        return java.util.Map.of(
+            "token", newAccessToken,
+            "type", "Bearer"
+        );
+    }
+
+    public void logout(String username) {
+        refreshTokenRepository.deleteByUsername(username);
     }
 
     public String verify2FA(String username, String code) {
@@ -190,7 +232,6 @@ public class UserAccountService {
             .findTop10ByUsernameOrderByLoginTimeDesc(username);
     }
 
-    // Password reset step 1 - generate token
     public String generatePasswordResetToken(String username) {
         userAccountRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -208,7 +249,6 @@ public class UserAccountService {
         return token;
     }
 
-    // Password reset step 2 - use token to set new password
     public void resetPassword(String token, String newPassword) {
         validatePasswordStrength(newPassword);
 
@@ -241,6 +281,20 @@ public class UserAccountService {
 
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
+    }
+
+    private String generateRefreshToken(String username) {
+        refreshTokenRepository.deleteByUsername(username);
+
+        String token = UUID.randomUUID().toString() +
+            UUID.randomUUID().toString();
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(token);
+        refreshToken.setUsername(username);
+        refreshTokenRepository.save(refreshToken);
+
+        return token;
     }
 
     private void saveLoginHistory(String username, String ip,
