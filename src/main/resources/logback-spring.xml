@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- DEV profile - human readable logs -->
+    <springProfile name="dev">
+        <appender name="CONSOLE"
+                class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.vsu.researchapp" level="DEBUG"/>
+    </springProfile>
+
+    <!-- PROD profile - JSON logs for Splunk/Elastic -->
+    <springProfile name="prod">
+        <appender name="JSON_CONSOLE"
+                class="ch.qos.logback.core.ConsoleAppender">
+            <encoder
+                class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>userId</includeMdcKeyName>
+                <includeMdcKeyName>ip</includeMdcKeyName>
+            </encoder>
+        </appender>
+
+        <appender name="JSON_FILE"
+                class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/researchapp.json</file>
+            <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/researchapp.%d{yyyy-MM-dd}.json</fileNamePattern>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+            <encoder
+                class="net.logstash.logback.encoder.LogstashEncoder"/>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="JSON_FILE"/>
+        </root>
+        <logger name="com.vsu.researchapp" level="INFO"/>
+    </springProfile>
+
+</configuration>
