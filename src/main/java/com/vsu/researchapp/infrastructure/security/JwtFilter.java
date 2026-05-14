@@ -40,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        // Check if token has been blacklisted (logged out)
+        // Check if token has been blacklisted
         if (tokenBlacklistService.isBlacklisted(token)) {
             response.setStatus(401);
             response.setHeader("Content-Type", "application/json");
@@ -59,6 +59,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String username = jwtUtil.extractUsername(token);
         String role = jwtUtil.extractRole(token);
+
+        // Auto-rotate token if expiring within 5 minutes
+        if (jwtUtil.isTokenExpiringSoon(token)) {
+            String newToken = jwtUtil.generateToken(username, role);
+            response.setHeader("X-New-Token", newToken);
+            response.setHeader("X-Token-Rotated", "true");
+        }
 
         UsernamePasswordAuthenticationToken auth =
             new UsernamePasswordAuthenticationToken(
