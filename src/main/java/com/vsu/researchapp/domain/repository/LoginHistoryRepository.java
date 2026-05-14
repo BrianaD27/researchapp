@@ -15,4 +15,8 @@ public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Long
 
     List<LoginHistory> findByUsernameAndStatusOrderByLoginTimeDesc(
         String username, String status);
+
+    List<LoginHistory> findByStatusOrderByLoginTimeDesc(String status);
+
+    List<LoginHistory> findTop50ByOrderByLoginTimeDesc();
 }

@@ -64,6 +64,7 @@ com\vsu\researchapp\domain\repository\UserAccountRepository.class
 com\vsu\researchapp\domain\repository\ResearchTeamMemberRepository.class
 com\vsu\researchapp\application\dto\ResearchOpportunityDto.class
 com\vsu\researchapp\application\service\NotificationService.class
+com\vsu\researchapp\application\service\SecurityAuditService.class
 com\vsu\researchapp\infrastructure\security\TokenBlacklistService.class
 com\vsu\researchapp\domain\repository\EncryptedFileRepository.class
 com\vsu\researchapp\application\service\ProfessorService.class
