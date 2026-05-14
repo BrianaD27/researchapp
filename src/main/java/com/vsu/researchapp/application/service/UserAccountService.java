@@ -8,7 +8,10 @@ import com.vsu.researchapp.domain.repository.LoginHistoryRepository;
 import com.vsu.researchapp.domain.repository.PasswordResetTokenRepository;
 import com.vsu.researchapp.domain.repository.RefreshTokenRepository;
 import com.vsu.researchapp.domain.repository.UserAccountRepository;
+import com.vsu.researchapp.infrastructure.externalServices.email.emailService;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,25 +26,31 @@ import java.util.UUID;
 @Service
 public class UserAccountService {
 
+    private static final Logger logger =
+        LoggerFactory.getLogger(UserAccountService.class);
+
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final LoginHistoryRepository loginHistoryRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final emailService emailService;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
                               PasswordEncoder passwordEncoder,
                               JwtUtil jwtUtil,
                               LoginHistoryRepository loginHistoryRepository,
                               PasswordResetTokenRepository passwordResetTokenRepository,
-                              RefreshTokenRepository refreshTokenRepository) {
+                              RefreshTokenRepository refreshTokenRepository,
+                              emailService emailService) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.loginHistoryRepository = loginHistoryRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.emailService = emailService;
     }
 
     public UserAccount createUser(String username, String email,
@@ -75,7 +84,17 @@ public class UserAccountService {
         user.setAccountLocked(false);
         user.setTwoFactorEnabled(false);
 
-        return userAccountRepository.save(user);
+        UserAccount saved = userAccountRepository.save(user);
+
+        // Send welcome email
+        try {
+            emailService.sendWelcome(email, username);
+        } catch (Exception e) {
+            logger.warn("[EMAIL] Could not send welcome email: {}",
+                e.getMessage());
+        }
+
+        return saved;
     }
 
     public java.util.Map<String, String> login(String username,
@@ -92,6 +111,12 @@ public class UserAccountService {
 
         if (user.isAccountLocked()) {
             saveLoginHistory(username, ip, userAgent, "LOCKED");
+            try {
+                emailService.sendAccountLocked(user.getEmail());
+            } catch (Exception e) {
+                logger.warn("[EMAIL] Could not send lock notification: {}",
+                    e.getMessage());
+            }
             throw new RuntimeException("Account locked. Try again later.");
         }
 
@@ -116,11 +141,28 @@ public class UserAccountService {
             user.setTwoFactorExpiry(LocalDateTime.now().plusMinutes(5));
             userAccountRepository.save(user);
             saveLoginHistory(username, ip, userAgent, "2FA_REQUIRED");
+
+            // Send 2FA code via email
+            try {
+                emailService.send2FACode(user.getEmail(), code);
+            } catch (Exception e) {
+                logger.warn("[EMAIL] Could not send 2FA code: {}",
+                    e.getMessage());
+            }
+
             return java.util.Map.of("status", "2FA_REQUIRED");
         }
 
         userAccountRepository.save(user);
         saveLoginHistory(username, ip, userAgent, "SUCCESS");
+
+        // Send login alert
+        try {
+            emailService.sendLoginAlert(user.getEmail(), ip, userAgent);
+        } catch (Exception e) {
+            logger.warn("[EMAIL] Could not send login alert: {}",
+                e.getMessage());
+        }
 
         String accessToken = jwtUtil.generateToken(
             user.getUsername(), user.getRole());
@@ -239,7 +281,7 @@ public class UserAccountService {
     }
 
     public String generatePasswordResetToken(String username) {
-        userAccountRepository.findByUsername(username)
+        UserAccount user = userAccountRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
         passwordResetTokenRepository.deleteByUsername(username);
@@ -251,6 +293,14 @@ public class UserAccountService {
         resetToken.setToken(token);
         resetToken.setUsername(username);
         passwordResetTokenRepository.save(resetToken);
+
+        // Send reset email
+        try {
+            emailService.sendPasswordReset(user.getEmail(), token);
+        } catch (Exception e) {
+            logger.warn("[EMAIL] Could not send password reset email: {}",
+                e.getMessage());
+        }
 
         return token;
     }
