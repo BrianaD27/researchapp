@@ -2,6 +2,7 @@ com\vsu\researchapp\infrastructure\security\CustomUserDetailsService.class
 com\vsu\researchapp\infrastructure\security\LoginAttemptService.class
 com\vsu\researchapp\infrastructure\security\IpBlockFilter.class
 com\vsu\researchapp\domain\repository\StudentRepository.class
+com\vsu\researchapp\infrastructure\security\WebSocketConfig.class
 com\vsu\researchapp\presentation\controller\DashboardController.class
 com\vsu\researchapp\application\dto\ProfessorDto.class
 com\vsu\researchapp\domain\model\LoginHistory.class
@@ -34,12 +35,14 @@ com\vsu\researchapp\application\dto\ResearchEventDto.class
 com\vsu\researchapp\application\dto\Verify2FARequest.class
 com\vsu\researchapp\domain\repository\NotificationRepository.class
 com\vsu\researchapp\presentation\controller\ResearchEventController.class
+com\vsu\researchapp\presentation\controller\ThreatDashboardController.class
 com\vsu\researchapp\domain\model\StudentApplication.class
 com\vsu\researchapp\infrastructure\security\IpAllowlistFilter.class
 com\vsu\researchapp\infrastructure\ai\PromptBuilder.class
 com\vsu\researchapp\presentation\SearchController.class
 com\vsu\researchapp\infrastructure\security\GlobalExceptionHandler.class
 com\vsu\researchapp\presentation\controller\AuthController.class
+com\vsu\researchapp\infrastructure\security\ThreatEventPublisher.class
 com\vsu\researchapp\domain\repository\ProfessorRepository.class
 com\vsu\researchapp\application\dto\UpdateResearchEventDto.class
 com\vsu\researchapp\domain\exception\OpportunityNotFoundException.class
@@ -80,6 +83,7 @@ com\vsu\researchapp\infrastructure\security\AuditLogFilter.class
 com\vsu\researchapp\infrastructure\security\JwtFilter.class
 com\vsu\researchapp\presentation\controller\ResearchOpportunityController.class
 com\vsu\researchapp\application\service\UserAccountService.class
+com\vsu\researchapp\application\service\AnomalyDetectionService.class
 com\vsu\researchapp\infrastructure\security\RateLimitFilter.class
 com\vsu\researchapp\application\dto\CreateResearchEventDto.class
 com\vsu\researchapp\domain\repository\StudentApplicationRepository.class

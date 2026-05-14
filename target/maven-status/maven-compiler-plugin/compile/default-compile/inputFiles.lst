@@ -13,6 +13,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\applicati
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\application\dto\UpdateStudentDto.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\application\dto\Verify2FARequest.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\application\service\AnalyticsService.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\application\service\AnomalyDetectionService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\application\service\EncryptedFileService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\application\service\EncryptionService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\application\service\EventService.java
@@ -84,7 +85,9 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastru
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\SessionConcurrencyService.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\SqlInjectionFilter.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\SwaggerSecurityConfig.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\ThreatEventPublisher.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\TokenBlacklistService.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\infrastructure\security\WebSocketConfig.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\AdminController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\AuthController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\DashboardController.java
@@ -97,6 +100,7 @@ C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentat
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\StudentApplicationAdminController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\StudentApplicationController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\StudentController.java
+C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\ThreatDashboardController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\UserAccountController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\controller\UserProfileController.java
 C:\Users\quint\Documents\researchapp\src\main\java\com\vsu\researchapp\presentation\SearchController.java
