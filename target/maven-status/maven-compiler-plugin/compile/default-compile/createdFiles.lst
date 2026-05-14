@@ -34,6 +34,7 @@ com\vsu\researchapp\application\dto\ResearchEventDto.class
 com\vsu\researchapp\application\dto\Verify2FARequest.class
 com\vsu\researchapp\domain\repository\NotificationRepository.class
 com\vsu\researchapp\presentation\controller\ResearchEventController.class
+com\vsu\researchapp\presentation\controller\SearchController.class
 com\vsu\researchapp\domain\model\StudentApplication.class
 com\vsu\researchapp\infrastructure\security\IpAllowlistFilter.class
 com\vsu\researchapp\infrastructure\ai\PromptBuilder.class
