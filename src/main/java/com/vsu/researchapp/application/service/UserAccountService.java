@@ -9,6 +9,8 @@ import com.vsu.researchapp.domain.repository.PasswordResetTokenRepository;
 import com.vsu.researchapp.domain.repository.RefreshTokenRepository;
 import com.vsu.researchapp.domain.repository.UserAccountRepository;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -223,6 +225,10 @@ public class UserAccountService {
         return userAccountRepository.findAll();
     }
 
+    public Page<UserAccount> findAllPaginated(Pageable pageable) {
+        return userAccountRepository.findAll(pageable);
+    }
+
     public Optional<UserAccount> findById(Long id) {
         return userAccountRepository.findById(id);
     }
@@ -283,7 +289,6 @@ public class UserAccountService {
         passwordResetTokenRepository.save(resetToken);
     }
 
-    // Admin — assign role
     public UserAccount assignRole(String username, String role) {
         UserAccount user = userAccountRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -294,7 +299,6 @@ public class UserAccountService {
         return userAccountRepository.save(user);
     }
 
-    // Admin — activate or deactivate user
     public UserAccount setActiveStatus(String username, boolean active) {
         UserAccount user = userAccountRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -302,7 +306,6 @@ public class UserAccountService {
         return userAccountRepository.save(user);
     }
 
-    // Admin — unlock account
     public UserAccount unlockAccount(String username) {
         UserAccount user = userAccountRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
