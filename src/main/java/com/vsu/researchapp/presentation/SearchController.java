@@ -1,4 +1,4 @@
-package com.vsu.researchapp.presentation.controller;
+package com.vsu.researchapp.presentation;
 
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;

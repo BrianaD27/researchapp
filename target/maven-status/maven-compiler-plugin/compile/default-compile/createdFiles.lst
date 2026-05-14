@@ -34,10 +34,10 @@ com\vsu\researchapp\application\dto\ResearchEventDto.class
 com\vsu\researchapp\application\dto\Verify2FARequest.class
 com\vsu\researchapp\domain\repository\NotificationRepository.class
 com\vsu\researchapp\presentation\controller\ResearchEventController.class
-com\vsu\researchapp\presentation\controller\SearchController.class
 com\vsu\researchapp\domain\model\StudentApplication.class
 com\vsu\researchapp\infrastructure\security\IpAllowlistFilter.class
 com\vsu\researchapp\infrastructure\ai\PromptBuilder.class
+com\vsu\researchapp\presentation\SearchController.class
 com\vsu\researchapp\infrastructure\security\GlobalExceptionHandler.class
 com\vsu\researchapp\presentation\controller\AuthController.class
 com\vsu\researchapp\domain\repository\ProfessorRepository.class
@@ -67,6 +67,7 @@ com\vsu\researchapp\application\dto\ResearchOpportunityDto.class
 com\vsu\researchapp\application\service\NotificationService.class
 com\vsu\researchapp\application\service\SecurityAuditService.class
 com\vsu\researchapp\infrastructure\security\TokenBlacklistService.class
+com\vsu\researchapp\infrastructure\security\SessionConcurrencyService.class
 com\vsu\researchapp\domain\repository\EncryptedFileRepository.class
 com\vsu\researchapp\application\service\ProfessorService.class
 com\vsu\researchapp\infrastructure\ai\AiService.class
@@ -89,6 +90,7 @@ com\vsu\researchapp\infrastructure\security\SwaggerSecurityConfig.class
 com\vsu\researchapp\domain\model\Notification.class
 com\vsu\researchapp\infrastructure\config\DataInitializer.class
 com\vsu\researchapp\application\service\UserProfileService.class
+com\vsu\researchapp\infrastructure\security\PrivilegeEscalationDetector.class
 com\vsu\researchapp\presentation\controller\UserAccountController.class
 com\vsu\researchapp\domain\exception\ProfessorNotFoundException.class
 com\vsu\researchapp\infrastructure\security\JwtUtil.class
@@ -97,3 +99,5 @@ com\vsu\researchapp\domain\model\EncryptedFile.class
 com\vsu\researchapp\domain\model\Message.class
 com\vsu\researchapp\domain\repository\OpportunityRepository.class
 com\vsu\researchapp\domain\repository\MessageRepository.class
+com\vsu\researchapp\infrastructure\security\SqlInjectionFilter.class
+com\vsu\researchapp\infrastructure\security\HoneypotFilter.class
