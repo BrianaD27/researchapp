@@ -6,14 +6,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+@Component
 public class AuditLogFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = 
+    private static final Logger logger =
         LoggerFactory.getLogger(AuditLogFilter.class);
 
     @Override
@@ -25,7 +27,7 @@ public class AuditLogFilter extends OncePerRequestFilter {
         String ip = getClientIp(request);
         String method = request.getMethod();
         String uri = request.getRequestURI();
-        String user = request.getRemoteUser() != null ? 
+        String user = request.getRemoteUser() != null ?
             request.getRemoteUser() : "anonymous";
 
         long start = System.currentTimeMillis();
@@ -36,7 +38,6 @@ public class AuditLogFilter extends OncePerRequestFilter {
             long duration = System.currentTimeMillis() - start;
             int status = response.getStatus();
 
-            // Flag suspicious activity
             if (status == 401 || status == 403) {
                 logger.warn("[AUDIT] {} | IP: {} | User: {} | {} {} | Status: {} | {}ms",
                     LocalDateTime.now(), ip, user, method, uri, status, duration);
