@@ -8,7 +8,7 @@ import com.vsu.researchapp.domain.queryObjects.StudentSearchCriteria;
 public interface StudentRepositoryInterface {
     Student createStudent(Student student);
     Student getStudentById(Long id);
-    Student updateStudent(Student student);
+    Student updateStudent(Student student, Long id);
     void deleteStudent(Long id);
     List<Student> getAllStudents();
     List<Student> searchStudentsByCriteria(StudentSearchCriteria criteria);

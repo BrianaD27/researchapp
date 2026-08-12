@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,17 +26,35 @@ public class CustomUserDetailsService implements UserDetailsService {
             throws UsernameNotFoundException {
 
         UserAccount acc = repo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            .orElseThrow(() -> new UsernameNotFoundException(
+                "User not found"));
 
-        // For now, treat everyone as ADMIN until we wire real roles
-        SimpleGrantedAuthority authority =
-                new SimpleGrantedAuthority("ROLE_ADMIN");
+        // Auto-unlock after 15 minutes
+        if (acc.isAccountLocked() && acc.getLockTime() != null &&
+                acc.getLockTime().isBefore(
+                    LocalDateTime.now().minusMinutes(15))) {
+            acc.setAccountLocked(false);
+            acc.setFailedAttempts(0);
+            repo.save(acc);
+        }
 
-       return new org.springframework.security.core.userdetails.User(
-        acc.getUsername(),
-        acc.getPasswordHash(),
-        List.of(authority)
-);
+        // Use the REAL role from the database
+        String role = acc.getRole() != null ? 
+            acc.getRole() : "ROLE_STUDENT";
 
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
+        }
+
+        SimpleGrantedAuthority authority = 
+            new SimpleGrantedAuthority(role);
+
+        return org.springframework.security.core.userdetails
+            .User.withUsername(acc.getUsername())
+            .password(acc.getPasswordHash())
+            .authorities(List.of(authority))
+            .disabled(!acc.isActive())
+            .accountLocked(acc.isAccountLocked())
+            .build();
     }
 }

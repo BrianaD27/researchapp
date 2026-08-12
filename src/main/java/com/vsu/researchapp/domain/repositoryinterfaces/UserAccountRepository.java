@@ -1,12 +1,13 @@
 package com.vsu.researchapp.domain.repositoryinterfaces;
 
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
 import com.vsu.researchapp.domain.model.UserAccount;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 
 public interface UserAccountRepository extends JpaRepository<UserAccount, Long> {
-
-    Optional<UserAccount> findByEmail(String email);
-
     Optional<UserAccount> findByUsername(String username);
+    Optional<UserAccount> findByEmail(String email);
+    long countByAccountLocked(boolean accountLocked);
+    long countByActive(boolean active);
 }

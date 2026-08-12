@@ -1,16 +1,15 @@
 package com.vsu.researchapp.domain.model;
+
 import java.time.LocalDateTime;
-import java.util.List;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.ElementCollection;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,11 +18,12 @@ import jakarta.persistence.Column;
 
 @Entity
 @Table(name = "students")
-@Getter // Lombok annotation to generate getters for all fields 
-@Setter // Lombok annotation to generate setters for all fields
-@NoArgsConstructor // Lombok annotation to generate a no-argument constructor
-@AllArgsConstructor // Lombok annotation to generate an all-arguments constructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Student {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,14 +48,12 @@ public class Student {
     @Column(name = "skill")
     private List<String> skills;
 
-    // Automatically Sets CreatedAt and Updated At on Created
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Automatically sets UpdatedAt only when Updated
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
