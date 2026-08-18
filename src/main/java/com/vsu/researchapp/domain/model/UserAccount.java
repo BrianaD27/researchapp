@@ -1,5 +1,6 @@
 package com.vsu.researchapp.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class UserAccount {
 
     private String username;
     private String email;
+    @JsonIgnore
     private String passwordHash;
     private String role;
     private boolean active = true;
@@ -29,6 +31,7 @@ public class UserAccount {
 
     // 2FA
     private boolean twoFactorEnabled = false;
+    @JsonIgnore
     private String twoFactorCode;
     private LocalDateTime twoFactorExpiry;
 
@@ -42,6 +45,7 @@ public class UserAccount {
         joinColumns = @JoinColumn(name = "user_id")
     )
     @Column(name = "password_hash")
+    @JsonIgnore
     private List<String> passwordHistory = new ArrayList<>();
 
     @PrePersist

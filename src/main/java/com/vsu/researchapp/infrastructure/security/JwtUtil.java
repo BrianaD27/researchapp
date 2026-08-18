@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class JwtUtil {
@@ -21,11 +23,14 @@ public class JwtUtil {
 
     // Short lived access tokens - 15 minutes
     private static final long ACCESS_TOKEN_MS = 15 * 60 * 1000;
+    private static final String ISSUER = "vsu-research-app";
+    private static final String AUDIENCE = "vsu-research-api";
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration}") long expirationMs) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        this.secretKey = Keys.hmacShaKeyFor(
+            secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
     }
 
@@ -45,6 +50,9 @@ public class JwtUtil {
         Date expiry = new Date(now.getTime() + expMs);
 
         return Jwts.builder()
+            .id(UUID.randomUUID().toString())
+            .issuer(ISSUER)
+            .audience().add(AUDIENCE).and()
             .subject(username)
             .claim("role", role)
             .claim("iat_ms", now.getTime())
@@ -94,6 +102,8 @@ public class JwtUtil {
 
     private Claims parseClaims(String token) {
         return Jwts.parser()
+            .requireIssuer(ISSUER)
+            .requireAudience(AUDIENCE)
             .verifyWith(secretKey)
             .build()
             .parseSignedClaims(token)

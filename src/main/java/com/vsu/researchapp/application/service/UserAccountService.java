@@ -10,6 +10,7 @@ import com.vsu.researchapp.domain.repository.RefreshTokenRepository;
 import com.vsu.researchapp.domain.repository.UserAccountRepository;
 import com.vsu.researchapp.infrastructure.externalServices.email.emailService;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
+import com.vsu.researchapp.infrastructure.security.LoginAttemptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,6 +40,7 @@ public class UserAccountService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final emailService emailService;
+    private final LoginAttemptService loginAttemptService;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
                               PasswordEncoder passwordEncoder,
@@ -43,7 +48,8 @@ public class UserAccountService {
                               LoginHistoryRepository loginHistoryRepository,
                               PasswordResetTokenRepository passwordResetTokenRepository,
                               RefreshTokenRepository refreshTokenRepository,
-                              emailService emailService) {
+                              emailService emailService,
+                              LoginAttemptService loginAttemptService) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
@@ -51,11 +57,14 @@ public class UserAccountService {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.emailService = emailService;
+        this.loginAttemptService = loginAttemptService;
     }
 
     public UserAccount createUser(String username, String email,
             String password, String role) {
         validatePasswordStrength(password);
+
+        String normalizedRole = normalizeAllowedRole(role);
 
         UserAccount existing = userAccountRepository
             .findByUsername(username).orElse(null);
@@ -71,13 +80,7 @@ public class UserAccountService {
         user.setPasswordHash(encodedPassword);
         user.getPasswordHistory().add(encodedPassword);
 
-        if (role == null || role.isBlank()) {
-            user.setRole("ROLE_USER");
-        } else if (role.startsWith("ROLE_")) {
-            user.setRole(role);
-        } else {
-            user.setRole("ROLE_" + role.toUpperCase());
-        }
+        user.setRole(normalizedRole);
 
         user.setActive(true);
         user.setFailedAttempts(0);
@@ -137,7 +140,7 @@ public class UserAccountService {
 
         if (user.isTwoFactorEnabled()) {
             String code = generate2FACode();
-            user.setTwoFactorCode(code);
+            user.setTwoFactorCode(passwordEncoder.encode(code));
             user.setTwoFactorExpiry(LocalDateTime.now().plusMinutes(5));
             userAccountRepository.save(user);
             saveLoginHistory(username, ip, userAgent, "2FA_REQUIRED");
@@ -177,8 +180,9 @@ public class UserAccountService {
 
     public java.util.Map<String, String> refreshAccessToken(
             String refreshToken) {
+        String refreshTokenHash = hashToken(refreshToken);
         RefreshToken stored = refreshTokenRepository
-            .findByToken(refreshToken)
+            .findByToken(refreshTokenHash)
             .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
 
         if (LocalDateTime.now().isAfter(stored.getExpiresAt())) {
@@ -190,11 +194,19 @@ public class UserAccountService {
             .findByUsername(stored.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (!user.isActive() || user.isAccountLocked()) {
+            refreshTokenRepository.delete(stored);
+            throw new RuntimeException("Invalid refresh token");
+        }
+
         String newAccessToken = jwtUtil.generateToken(
             user.getUsername(), user.getRole());
+        refreshTokenRepository.delete(stored);
+        String newRefreshToken = generateRefreshToken(user.getUsername());
 
         return java.util.Map.of(
             "token", newAccessToken,
+            "refreshToken", newRefreshToken,
             "type", "Bearer"
         );
     }
@@ -203,11 +215,18 @@ public class UserAccountService {
         refreshTokenRepository.deleteByUsername(username);
     }
 
-    public String verify2FA(String username, String code) {
+    public java.util.Map<String, String> verify2FA(
+            String username, String code) {
+        String attemptKey = "2fa:" + username;
+        if (loginAttemptService.isBlocked(attemptKey)) {
+            throw new RuntimeException("Too many verification attempts. Try again later.");
+        }
         UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!user.isTwoFactorEnabled()) return "2FA_NOT_ENABLED";
+        if (!user.isTwoFactorEnabled()) {
+            throw new RuntimeException("No active 2FA challenge");
+        }
 
         if (user.getTwoFactorCode() == null ||
                 user.getTwoFactorExpiry() == null) {
@@ -221,15 +240,23 @@ public class UserAccountService {
             throw new RuntimeException("2FA code expired");
         }
 
-        if (!user.getTwoFactorCode().equals(code)) {
+        if (!passwordEncoder.matches(code, user.getTwoFactorCode())) {
+            loginAttemptService.loginFailed(attemptKey);
             throw new RuntimeException("Invalid 2FA code");
         }
 
+        loginAttemptService.loginSucceeded(attemptKey);
         user.setTwoFactorCode(null);
         user.setTwoFactorExpiry(null);
         user.setLastLoginAt(LocalDateTime.now());
         userAccountRepository.save(user);
-        return jwtUtil.generateToken(user.getUsername(), user.getRole());
+        String accessToken = jwtUtil.generateToken(
+            user.getUsername(), user.getRole());
+        String refreshToken = generateRefreshToken(user.getUsername());
+        return java.util.Map.of(
+            "token", accessToken,
+            "refreshToken", refreshToken
+        );
     }
 
     public UserAccount enableTwoFactor(String username) {
@@ -260,7 +287,9 @@ public class UserAccountService {
         String newHash = passwordEncoder.encode(newPassword);
         user.setPasswordHash(newHash);
         user.getPasswordHistory().add(newHash);
-        return userAccountRepository.save(user);
+        UserAccount saved = userAccountRepository.save(user);
+        refreshTokenRepository.deleteByUsername(user.getUsername());
+        return saved;
     }
 
     public List<UserAccount> findAll() {
@@ -280,9 +309,13 @@ public class UserAccountService {
             .findTop10ByUsernameOrderByLoginTimeDesc(username);
     }
 
-    public String generatePasswordResetToken(String username) {
-        UserAccount user = userAccountRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+    public void generatePasswordResetToken(String username) {
+        Optional<UserAccount> userOptional =
+            userAccountRepository.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            return;
+        }
+        UserAccount user = userOptional.get();
 
         passwordResetTokenRepository.deleteByUsername(username);
 
@@ -290,7 +323,7 @@ public class UserAccountService {
             UUID.randomUUID().toString();
 
         PasswordResetToken resetToken = new PasswordResetToken();
-        resetToken.setToken(token);
+        resetToken.setToken(hashToken(token));
         resetToken.setUsername(username);
         passwordResetTokenRepository.save(resetToken);
 
@@ -302,14 +335,13 @@ public class UserAccountService {
                 e.getMessage());
         }
 
-        return token;
     }
 
     public void resetPassword(String token, String newPassword) {
         validatePasswordStrength(newPassword);
 
         PasswordResetToken resetToken = passwordResetTokenRepository
-            .findByToken(token)
+            .findByToken(hashToken(token))
             .orElseThrow(() -> new RuntimeException("Invalid reset token"));
 
         if (resetToken.isUsed()) {
@@ -335,6 +367,9 @@ public class UserAccountService {
         user.getPasswordHistory().add(newHash);
         userAccountRepository.save(user);
 
+        // A password change invalidates every existing session.
+        refreshTokenRepository.deleteByUsername(user.getUsername());
+
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
     }
@@ -342,10 +377,8 @@ public class UserAccountService {
     public UserAccount assignRole(String username, String role) {
         UserAccount user = userAccountRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
-        if (!role.startsWith("ROLE_")) {
-            role = "ROLE_" + role.toUpperCase();
-        }
-        user.setRole(role);
+        user.setRole(normalizeAllowedRole(role));
+        refreshTokenRepository.deleteByUsername(username);
         return userAccountRepository.save(user);
     }
 
@@ -372,7 +405,7 @@ public class UserAccountService {
             UUID.randomUUID().toString();
 
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken(token);
+        refreshToken.setToken(hashToken(token));
         refreshToken.setUsername(username);
         refreshTokenRepository.save(refreshToken);
 
@@ -417,5 +450,31 @@ public class UserAccountService {
     private String generate2FACode() {
         SecureRandom secureRandom = new SecureRandom();
         return String.valueOf(100000 + secureRandom.nextInt(900000));
+    }
+
+    private String normalizeAllowedRole(String role) {
+        if (role == null || role.isBlank()) {
+            return "ROLE_STUDENT";
+        }
+        String normalized = role.toUpperCase();
+        if (!normalized.startsWith("ROLE_")) {
+            normalized = "ROLE_" + normalized;
+        }
+        if (!java.util.Set.of(
+                "ROLE_STUDENT", "ROLE_PROFESSOR", "ROLE_ADMIN")
+                .contains(normalized)) {
+            throw new RuntimeException("Invalid role");
+        }
+        return normalized;
+    }
+
+    private String hashToken(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(digest.digest(
+                token.getBytes(StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is unavailable", e);
+        }
     }
 }

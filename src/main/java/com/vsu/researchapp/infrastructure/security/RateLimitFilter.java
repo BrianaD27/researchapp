@@ -12,7 +12,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -26,7 +25,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RedisTemplate<String, Object> redisTemplate;
 
     // Fallback in-memory if Redis unavailable
-    private final ConcurrentHashMap<String, AtomicInteger> fallback =
+    private final ConcurrentHashMap<String, FallbackWindow> fallback =
         new ConcurrentHashMap<>();
 
     public RateLimitFilter(
@@ -62,9 +61,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             logger.error("[REDIS] Rate limit falling back to memory: {}",
                 e.getMessage());
-            AtomicInteger count2 = fallback.computeIfAbsent(
-                ip, k -> new AtomicInteger(0));
-            if (count2.incrementAndGet() > LIMIT) {
+            long now = System.currentTimeMillis();
+            FallbackWindow window = fallback.compute(ip, (key2, existing) -> {
+                if (existing == null
+                        || now - existing.startedAt >= WINDOW_SECONDS * 1000L) {
+                    return new FallbackWindow(now, 1);
+                }
+                existing.count++;
+                return existing;
+            });
+            if (window.count > LIMIT) {
                 response.setStatus(429);
                 response.setHeader("Retry-After", "60");
                 response.setHeader("Content-Type", "application/json");
@@ -83,5 +89,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return forwarded.split(",")[0].trim();
         }
         return request.getRemoteAddr();
+    }
+
+    private static final class FallbackWindow {
+        private final long startedAt;
+        private int count;
+
+        private FallbackWindow(long startedAt, int count) {
+            this.startedAt = startedAt;
+            this.count = count;
+        }
     }
 }

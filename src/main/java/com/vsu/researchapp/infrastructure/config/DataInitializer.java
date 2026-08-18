@@ -8,13 +8,19 @@ import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.repository.ProfessorRepository;
 
 @Configuration
+@Profile("dev")
 public class DataInitializer {
+
+    @Value("${app.dev.admin-password:}")
+    private String developmentAdminPassword;
 
     @Bean
     CommandLineRunner initData(UserAccountRepository userRepo,
@@ -23,19 +29,15 @@ public class DataInitializer {
         return args -> {
 
             // ---- ADMIN USER SEED ----
-            if (userRepo.findByUsername("admin123").isEmpty()) {
+            if (!developmentAdminPassword.isBlank()
+                    && userRepo.findByUsername("admin123").isEmpty()) {
                 UserAccount admin = new UserAccount();
                 admin.setUsername("admin123");
                 admin.setEmail("admin@example.com");
-                admin.setPasswordHash(encoder.encode("admin123"));
-                // if your UserAccount has a role field, keep this. If not, you can comment it out.
-                try {
-                    admin.setRole("ADMIN");
-                } catch (NoSuchMethodError | RuntimeException e) {
-                    System.out.println("Role field not present on UserAccount (that's okay for now).");
-                }
+                admin.setPasswordHash(encoder.encode(
+                    developmentAdminPassword));
+                admin.setRole("ROLE_ADMIN");
                 userRepo.save(admin);
-                System.out.println("Admin user created: admin123 / admin123");
             }
             // ---- PROFESSOR OPPORTUNITIES SEED ----
             Professor drDaniels = null;

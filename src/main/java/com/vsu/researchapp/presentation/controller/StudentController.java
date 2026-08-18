@@ -1,6 +1,7 @@
 package com.vsu.researchapp.presentation.controller;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +20,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/students")
-@CrossOrigin(origins = "*")
-
 public class StudentController {
      private final StudentService studentService;
 
@@ -29,36 +28,42 @@ public class StudentController {
     }
 
     @GetMapping()
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResponseEntity<List<StudentDto>> getAllStudents() {
         List<StudentDto> students = studentService.getAllStudents();
         return ResponseEntity.ok(students);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR') or @ownership.canManageStudent(#id, authentication.name)")
     public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
         StudentDto student = studentService.getStudentById(id);
         return ResponseEntity.ok(student);
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResponseEntity<List<StudentDto>> searchStudents(@RequestParam String term) {
         List<StudentDto> students = studentService.searchStudents(term);
         return ResponseEntity.ok(students);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<StudentDto> createStudent(@Valid @RequestBody CreateStudentDto student) {
         StudentDto created = studentService.createStudent(student);
         return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @ownership.canManageStudent(#id, authentication.name)")
     public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentDto student) {
         StudentDto updated = studentService.updateStudent(student, id);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @ownership.canManageStudent(#id, authentication.name)")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();

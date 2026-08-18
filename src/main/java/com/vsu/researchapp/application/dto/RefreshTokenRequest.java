@@ -3,7 +3,6 @@ package com.vsu.researchapp.application.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record LoginRequest(
-    @NotBlank @Size(max = 100) String username,
-    @NotBlank @Size(max = 200) String password
+public record RefreshTokenRequest(
+    @NotBlank @Size(max = 500) String refreshToken
 ) {}

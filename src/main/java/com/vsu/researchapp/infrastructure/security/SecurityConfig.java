@@ -103,7 +103,7 @@ public class SecurityConfig {
                     "/api/professors/**").hasAnyRole("ADMIN", "PROFESSOR")
                 .requestMatchers(
                     "/api/v1/students/**",
-                    "/api/students/**").hasAnyRole("ADMIN", "PROFESSOR")
+                    "/api/students/**").hasAnyRole("ADMIN", "PROFESSOR", "STUDENT")
                 .requestMatchers(
                     "/api/v1/research-events/**",
                     "/api/research-events/**").authenticated()

@@ -3,6 +3,7 @@ import com.vsu.researchapp.application.service.ResearchOpportunityService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.LocalDate;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/research-opportunities")
-@CrossOrigin(origins = "*")
 public class ResearchOpportunityController {
 
     private final ResearchOpportunityService service;
@@ -56,6 +56,7 @@ public class ResearchOpportunityController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESSOR') and @ownership.canManageProfessor(#professorId, authentication.name))")
     public ResponseEntity<ResearchOpportunityDto> createResearchOpportunity(@Valid @RequestBody CreateResearchOpportunityDto dto, @RequestParam Long professorId) {
         ResearchOpportunityDto created = service.createResearchOpportunity(dto, professorId);
 
@@ -63,12 +64,14 @@ public class ResearchOpportunityController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESSOR') and @ownership.canManageOpportunity(#id, authentication.name))")
     public ResponseEntity<ResearchOpportunityDto> updateResearchOpportunity(@PathVariable Long id, @Valid @RequestBody UpdateResearchOpportunityDto dto) {
         ResearchOpportunityDto updated = service.updateResearchOpportunity(dto, id);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESSOR') and @ownership.canManageOpportunity(#id, authentication.name))")
     public ResponseEntity<Void> deleteResearchOpportunity(@PathVariable Long id) {
         service.deleteResearchOpportunity(id);
         return ResponseEntity.noContent().build();

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +24,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/professors")
-@CrossOrigin(origins = "*")
 public class ProfessorController {
 
     private final ProfessorService professorService;
@@ -44,6 +44,7 @@ public class ProfessorController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProfessorDto> createProfessor(@Valid @RequestBody CreateProfessorDto dto) {
         ProfessorDto created = professorService.createProfessor(dto);
 
@@ -52,11 +53,13 @@ public class ProfessorController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @ownership.canManageProfessor(#id, authentication.name)")
     public ResponseEntity<ProfessorDto> updateProfessor(@PathVariable Long id, @Valid @RequestBody UpdateProfessorDto updated) {
         return ResponseEntity.ok(professorService.updateProfessor(id, updated));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @ownership.canManageProfessor(#id, authentication.name)")
     public ResponseEntity<Void> deleteProfessor(@Valid @PathVariable Long id) {
         professorService.deleteProfessor(id);
         return ResponseEntity.noContent().build();
