@@ -1,17 +1,15 @@
 package com.vsu.researchapp.application.service;
 
-import com.vsu.researchapp.domain.model.Professor;
-import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
-
-import org.springframework.stereotype.Service;
-
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
 
 import com.vsu.researchapp.application.dto.CreateProfessorDto;
 import com.vsu.researchapp.application.dto.ProfessorDto;
 import com.vsu.researchapp.application.dto.UpdateProfessorDto;
+import com.vsu.researchapp.domain.model.Professor;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
 
 @Service
 public class ProfessorService {
@@ -23,17 +21,22 @@ public class ProfessorService {
     }
 
     public List<ProfessorDto> getAllProfessors() {
-        List<Professor> professors = professorRepository.getAllProfessors();
-        return professors.stream().map(this::entityToDto).toList();
+        return professorRepository.getAllProfessors().stream().map(this::entityToDto).toList();
     }
 
     public ProfessorDto getProfessorById(Long id) {
-        Professor professor = professorRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Professor with the id: " + id));
-        return entityToDto(professor);
+        return entityToDto(professorRepository.getProfessorById(id));
+    }
+
+    public List<ProfessorDto> searchProfessors(String term) {
+        return professorRepository.searchProfessors(term).stream().map(this::entityToDto).toList();
+    }
+
+    public List<ProfessorDto> getProfessorsByDepartment(String department) {
+        return professorRepository.getProfessorsByDepartment(department).stream().map(this::entityToDto).toList();
     }
 
     public ProfessorDto createProfessor(CreateProfessorDto dto) {
-        //Validate Email
         if (!dto.email().endsWith("@vsu.edu")) {
             throw new IllegalArgumentException("A valid VSU email is required");
         }
@@ -45,27 +48,25 @@ public class ProfessorService {
         professor.setName(dto.name());
         professor.setEmail(dto.email());
         professor.setDepartment(dto.department());
+        professor.setOfficeLocation(dto.officeLocation());
 
-       Professor saved = professorRepository.save(professor);
-       return entityToDto(saved);
+        return entityToDto(professorRepository.createProfessor(professor));
     }
 
     public ProfessorDto updateProfessor(Long id, UpdateProfessorDto updated) {
-        Professor professor = professorRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Professor with the id: " + id));
+        Professor professor = professorRepository.getProfessorById(id);
 
         Optional.ofNullable(updated.name()).ifPresent(professor::setName);
         Optional.ofNullable(updated.department()).ifPresent(professor::setDepartment);
+        Optional.ofNullable(updated.officeLocation()).ifPresent(professor::setOfficeLocation);
+        Optional.ofNullable(updated.description()).ifPresent(professor::setDescription);
+        Optional.ofNullable(updated.profilePictureUrl()).ifPresent(professor::setProfilePictureUrl);
 
-        Professor saved = professorRepository.save(professor);
-        return entityToDto(saved);
+        return entityToDto(professorRepository.updateProfessor(professor));
     }
 
     public void deleteProfessor(Long id) {
-        if (!professorRepository.existsById(id)) {
-            throw new RuntimeException("There is no Professor with the id: " + id);
-        }
-
-        professorRepository.deleteById(id);
+        professorRepository.deleteProfessor(id);
     }
 
     private ProfessorDto entityToDto(Professor professor) {
@@ -74,6 +75,9 @@ public class ProfessorService {
             professor.getName(),
             professor.getEmail(),
             professor.getDepartment(),
+            professor.getOfficeLocation(),
+            professor.getDescription(),
+            professor.getProfilePictureUrl(),
             professor.getCreatedAt(),
             professor.getUpdatedAt()
         );

@@ -3,9 +3,9 @@ package com.vsu.researchapp.presentation;
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
 import com.vsu.researchapp.domain.model.Student;
-import com.vsu.researchapp.domain.repository.ProfessorRepository;
-import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
-import com.vsu.researchapp.domain.repository.StudentRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
+import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityRepositoryInterface;
+import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepositoryInterface;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,14 +18,14 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class SearchController {
 
-    private final StudentRepository studentRepository;
-    private final ProfessorRepository professorRepository;
-    private final ResearchOpportunityRepository opportunityRepository;
+    private final StudentRepositoryInterface studentRepository;
+    private final ProfessorRepositoryInterface professorRepository;
+    private final ResearchOpportunityRepositoryInterface opportunityRepository;
 
     public SearchController(
-            StudentRepository studentRepository,
-            ProfessorRepository professorRepository,
-            ResearchOpportunityRepository opportunityRepository) {
+            StudentRepositoryInterface studentRepository,
+            ProfessorRepositoryInterface professorRepository,
+            ResearchOpportunityRepositoryInterface opportunityRepository) {
         this.studentRepository = studentRepository;
         this.professorRepository = professorRepository;
         this.opportunityRepository = opportunityRepository;
@@ -70,7 +70,7 @@ public class SearchController {
     public ResponseEntity<List<Professor>> searchByDepartment(
             @RequestParam String department) {
         return ResponseEntity.ok(
-            professorRepository.findByDepartmentIgnoreCase(department));
+            professorRepository.getProfessorsByDepartment(department));
     }
 
     // Search research opportunities only

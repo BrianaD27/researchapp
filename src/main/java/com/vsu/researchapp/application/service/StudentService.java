@@ -1,12 +1,15 @@
 package com.vsu.researchapp.application.service;
-import com.vsu.researchapp.domain.model.Student;
-import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepositoryInterface;
+
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
-import java.util.List;
+
 import com.vsu.researchapp.application.dto.CreateStudentDto;
 import com.vsu.researchapp.application.dto.StudentDto;
 import com.vsu.researchapp.application.dto.UpdateStudentDto;
+import com.vsu.researchapp.domain.model.Student;
+import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepositoryInterface;
 
 @Service
 public class StudentService {
@@ -17,71 +20,75 @@ public class StudentService {
     }
 
     public List<StudentDto> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
-        return students.stream().map(this::entityToDto).toList();
+        return studentRepository.getAllStudents().stream().map(this::entityToDto).toList();
     }
 
     public StudentDto getStudentById(Long id) {
-        Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found: " + id));
-        return entityToDto(student);
+        return entityToDto(studentRepository.getStudentById(id));
     }
 
     public List<StudentDto> searchStudents(String term) {
-        List<Student> students = studentRepository.searchStudents(term);
-        return students.stream().map(this::entityToDto).toList();
+        return studentRepository.searchStudents(term).stream().map(this::entityToDto).toList();
     }
 
-    public StudentDto createStudent(CreateStudentDto student) {
-        if (student.graduateYear() < 2000 || student.graduateYear() > 2100) {
-            throw new IllegalArgumentException("Graduate year must be between 2000 and 2100");
+    public StudentDto createStudent(CreateStudentDto dto) {
+        if (studentRepository.existsByEmail(dto.email())) {
+            throw new IllegalArgumentException("A student with this email already exists");
         }
 
         Student newStudent = new Student();
-        newStudent.setName(student.name());
-        newStudent.setEmail(student.email());
-        newStudent.setMajor(student.major());
-        newStudent.setGraduateYear(student.graduateYear());
-        newStudent.setDescription(student.description());
-        newStudent.setSkills(student.skills());
+        newStudent.setName(dto.name());
+        newStudent.setEmail(dto.email());
+        newStudent.setMajor(dto.major());
+        newStudent.setGraduationYear(dto.graduationYear());
+        newStudent.setClassification(dto.classification());
+        newStudent.setDescription(dto.description());
+        newStudent.setPreviousExperience(dto.previousExperience());
+        newStudent.setGpa(dto.gpa());
+        newStudent.setAvailableHoursPerWeek(dto.availableHoursPerWeek());
+        newStudent.setSkills(dto.skills());
 
-        Student savedStudent = studentRepository.save(newStudent);
-        return entityToDto(savedStudent);
+        return entityToDto(studentRepository.createStudent(newStudent));
     }
 
     public StudentDto updateStudent(UpdateStudentDto updated, Long id) {
-        Student existingStudent = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found: " + id));
+        Student existingStudent = studentRepository.getStudentById(id);
 
-        if (updated.graduateYear() < 2000 || updated.graduateYear() > 2100) {
-            throw new IllegalArgumentException("Graduate year must be between 2000 and 2100");
-        }
+        Optional.ofNullable(updated.name()).ifPresent(existingStudent::setName);
+        Optional.ofNullable(updated.major()).ifPresent(existingStudent::setMajor);
+        Optional.ofNullable(updated.graduationYear()).ifPresent(existingStudent::setGraduationYear);
+        Optional.ofNullable(updated.classification()).ifPresent(existingStudent::setClassification);
+        Optional.ofNullable(updated.description()).ifPresent(existingStudent::setDescription);
+        Optional.ofNullable(updated.previousExperience()).ifPresent(existingStudent::setPreviousExperience);
+        Optional.ofNullable(updated.gpa()).ifPresent(existingStudent::setGpa);
+        Optional.ofNullable(updated.availableHoursPerWeek()).ifPresent(existingStudent::setAvailableHoursPerWeek);
+        Optional.ofNullable(updated.resumeUrl()).ifPresent(existingStudent::setResumeUrl);
+        Optional.ofNullable(updated.skills()).ifPresent(existingStudent::setSkills);
 
-        existingStudent.setName(updated.name());
-        existingStudent.setMajor(updated.major());
-        existingStudent.setGraduateYear(updated.graduateYear());
-        existingStudent.setDescription(updated.description());
-        existingStudent.setSkills(updated.skills());
-
-        Student savedStudent = studentRepository.save(existingStudent);
-        return entityToDto(savedStudent);
+        return entityToDto(studentRepository.updateStudent(existingStudent, id));
     }
 
     public void deleteStudent(Long id) {
-        studentRepository.deleteById(id);
+        studentRepository.deleteStudent(id);
     }
 
     private StudentDto entityToDto(Student student) {
         return new StudentDto(
-                student.getId(),
-                student.getName(),
-                student.getEmail(),
-                student.getGraduateYear(),
-                student.getMajor(),
-                student.getDescription(),
-                student.getSkills(),
-                student.getCreatedAt(),
-                student.getUpdatedAt()
+            student.getId(),
+            student.getName(),
+            student.getEmail(),
+            student.getMajor(),
+            student.getGraduationYear(),
+            student.getClassification(),
+            student.getDescription(),
+            student.getPreviousExperience(),
+            student.getGpa(),
+            student.getAvailableHoursPerWeek(),
+            student.getResumeUrl(),
+            student.getProfilePictureUrl(),
+            student.getSkills(),
+            student.getCreatedAt(),
+            student.getUpdatedAt()
         );
     }
 }

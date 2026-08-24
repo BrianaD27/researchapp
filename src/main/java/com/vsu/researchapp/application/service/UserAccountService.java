@@ -6,10 +6,9 @@ import com.vsu.researchapp.domain.model.RefreshToken;
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 
-import com.vsu.researchapp.domain.repository.LoginHistoryRepository;
-import com.vsu.researchapp.domain.repository.PasswordResetTokenRepository;
-import com.vsu.researchapp.domain.repository.RefreshTokenRepository;
-import com.vsu.researchapp.domain.repository.UserAccountRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.LoginHistoryRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.PasswordResetTokenRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.RefreshTokenRepository;
 import com.vsu.researchapp.infrastructure.externalServices.email.emailService;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
 import org.slf4j.Logger;
