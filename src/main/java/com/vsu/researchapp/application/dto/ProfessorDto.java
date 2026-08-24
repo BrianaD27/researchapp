@@ -6,6 +6,9 @@ public record ProfessorDto(
     String name,
     String email,
     String department,
+    String officeLocation,
+    String description,
+    String profilePictureUrl,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

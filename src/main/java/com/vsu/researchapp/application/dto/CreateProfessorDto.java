@@ -20,5 +20,5 @@ public record CreateProfessorDto(
     String department,
 
     @NotBlank(message = "A office location is required")
-    String OfficeLocation
+    String officeLocation
 ) {}
