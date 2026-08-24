@@ -10,7 +10,7 @@ import com.vsu.researchapp.domain.model.Application;
 import com.vsu.researchapp.domain.model.Application.ApplicationStatus;
 import com.vsu.researchapp.domain.model.Application.OpportunityStatus;
 
-public interface ApplicationRepository extends JpaRepository<Application, Long> {
+public interface ApplicationJpaRepository extends JpaRepository<Application, Long> {
 
     Optional<Application> findByStudentIdAndResearchOpportunityId(Long studentId, Long researchOpportunityId);
 

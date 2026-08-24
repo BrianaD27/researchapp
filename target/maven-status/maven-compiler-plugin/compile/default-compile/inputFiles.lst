@@ -70,18 +70,18 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/StudentRepositoryInterface.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/UserAccountRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/UserProfileRepository.java
-/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ApplicationRepository.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ApplicationJpaRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ApplicationRepositoryImpl.java
-/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ProfessorRepository.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ProfessorJpaRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ProfessorRepositoryImpl.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ResearchEventRepository.java
-/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ResearchOpportunityRepository.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ResearchOpportunityJpaRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/ResearchOpportunityRepositoryImpl.java
-/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/SavedOpportunityRepository.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/SavedOpportunityJpaRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/SavedOpportunityRepositoryImpl.java
-/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/SavedStudentRepository.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/SavedStudentJpaRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/SavedStudentRepositoryImpl.java
-/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/StudentRepository.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/StudentJpaRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/Repository/StudentRepositoryImpl.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/ai/AiClient.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/ai/AiService.java
@@ -90,6 +90,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/config/DataInitializer.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/externalServices/email/emailService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/AuditLogFilter.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/CurrentUserService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/CustomUserDetailsService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/GlobalExceptionHandler.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/HoneypotFilter.java
@@ -99,6 +100,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/JwtUtil.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/LoginAttemptService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/OAuth2SuccessHandler.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/PasswordEncoderConfig.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/PrivilegeEscalationDetector.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/RateLimitFilter.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/SecurityConfig.java
@@ -110,6 +112,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/WebSocketConfig.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/SearchController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/AdminController.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ApplicationController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/AuthController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/DashboardController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/EncryptedFileController.java
@@ -118,6 +121,8 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ProfessorController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ResearchEventController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ResearchOpportunityController.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/SavedOpportunityController.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/SavedStudentController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/StudentController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ThreatDashboardController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/UserAccountController.java

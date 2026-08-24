@@ -11,9 +11,9 @@ import com.vsu.researchapp.domain.repositoryinterfaces.SavedOpportunityRepositor
 @Repository
 public class SavedOpportunityRepositoryImpl implements SavedOpportunityRepositoryInterface {
 
-    private final SavedOpportunityRepository savedOpportunityRepository;
+    private final SavedOpportunityJpaRepository savedOpportunityRepository;
 
-    public SavedOpportunityRepositoryImpl(SavedOpportunityRepository savedOpportunityRepository) {
+    public SavedOpportunityRepositoryImpl(SavedOpportunityJpaRepository savedOpportunityRepository) {
         this.savedOpportunityRepository = savedOpportunityRepository;
     }
 

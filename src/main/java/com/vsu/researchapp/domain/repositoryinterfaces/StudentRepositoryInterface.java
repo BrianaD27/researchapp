@@ -19,4 +19,8 @@ public interface StudentRepositoryInterface {
     boolean existsByEmail(String email);
     List<Student> searchStudents(String term);
     List<Student> searchStudentsByCriteria(StudentSearchCriteria criteria);
+
+    // Used to enforce "one student profile per login account": checked before
+    // creating a new profile, and to resolve which profile the logged-in user owns.
+    Optional<Student> getStudentByUserAccountId(Long userAccountId);
 }

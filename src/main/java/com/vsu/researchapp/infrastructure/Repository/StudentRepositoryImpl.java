@@ -18,9 +18,9 @@ import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepositoryInterfac
 @Repository
 public class StudentRepositoryImpl implements StudentRepositoryInterface {
 
-    private final StudentRepository studentRepository;
+    private final StudentJpaRepository studentRepository;
 
-    public StudentRepositoryImpl(StudentRepository studentRepository) {
+    public StudentRepositoryImpl(StudentJpaRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
@@ -65,6 +65,11 @@ public class StudentRepositoryImpl implements StudentRepositoryInterface {
     @Override
     public boolean existsByEmail(String email) {
         return studentRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Optional<Student> getStudentByUserAccountId(Long userAccountId) {
+        return studentRepository.findByUserAccountId(userAccountId);
     }
 
     @Override

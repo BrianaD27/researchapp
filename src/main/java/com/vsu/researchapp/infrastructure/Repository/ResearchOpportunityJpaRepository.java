@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
 
-public interface ResearchOpportunityRepository extends JpaRepository<ResearchOpportunity, Long>, JpaSpecificationExecutor<ResearchOpportunity> {
+public interface ResearchOpportunityJpaRepository extends JpaRepository<ResearchOpportunity, Long>, JpaSpecificationExecutor<ResearchOpportunity> {
 
     List<ResearchOpportunity> findByProfessorId(Long professorId);
 

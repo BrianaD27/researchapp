@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.vsu.researchapp.domain.model.SavedStudent;
 
-public interface SavedStudentRepository extends JpaRepository<SavedStudent, Long> {
+public interface SavedStudentJpaRepository extends JpaRepository<SavedStudent, Long> {
 
     List<SavedStudent> findByProfessorId(Long professorId);
 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vsu.researchapp.application.dto.CreateProfessorDto;
@@ -43,6 +44,16 @@ public class ProfessorController {
         return ResponseEntity.ok(professorService.getProfessorById(id));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<ProfessorDto>> searchProfessors(@RequestParam String term) {
+        return ResponseEntity.ok(professorService.searchProfessors(term));
+    }
+
+    @GetMapping("/department")
+    public ResponseEntity<List<ProfessorDto>> getProfessorsByDepartment(@RequestParam String department) {
+        return ResponseEntity.ok(professorService.getProfessorsByDepartment(department));
+    }
+
     @PostMapping
     public ResponseEntity<ProfessorDto> createProfessor(@Valid @RequestBody CreateProfessorDto dto) {
         ProfessorDto created = professorService.createProfessor(dto);
@@ -61,5 +72,5 @@ public class ProfessorController {
         professorService.deleteProfessor(id);
         return ResponseEntity.noContent().build();
     }
-    
+
 }

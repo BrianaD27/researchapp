@@ -12,9 +12,9 @@ import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterf
 @Repository
 public class ProfessorRepositoryImpl implements ProfessorRepositoryInterface {
 
-    private final ProfessorRepository professorRepository;
+    private final ProfessorJpaRepository professorRepository;
 
-    public ProfessorRepositoryImpl(ProfessorRepository professorRepository) {
+    public ProfessorRepositoryImpl(ProfessorJpaRepository professorRepository) {
         this.professorRepository = professorRepository;
     }
 
@@ -58,6 +58,11 @@ public class ProfessorRepositoryImpl implements ProfessorRepositoryInterface {
     @Override
     public boolean existsByEmail(String email) {
         return professorRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Optional<Professor> getProfessorByUserAccountId(Long userAccountId) {
+        return professorRepository.findByUserAccountId(userAccountId);
     }
 
     @Override

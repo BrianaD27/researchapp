@@ -10,11 +10,13 @@ import org.springframework.data.repository.query.Param;
 
 import com.vsu.researchapp.domain.model.Student;
 
-public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpecificationExecutor<Student> {
+public interface StudentJpaRepository extends JpaRepository<Student, Long>, JpaSpecificationExecutor<Student> {
 
     Optional<Student> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    Optional<Student> findByUserAccountId(Long userAccountId);
 
     @Query("SELECT s FROM Student s WHERE " +
         "LOWER(s.name) LIKE LOWER(CONCAT('%', :term, '%')) OR " +

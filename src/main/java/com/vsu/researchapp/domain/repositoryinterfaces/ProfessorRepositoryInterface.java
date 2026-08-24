@@ -18,4 +18,8 @@ public interface ProfessorRepositoryInterface {
     boolean existsByEmail(String email);
     List<Professor> getProfessorsByDepartment(String department);
     List<Professor> searchProfessors(String term);
+
+    // Used to enforce "one professor profile per login account": checked before
+    // creating a new profile, and to resolve which profile the logged-in user owns.
+    Optional<Professor> getProfessorByUserAccountId(Long userAccountId);
 }

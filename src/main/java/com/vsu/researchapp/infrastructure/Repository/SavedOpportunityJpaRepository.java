@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.vsu.researchapp.domain.model.SavedOpportunity;
 
-public interface SavedOpportunityRepository extends JpaRepository<SavedOpportunity, Long> {
+public interface SavedOpportunityJpaRepository extends JpaRepository<SavedOpportunity, Long> {
 
     List<SavedOpportunity> findByStudentId(Long studentId);
 

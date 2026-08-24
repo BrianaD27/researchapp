@@ -72,13 +72,30 @@ public class UserAccountService {
         user.setPasswordHash(encodedPassword);
         user.getPasswordHistory().add(encodedPassword);
 
-        if (role == null || role.isBlank()) {
-            user.setRole("ROLE_USER");
-        } else if (role.startsWith("ROLE_")) {
-            user.setRole(role);
-        } else {
-            user.setRole("ROLE_" + role.toUpperCase());
+        // Roles are stored WITHOUT the "ROLE_" prefix (e.g. "STUDENT", not
+        // "ROLE_STUDENT"). JwtFilter is the only place that adds "ROLE_", at the
+        // moment it grants the Spring Security authority for an incoming request.
+        // This method used to add the prefix here too, which meant every
+        // self-registered account ended up with a doubled authority like
+        // "ROLE_ROLE_STUDENT" - that string matches no hasRole()/hasAnyRole() check,
+        // so self-registered users were silently locked out of every role-gated
+        // endpoint (including the ones meant for them, like creating their own
+        // student profile).
+        String normalizedRole = (role == null || role.isBlank())
+            ? "STUDENT"
+            : role.trim().toUpperCase().replaceFirst("^ROLE_", "");
+
+        // Anyone can call this method's caller endpoints (/api/v1/auth/register and
+        // /api/v1/users/register) while only authenticated (not admin-gated). Without
+        // this check, any logged-in user - even a STUDENT - could register a brand
+        // new ADMIN account for themselves. Public self-registration is limited to
+        // the two roles a signup form is actually meant to hand out.
+        if (!normalizedRole.equals("STUDENT") && !normalizedRole.equals("PROFESSOR")) {
+            throw new IllegalArgumentException(
+                "Self-registration only supports the STUDENT or PROFESSOR role");
         }
+
+        user.setRole(normalizedRole);
 
         user.setActive(true);
         user.setFailedAttempts(0);

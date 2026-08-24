@@ -10,6 +10,7 @@ import java.util.List;
 import com.vsu.researchapp.application.dto.CreateResearchOpportunityDto;
 import com.vsu.researchapp.application.dto.ResearchOpportunityDto;
 import com.vsu.researchapp.application.dto.UpdateResearchOpportunityDto;
+import com.vsu.researchapp.domain.queryObjects.OpportunitySearchCriteria;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,11 @@ public class ResearchOpportunityController {
         return ResponseEntity.ok(opportunity);
     }
 
+    @GetMapping("/professor/{professorId}")
+    public ResponseEntity<List<ResearchOpportunityDto>> getByProfessorId(@PathVariable Long professorId) {
+        return ResponseEntity.ok(service.getResearchOpportunitiesByProfessorId(professorId));
+    }
+
     @GetMapping("/upcoming")
     public ResponseEntity<List<ResearchOpportunityDto>> getByUpcoming() {
         List<ResearchOpportunityDto> opportunities = service.getResearchOpportunitiesByUpcoming();
@@ -49,10 +55,36 @@ public class ResearchOpportunityController {
         return ResponseEntity.ok(service.getResearchOpportunitiesByDateRange(earliestDate, latestDate));
     }
 
+    @GetMapping("/open-for-applications")
+    public ResponseEntity<List<ResearchOpportunityDto>> getOpenForApplications() {
+        return ResponseEntity.ok(service.getOpenForApplications());
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<ResearchOpportunityDto>> search(@RequestParam String term) {
         List<ResearchOpportunityDto> opportunities = service.search(term);
         return ResponseEntity.ok(opportunities);
+    }
+
+    @GetMapping("/search/criteria")
+    public ResponseEntity<List<ResearchOpportunityDto>> searchByCriteria(
+            @RequestParam(required = false) String input,
+            @RequestParam(required = false) String major,
+            @RequestParam(required = false) String classification,
+            @RequestParam(required = false) Float gpa,
+            @RequestParam(required = false) Integer availability,
+            @RequestParam(required = false) List<String> skills) {
+
+        OpportunitySearchCriteria criteria = OpportunitySearchCriteria.builder()
+            .input(input)
+            .major(major)
+            .classification(classification)
+            .gpa(gpa)
+            .availability(availability)
+            .skills(skills)
+            .build();
+
+        return ResponseEntity.ok(service.searchByCriteria(criteria));
     }
 
     @PostMapping

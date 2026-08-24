@@ -46,6 +46,12 @@ public class Student {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Links this profile back to the login account that owns it, so the backend
+    // can tell "is the logged-in user allowed to edit THIS student record" instead
+    // of trusting whatever id is in the URL. Null for records created before this
+    // link existed (e.g. seed data) or created directly by an admin.
+    private Long userAccountId;
+
     // Stores Skills as a separate table (Without creating a new entity table) with a foreign key to Student, allowing for multiple skills per student
     @ElementCollection
     @CollectionTable(name = "studentSkills", joinColumns = @JoinColumn(name = "student_id"))

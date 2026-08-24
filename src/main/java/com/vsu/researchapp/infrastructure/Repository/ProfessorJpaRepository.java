@@ -9,11 +9,13 @@ import org.springframework.data.repository.query.Param;
 
 import com.vsu.researchapp.domain.model.Professor;
 
-public interface ProfessorRepository extends JpaRepository<Professor, Long> {
+public interface ProfessorJpaRepository extends JpaRepository<Professor, Long> {
 
     Optional<Professor> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    Optional<Professor> findByUserAccountId(Long userAccountId);
 
     List<Professor> findByDepartmentIgnoreCase(String department);
 

@@ -14,9 +14,9 @@ import com.vsu.researchapp.domain.repositoryinterfaces.ApplicationRepositoryInte
 @Repository
 public class ApplicationRepositoryImpl implements ApplicationRepositoryInterface {
 
-    private final ApplicationRepository applicationRepository;
+    private final ApplicationJpaRepository applicationRepository;
 
-    public ApplicationRepositoryImpl(ApplicationRepository applicationRepository) {
+    public ApplicationRepositoryImpl(ApplicationJpaRepository applicationRepository) {
         this.applicationRepository = applicationRepository;
     }
 

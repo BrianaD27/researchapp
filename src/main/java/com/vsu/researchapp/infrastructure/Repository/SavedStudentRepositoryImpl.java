@@ -11,9 +11,9 @@ import com.vsu.researchapp.domain.repositoryinterfaces.SavedStudentRepositoryInt
 @Repository
 public class SavedStudentRepositoryImpl implements SavedStudentRepositoryInterface {
 
-    private final SavedStudentRepository savedStudentRepository;
+    private final SavedStudentJpaRepository savedStudentRepository;
 
-    public SavedStudentRepositoryImpl(SavedStudentRepository savedStudentRepository) {
+    public SavedStudentRepositoryImpl(SavedStudentJpaRepository savedStudentRepository) {
         this.savedStudentRepository = savedStudentRepository;
     }
 

@@ -18,9 +18,9 @@ import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityReposi
 @Repository
 public class ResearchOpportunityRepositoryImpl implements ResearchOpportunityRepositoryInterface {
 
-    private final ResearchOpportunityRepository opportunityRepository;
+    private final ResearchOpportunityJpaRepository opportunityRepository;
 
-    public ResearchOpportunityRepositoryImpl(ResearchOpportunityRepository opportunityRepository) {
+    public ResearchOpportunityRepositoryImpl(ResearchOpportunityJpaRepository opportunityRepository) {
         this.opportunityRepository = opportunityRepository;
     }
 
