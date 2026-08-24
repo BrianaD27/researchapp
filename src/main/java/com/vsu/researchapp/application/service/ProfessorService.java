@@ -23,7 +23,7 @@ public class ProfessorService {
     }
 
     public List<ProfessorDto> getAllProfessors() {
-        List<Professor> professors = professorRepository.findAll();
+        List<Professor> professors = professorRepository.getAllProfessors();
         return professors.stream().map(this::entityToDto).toList();
     }
 
@@ -45,7 +45,6 @@ public class ProfessorService {
         professor.setName(dto.name());
         professor.setEmail(dto.email());
         professor.setDepartment(dto.department());
-        professor.setTitle(dto.title());
 
        Professor saved = professorRepository.save(professor);
        return entityToDto(saved);
@@ -56,7 +55,6 @@ public class ProfessorService {
 
         Optional.ofNullable(updated.name()).ifPresent(professor::setName);
         Optional.ofNullable(updated.department()).ifPresent(professor::setDepartment);
-        Optional.ofNullable(updated.title()).ifPresent(professor::setTitle);
 
         Professor saved = professorRepository.save(professor);
         return entityToDto(saved);
@@ -76,7 +74,6 @@ public class ProfessorService {
             professor.getName(),
             professor.getEmail(),
             professor.getDepartment(),
-            professor.getTitle(),
             professor.getCreatedAt(),
             professor.getUpdatedAt()
         );

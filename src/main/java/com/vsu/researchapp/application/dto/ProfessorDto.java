@@ -6,7 +6,6 @@ public record ProfessorDto(
     String name,
     String email,
     String department,
-    String title,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

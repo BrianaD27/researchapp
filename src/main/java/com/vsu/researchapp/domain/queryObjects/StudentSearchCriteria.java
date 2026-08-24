@@ -20,4 +20,5 @@ public class StudentSearchCriteria {
     private Float gpa;
     private Integer availability;
     private List<String> skills;
+
 }
