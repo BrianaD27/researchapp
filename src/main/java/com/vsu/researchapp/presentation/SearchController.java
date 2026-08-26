@@ -15,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/search")
-@CrossOrigin(origins = "*")
 public class SearchController {
 
     private final StudentRepositoryInterface studentRepository;

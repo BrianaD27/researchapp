@@ -38,6 +38,9 @@ public class StudentService {
     }
 
     public StudentDto createStudent(CreateStudentDto dto) {
+        if (!dto.email().endsWith("@students.vsu.edu")) {
+            throw new IllegalArgumentException("A valid VSU email is required");
+        }
         if (studentRepository.existsByEmail(dto.email())) {
             throw new IllegalArgumentException("A student with this email already exists");
         }

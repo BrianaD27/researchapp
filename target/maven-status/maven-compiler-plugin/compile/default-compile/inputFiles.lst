@@ -7,10 +7,15 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/CreateSavedOpportunityDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/CreateSavedStudentDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/CreateStudentDto.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/ForgotPasswordRequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/LoginRequest.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/LogoutRequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/ProfessorDto.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/RefreshTokenRequest.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/RegisterRequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/ResearchEventDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/ResearchOpportunityDto.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/ResetPasswordRequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/SavedOpportunityDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/SavedStudentDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/StudentDto.java
@@ -19,6 +24,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/UpdateResearchEventDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/UpdateResearchOpportunityDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/UpdateStudentDto.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/UserAccountDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/Verify2FARequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/AnalyticsService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/AnomalyDetectionService.java

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/research-opportunities")
-@CrossOrigin(origins = "*")
 public class ResearchOpportunityController {
 
     private final ResearchOpportunityService service;
