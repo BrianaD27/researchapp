@@ -149,6 +149,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Azure Blob Storage client, used by AzureBlobStorageService in prod -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>12.28.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

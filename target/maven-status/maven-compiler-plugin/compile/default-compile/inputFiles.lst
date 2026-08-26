@@ -43,6 +43,8 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/StudentService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/UserAccountService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/UserProfileService.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/exception/FileStorageException.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/exception/InvalidFileException.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/exception/OpportunityNotFoundException.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/exception/ProfessorNotFoundException.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/exception/StudentNotFoundException.java
@@ -64,6 +66,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/ApplicationRepositoryInterface.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/EncryptedFileRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/EncryptedFileShareRepository.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/FileStorageInterface.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/LoginHistoryRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/OpportunityRepository.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/domain/repositoryinterfaces/PasswordResetTokenRepository.java
@@ -94,6 +97,8 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/ai/PromptBuilder.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/cache/RedisConfig.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/config/DataInitializer.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/config/StorageConfig.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/config/WebMvcConfig.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/externalServices/email/emailService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/AuditLogFilter.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/CurrentUserService.java
@@ -116,6 +121,8 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/ThreatEventPublisher.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/TokenBlacklistService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/security/WebSocketConfig.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/storage/AzureBlobStorageService.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/infrastructure/storage/LocalFileStorageService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/SearchController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/AdminController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ApplicationController.java
