@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const AuthNavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
