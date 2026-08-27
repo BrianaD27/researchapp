@@ -16,6 +16,22 @@ export const professorsService = {
         return response.data;
     },
 
+    // Search professors by free-text term
+    searchProfessors: async(term: string): Promise<professorDto[]> => {
+        const response = await apiClient.get<professorDto[]>('/professors/search', {
+            params: { term }
+        });
+        return response.data;
+    },
+
+    // Filter professors by department
+    getProfessorsByDepartment: async(department: string): Promise<professorDto[]> => {
+        const response = await apiClient.get<professorDto[]>('/professors/department', {
+            params: { department }
+        });
+        return response.data;
+    },
+
     // Create Professor
     createProfessor: async(dto: createProfessorDto): Promise<professorDto> => {
         const response = await apiClient.post<professorDto>('/professors', dto);
@@ -28,7 +44,7 @@ export const professorsService = {
         return response.data;
     },
 
-    // Delete Professor 
+    // Delete Professor
     deleteProfessor: async(id: number): Promise<void> => {
         await apiClient.delete<void>(`/professors/${id}`)
     }

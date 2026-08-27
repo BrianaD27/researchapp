@@ -22,20 +22,25 @@ export const researchEventsService = {
         return response.data;
     },
 
-    // Search by Date Range
-    getResearchEventsByDateRange: async(startDate: string, endDate: string): Promise<researchEventDto[]> => {
-        const response = await apiClient.get<researchEventDto[]>(`/research-events/date-range`, {
-            params: {
-                startDate,
-                endDate
-            }
+    // Search by date range (backend params: earliestDate / latestDate, "yyyy-MM-dd")
+    getResearchEventsByDateRange: async(
+        earliestDate: string,
+        latestDate: string
+    ): Promise<researchEventDto[]> => {
+        const response = await apiClient.get<researchEventDto[]>('/research-events/date-range', {
+            params: { earliestDate, latestDate }
         });
         return response.data;
     },
 
-    // Create Research Event
-    createResearchEvent: async(dto: createResearchEventDto): Promise<researchEventDto> => {
-        const response = await apiClient.post<researchEventDto>('/research-events', dto);
+    // Create Research Event - professorId is a required query param
+    createResearchEvent: async(
+        dto: createResearchEventDto,
+        professorId: number
+    ): Promise<researchEventDto> => {
+        const response = await apiClient.post<researchEventDto>('/research-events', dto, {
+            params: { professorId }
+        });
         return response.data;
     },
 
@@ -45,8 +50,8 @@ export const researchEventsService = {
         return response.data;
     },
 
-    // Delete Research Event 
+    // Delete Research Event
     deleteResearchEvent: async(id: number): Promise<void> => {
         await apiClient.delete<void>(`/research-events/${id}`)
-    }   
+    }
 }
