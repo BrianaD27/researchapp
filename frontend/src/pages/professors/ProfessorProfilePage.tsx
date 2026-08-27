@@ -1,6 +1,8 @@
 import { useState } from "react";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
+import { useAuth } from "../../auth/AuthContext";
 const ProfessorProfilePage = () => {
+  const auth = useAuth();
   const options = [
     "Change Name",
     "Change Department",
@@ -192,7 +194,7 @@ const ProfessorProfilePage = () => {
           <p className="text-white/70 text-xl pb-2 uppercase">Exit</p>
           <div className="flex h-auto justify-start p-8 items-start rounded-lg bg-white">
             <div className="flex flex-col items-start w-full gap-5">
-              <a href="/FacultyLogin" className="text-red-500 font-semibold">Log Out</a>
+              <button onClick={() => auth.logout()} className="text-red-500 font-semibold">Log Out</button>
             </div>
           </div>
         </div>

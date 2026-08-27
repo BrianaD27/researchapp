@@ -1,6 +1,17 @@
 // This file serves as a central export point for all API services and related dto types.
 export { default as apiClient } from './client';
-export { getToken, setToken, clearToken } from './token';
+export {
+    getToken,
+    setToken,
+    clearToken,
+    getRefreshToken,
+    setRefreshToken,
+    getUsername,
+    setUsername,
+    clearSession,
+} from './token';
+export { decodeToken, isTokenExpired } from './jwt';
+export type { DecodedToken } from './jwt';
 
 export { authService } from './services/auth';
 export { applicationsService } from './services/applications';

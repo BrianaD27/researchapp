@@ -1,7 +1,9 @@
 import { useState } from "react";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import SkillInput from "../../components/forms/SkillInput";
+import { useAuth } from "../../auth/AuthContext";
 const StudentsSettingsPage = () => {
+  const auth = useAuth();
   const options = [
     "Change Name",
     "Change Major",
@@ -410,9 +412,14 @@ const StudentsSettingsPage = () => {
           <p className="text-white/70 text-xl pb-2 uppercase">Exit</p>
           <div className="flex h-auto justify-start p-8 items-start rounded-lg bg-white">
             <div className="flex flex-col items-start w-full gap-5">
-              <a href="/FacultyLogin" className="text-red-500 font-semibold">
+              {/* auth.logout() tells the backend, clears the saved token,
+                  and sends the user back to the home page. */}
+              <button
+                onClick={() => auth.logout()}
+                className="text-red-500 font-semibold"
+              >
                 Log Out
-              </a>
+              </button>
             </div>
           </div>
         </div>

@@ -1,1 +1,10 @@
 http://localhost:8080/swagger-ui/index.html
+
+
+Login In Info
+User: Steve
+Password: Watdf%4fshja2
+
+Token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdGV2ZSIsInJvbGUiOiJTVFVERU5UIiwiaWF0X21zIjoxNzg3ODM2ODc5NDUxLCJpYXQiOjE3ODc4MzY4NzksImV4cCI6MTc4NzgzNzc3OX0.aPtQhWCJSwthIFwunVC31uBX7ah2O8iTk2tWW_G284quyBBtKaGlBbI2s3B20lHhhVjwdwjtgXDCwpZ16rkauQ
+
+Id: 5

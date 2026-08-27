@@ -53,7 +53,7 @@ const AuthNavBar = () => {
         <li className="nav-item items-center flex">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <a className="nav-link" href="/faculty-login">
+              <a className="nav-link" href="/StudentLogin">
                 Student
               </a>
               <img

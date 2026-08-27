@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { getToken, setToken, clearToken } from './token';
+import { getToken, setToken, clearSession } from './token';
 
 // Base URL comes from the environment so the Vite dev proxy ("/api" ->
 // http://localhost:8080) is used in development and a real host can be set in
@@ -33,10 +33,22 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // A 401 means the server rejected our token (missing, expired or invalid).
     if (error.response?.status === 401) {
-      clearToken();
-      // TODO: redirect to the login route once routing/auth context exists.
-      console.error('Unauthorized access - token cleared');
+      // Don't react to a failed login attempt itself - the login page shows its
+      // own "wrong username or password" message. Only react when a token we
+      // thought was good has stopped working.
+      const requestUrl: string = error.config?.url ?? '';
+      const isLoginRequest = requestUrl.includes('/v1/auth/login');
+
+      if (!isLoginRequest) {
+        clearSession();
+        // This interceptor runs outside React, so we can't use useNavigate here.
+        // A plain browser navigation is fine and also guarantees a clean state.
+        if (window.location.pathname !== '/StudentLogin') {
+          window.location.assign('/StudentLogin');
+        }
+      }
     }
     return Promise.reject(error);
   }
