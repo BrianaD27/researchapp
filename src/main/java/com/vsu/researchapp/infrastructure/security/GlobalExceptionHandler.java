@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleFileTooLarge(
             MaxUploadSizeExceededException ex) {
         return error(HttpStatus.BAD_REQUEST,
-            "File size exceeds maximum allowed size of 10MB");
+            "File size exceeds the maximum allowed upload size of 20MB");
     }
 
     // Storage layer failed (disk I/O, Azure Blob Storage, etc.) -- not the caller's fault

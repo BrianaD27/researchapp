@@ -88,6 +88,9 @@ public class SecurityConfig {
                     "/swagger-ui/**",
                     "/swagger-ui.html"
                 ).permitAll()
+                // Uploaded media (profile pictures, research media) is served as static
+                // content and must be reachable by unauthenticated <img>/<a> tags.
+                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                 .requestMatchers(
                     "/api/v1/admin/**",
                     "/admin/**",
@@ -120,6 +123,19 @@ public class SecurityConfig {
                     .hasAnyRole("ADMIN", "STUDENT")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**", "/api/students/**")
                     .hasAnyRole("ADMIN", "STUDENT")
+                // Research media mutations are restricted to the owning professor (or an
+                // admin); ownership of the specific opportunity is enforced in
+                // MediaUploadService. GET (listing/browsing media) stays open to any
+                // authenticated role via anyRequest() below.
+                .requestMatchers(HttpMethod.POST,
+                    "/api/v1/research-opportunities/*/media",
+                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR")
+                .requestMatchers(HttpMethod.PUT,
+                    "/api/v1/research-opportunities/*/media",
+                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR")
+                .requestMatchers(HttpMethod.DELETE,
+                    "/api/v1/research-opportunities/*/media",
+                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR")
                 .requestMatchers(
                     "/api/v1/research-events/**",
                     "/api/research-events/**").authenticated()

@@ -1,12 +1,17 @@
 package com.vsu.researchapp.presentation.controller;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,22 +27,35 @@ public class MediaController {
         this.mediaUploadService = mediaUploadService;
     }
 
-    @PostMapping("/api/students/{id}/profile-picture")
+    @PostMapping(value = "/api/students/{id}/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MediaUploadResponseDto> uploadStudentProfilePicture(
-            @PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+            @PathVariable Long id, @RequestPart("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(mediaUploadService.uploadStudentProfilePicture(id, file));
     }
 
-    @PostMapping("/api/professors/{id}/profile-picture")
+    @PostMapping(value = "/api/professors/{id}/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MediaUploadResponseDto> uploadProfessorProfilePicture(
-            @PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+            @PathVariable Long id, @RequestPart("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(mediaUploadService.uploadProfessorProfilePicture(id, file));
     }
 
-    @PostMapping("/api/research-opportunities/{id}/media")
+    @PostMapping(value = "/api/research-opportunities/{id}/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MediaUploadResponseDto> uploadResearchMedia(
-            @PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+            @PathVariable Long id, @RequestPart("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(mediaUploadService.uploadResearchMedia(id, file));
+    }
+
+    @GetMapping("/api/research-opportunities/{id}/media")
+    public ResponseEntity<List<String>> listResearchMedia(@PathVariable Long id) {
+        return ResponseEntity.ok(mediaUploadService.listResearchMedia(id));
+    }
+
+    @PutMapping(value = "/api/research-opportunities/{id}/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MediaUploadResponseDto> replaceResearchMedia(
+            @PathVariable Long id,
+            @RequestParam("url") String oldMediaUrl,
+            @RequestPart("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(mediaUploadService.replaceResearchMedia(id, oldMediaUrl, file));
     }
 
     @DeleteMapping("/api/research-opportunities/{id}/media")

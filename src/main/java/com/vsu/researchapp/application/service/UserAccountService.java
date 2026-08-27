@@ -57,6 +57,7 @@ public class UserAccountService {
     public UserAccount createUser(String username, String email,
             String password, String role) {
         validatePasswordStrength(password);
+        validateVsuEmail(email);
 
         UserAccount existing = userAccountRepository
             .findByUsername(username).orElse(null);
@@ -418,6 +419,21 @@ public class UserAccountService {
             throw new RuntimeException("Password must contain at least one number");
         if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*"))
             throw new RuntimeException("Password must contain at least one special character");
+    }
+
+    // Registration is limited to VSU accounts: faculty/staff (@vsu.edu) and
+    // students (@students.vsu.edu). Enforced here as well as via @Pattern on
+    // RegisterRequest so every caller of createUser() is covered.
+    private static final java.util.regex.Pattern VSU_EMAIL_PATTERN =
+        java.util.regex.Pattern.compile(
+            "^[A-Za-z0-9._%+-]+@(students\\.)?vsu\\.edu$",
+            java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    private void validateVsuEmail(String email) {
+        if (email == null || !VSU_EMAIL_PATTERN.matcher(email.trim()).matches()) {
+            throw new IllegalArgumentException(
+                "Email must be a valid VSU address ending in @vsu.edu or @students.vsu.edu");
+        }
     }
 
     private void handleAutoUnlockIfNeeded(UserAccount user) {

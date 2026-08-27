@@ -129,6 +129,38 @@ public class MediaUploadService {
         return new MediaUploadResponseDto(url, file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
 
+    public List<String> listResearchMedia(Long researchOpportunityId) {
+        ResearchOpportunity researchOpportunity = researchOpportunityRepository.getResearchOpportunity(researchOpportunityId);
+        List<String> existingMediaUrls = researchOpportunity.getResearchMediaUrls();
+        return existingMediaUrls == null ? new ArrayList<>() : new ArrayList<>(existingMediaUrls);
+    }
+
+    public MediaUploadResponseDto replaceResearchMedia(Long researchOpportunityId, String oldMediaUrl, MultipartFile file) throws IOException {
+        ResearchOpportunity researchOpportunity = researchOpportunityRepository.getResearchOpportunity(researchOpportunityId);
+        assertCanModifyResearchOpportunity(researchOpportunity);
+
+        // Validate file type and size
+        validateFile(file, RESEARCH_MEDIA_TYPES, RESEARCH_MEDIA_MAX_SIZE);
+
+        List<String> existingMediaUrls = researchOpportunity.getResearchMediaUrls();
+        int index = existingMediaUrls == null ? -1 : existingMediaUrls.indexOf(oldMediaUrl);
+        if (existingMediaUrls == null || index < 0) {
+            throw new InvalidFileException("No media matching that URL is attached to this research opportunity");
+        }
+
+        // Store the replacement first so a failed upload never removes the existing media.
+        String url = fileStorage.store(file, "research-media");
+        existingMediaUrls.set(index, url);
+
+        researchOpportunity.setResearchMediaUrls(existingMediaUrls);
+        researchOpportunityRepository.updateResearchOpportunity(researchOpportunity, researchOpportunityId);
+
+        // Only now remove the old file, once the replacement is safely stored and saved.
+        fileStorage.delete(oldMediaUrl);
+
+        return new MediaUploadResponseDto(url, file.getOriginalFilename(), file.getContentType(), file.getSize());
+    }
+
     public void deleteResearchMedia(Long researchOpportunityId, String mediaUrl) {
         ResearchOpportunity researchOpportunity = researchOpportunityRepository.getResearchOpportunity(researchOpportunityId);
         assertCanModifyResearchOpportunity(researchOpportunity);

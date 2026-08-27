@@ -3,7 +3,8 @@ package com.vsu.researchapp.infrastructure.storage;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
-import com.vsu.researchapp.domain.exception.FileStorageException; 
+import com.azure.storage.blob.models.PublicAccessType;
+import com.vsu.researchapp.domain.exception.FileStorageException;
 import com.vsu.researchapp.domain.repositoryinterfaces.FileStorageInterface; 
 import org.springframework.beans.factory.annotation.Value; 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty; 
@@ -37,6 +38,12 @@ public class AzureBlobStorageService implements FileStorageInterface {
 
         try {
             BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+
+            // Make sure the container exists and its blobs are publicly readable, so the
+            // URLs returned below can be used directly in <img>/<a> tags without a SAS token.
+            if (Boolean.TRUE.equals(containerClient.createIfNotExists())) {
+                containerClient.setAccessPolicy(PublicAccessType.BLOB, null);
+            }
 
             String originalFilename = file.getOriginalFilename();
 
