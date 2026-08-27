@@ -30,10 +30,11 @@ public class ProfessorRepositoryImpl implements ProfessorRepositoryInterface {
     }
 
     @Override
-    public Professor updateProfessor(Professor professor) {
-        if (!professorRepository.existsById(professor.getId())) {
-            throw new ProfessorNotFoundException("There is no professor with the id: " + professor.getId());
+    public Professor updateProfessor(Professor professor, Long id) {
+        if (!professorRepository.existsById(id)) {
+            throw new ProfessorNotFoundException("There is no professor with the id: " + id);
         }
+        professor.setId(id);
         return professorRepository.save(professor);
     }
 

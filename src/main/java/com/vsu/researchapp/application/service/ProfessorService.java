@@ -85,7 +85,7 @@ public class ProfessorService {
         Optional.ofNullable(updated.description()).ifPresent(professor::setDescription);
         Optional.ofNullable(updated.profilePictureUrl()).ifPresent(professor::setProfilePictureUrl);
 
-        return entityToDto(professorRepository.updateProfessor(professor));
+        return entityToDto(professorRepository.updateProfessor(professor, id));
     }
 
     public void deleteProfessor(Long id) {

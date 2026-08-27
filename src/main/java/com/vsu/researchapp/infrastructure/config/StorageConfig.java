@@ -10,7 +10,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class StorageConfig {
 
-    @Value("${azure.storage.connection-string}")
+    // Defaulted to "" so this field resolves fine in dev, where azure.storage.connection-string
+    // is never set (see application-dev.properties) -- the blobServiceClient() bean below is the
+    // only thing that actually reads this value, and it's skipped entirely outside prod.
+    @Value("${azure.storage.connection-string:}")
     private String connectionString;
 
     @Bean

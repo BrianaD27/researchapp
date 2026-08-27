@@ -10,7 +10,7 @@ public interface ResearchOpportunityRepositoryInterface {
     // CRUD Operations
     ResearchOpportunity createResearchOpportunity(ResearchOpportunity opportunity);
     ResearchOpportunity getResearchOpportunity(Long id);
-    ResearchOpportunity updateResearchOpportunity(ResearchOpportunity opportunity);
+    ResearchOpportunity updateResearchOpportunity(ResearchOpportunity opportunity, Long id);
     void deleteResearchOpportunity(Long id);
     List<ResearchOpportunity> getAllResearchOpportunities();
 

@@ -9,7 +9,7 @@ public interface ProfessorRepositoryInterface {
     // CRUD Operations
     Professor createProfessor(Professor professor);
     Professor getProfessorById(Long id);
-    Professor updateProfessor(Professor professor);
+    Professor updateProfessor(Professor professor, Long id);
     void deleteProfessor(Long id);
     List<Professor> getAllProfessors();
 

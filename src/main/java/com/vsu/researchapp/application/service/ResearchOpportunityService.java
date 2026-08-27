@@ -108,7 +108,7 @@ public class ResearchOpportunityService {
         Optional.ofNullable(updated.endDate()).ifPresent(opportunity::setEndDate);
         Optional.ofNullable(updated.researchMediaUrls()).ifPresent(opportunity::setResearchMediaUrls);
 
-        return entityToDto(repo.updateResearchOpportunity(opportunity));
+        return entityToDto(repo.updateResearchOpportunity(opportunity, id));
     }
 
     public void deleteResearchOpportunity(Long id) {

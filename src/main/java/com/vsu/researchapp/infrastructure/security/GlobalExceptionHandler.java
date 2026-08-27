@@ -1,5 +1,7 @@
 package com.vsu.researchapp.infrastructure.security;
 
+import com.vsu.researchapp.domain.exception.FileStorageException;
+
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +80,14 @@ public class GlobalExceptionHandler {
             MaxUploadSizeExceededException ex) {
         return error(HttpStatus.BAD_REQUEST,
             "File size exceeds maximum allowed size of 10MB");
+    }
+
+    // Storage layer failed (disk I/O, Azure Blob Storage, etc.) -- not the caller's fault
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<Map<String, Object>> handleFileStorage(
+            FileStorageException ex) {
+        logger.error("[STORAGE ERROR] {}", ex.getMessage(), ex);
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process file. Please try again later.");
     }
 
     // Business logic errors

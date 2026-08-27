@@ -10,6 +10,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/ForgotPasswordRequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/LoginRequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/LogoutRequest.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/MediaUploadResponseDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/ProfessorDto.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/RefreshTokenRequest.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/dto/RegisterRequest.java
@@ -32,6 +33,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/EncryptedFileService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/EncryptionService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/EventService.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/MediaUploadService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/MessageService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/NotificationService.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/application/service/ProfessorService.java
@@ -130,6 +132,7 @@
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/DashboardController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/EncryptedFileController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/HealthController.java
+/Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/MediaController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/MessageController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ProfessorController.java
 /Users/briana/VsuResearchWebApp/researchapp/src/main/java/com/vsu/researchapp/presentation/controller/ResearchEventController.java

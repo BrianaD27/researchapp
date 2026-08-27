@@ -36,10 +36,11 @@ public class ResearchOpportunityRepositoryImpl implements ResearchOpportunityRep
     }
 
     @Override
-    public ResearchOpportunity updateResearchOpportunity(ResearchOpportunity opportunity) {
-        if (!opportunityRepository.existsById(opportunity.getId())) {
-            throw new OpportunityNotFoundException("There is no research opportunity with the id: " + opportunity.getId());
+    public ResearchOpportunity updateResearchOpportunity(ResearchOpportunity opportunity, Long id) {
+        if (!opportunityRepository.existsById(id)) {
+            throw new OpportunityNotFoundException("There is no research opportunity with the id: " + id);
         }
+        opportunity.setId(id);
         return opportunityRepository.save(opportunity);
     }
 
