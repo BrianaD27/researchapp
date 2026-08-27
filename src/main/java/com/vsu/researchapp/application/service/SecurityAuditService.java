@@ -1,8 +1,8 @@
 package com.vsu.researchapp.application.service;
 
 import com.vsu.researchapp.domain.model.LoginHistory;
-import com.vsu.researchapp.domain.repository.LoginHistoryRepository;
-import com.vsu.researchapp.domain.repository.UserAccountRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.LoginHistoryRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 

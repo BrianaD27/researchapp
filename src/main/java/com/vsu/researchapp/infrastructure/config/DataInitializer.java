@@ -1,24 +1,25 @@
 package com.vsu.researchapp.infrastructure.config;
 
-import com.vsu.researchapp.domain.model.UserAccount;
+import java.util.List;
+
+import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
-import com.vsu.researchapp.domain.repository.UserAccountRepository;
-import com.vsu.researchapp.domain.repository.ResearchOpportunityRepository;
+import com.vsu.researchapp.domain.model.UserAccount;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
+import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityRepositoryInterface;
+import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.vsu.researchapp.domain.model.Professor;
-import com.vsu.researchapp.domain.repository.ProfessorRepository;
-
 @Configuration
 public class DataInitializer {
 
     @Bean
     CommandLineRunner initData(UserAccountRepository userRepo,
-                               ResearchOpportunityRepository oppRepo, ProfessorRepository proRepo,
+                               ResearchOpportunityRepositoryInterface oppRepo, ProfessorRepositoryInterface proRepo,
                                PasswordEncoder encoder) {
         return args -> {
 
@@ -41,38 +42,40 @@ public class DataInitializer {
             Professor drDaniels = null;
             Professor drWaller = null;
 
-            if (proRepo.count() == 0) {
+            if (proRepo.getAllProfessors().isEmpty()) {
                 drDaniels = new Professor();
                 drDaniels.setName("Dr. Daniels");
                 drDaniels.setEmail("daniels@vsu.edu");
                 drDaniels.setDepartment("Computer Science");
-                drDaniels.setTitle("Professor");
-                proRepo.save(drDaniels);
+                drDaniels = proRepo.createProfessor(drDaniels);
 
                 drWaller = new Professor();
                 drWaller.setName("Dr. Waller");
                 drWaller.setEmail("waller@vsu.edu");
                 drWaller.setDepartment("Engineering");
-                drDaniels.setTitle("Professor");
-                proRepo.save(drWaller);
+                drWaller = proRepo.createProfessor(drWaller);
             }
 
             // ---- RESEARCH OPPORTUNITIES SEED ----
-            if (oppRepo.count() == 0) {
+            if (drDaniels != null && drWaller != null && oppRepo.getAllResearchOpportunities().isEmpty()) {
                 ResearchOpportunity opp1 = new ResearchOpportunity();
                 opp1.setTitle("Machine Learning in Bioinformatics");
                 opp1.setDescription("Undergraduate research using Python and ML to analyze genomic data.");
-                opp1.setCreatedBy(drDaniels);
-                opp1.setRequirements("Python, basic statistics, interest in biology.");
+                opp1.setDepartment("Computer Science");
+                opp1.setProfessor(drDaniels);
+                opp1.setRequiredMajors(List.of("Computer Science", "Biology"));
+                opp1.setRequiredSkills(List.of("Python", "Basic statistics"));
 
                 ResearchOpportunity opp2 = new ResearchOpportunity();
                 opp2.setTitle("IoT Security for Smart Campus Devices");
                 opp2.setDescription("Research project securing IoT sensors in the VSU engineering building.");
-                opp2.setCreatedBy(drWaller);
-                opp2.setRequirements("Networking basics, interest in cybersecurity.");
+                opp2.setDepartment("Engineering");
+                opp2.setProfessor(drWaller);
+                opp2.setRequiredMajors(List.of("Computer Science", "Electrical Engineering"));
+                opp2.setRequiredSkills(List.of("Networking basics", "Interest in cybersecurity"));
 
-                oppRepo.save(opp1);
-                oppRepo.save(opp2);
+                oppRepo.createResearchOpportunity(opp1);
+                oppRepo.createResearchOpportunity(opp2);
 
                 System.out.println("Seeded 2 real ResearchOpportunity records.");
             }

@@ -4,8 +4,8 @@ import com.vsu.researchapp.domain.model.EncryptedFile;
 import com.vsu.researchapp.domain.model.EncryptedFileShare;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
 import com.vsu.researchapp.domain.model.UserAccount;
-import com.vsu.researchapp.domain.repository.EncryptedFileRepository;
-import com.vsu.researchapp.domain.repository.EncryptedFileShareRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.EncryptedFileRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.EncryptedFileShareRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

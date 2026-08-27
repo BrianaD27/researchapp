@@ -1,6 +1,11 @@
 package com.vsu.researchapp.application.dto;
-public class LoginRequest {
-    public String username;
-    public String password;
-    public boolean rememberMe;
-}
+
+import jakarta.validation.constraints.NotBlank;
+
+public record LoginRequest(
+    @NotBlank(message = "A username is required")
+    String username,
+
+    @NotBlank(message = "A password is required")
+    String password
+) {}

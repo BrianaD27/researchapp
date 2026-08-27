@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// This table represents the relationship between Students and Research Opportunities. A student can interact with many research opportunities and a research opportunity can have many students. This table stores the status of the application and the status of the opportunity (bookmarked, applied, completed) for each student.
+// This table represents the relationship between Students and Research Opportunities. A student and interact with many research opportunities and a research opportunity can have many students. This table stores the status of the application and the status of the opportunity (bookmarked, applied, completed) for each student.
 @Entity
 @Table(name = "applications")
 @Getter
@@ -38,6 +38,9 @@ public class Application {
     private ResearchOpportunity researchOpportunity;
 
     @Enumerated(EnumType.STRING)
+    private OpportunityStatus opportunityStatus;
+
+    @Enumerated(EnumType.STRING)
     private ApplicationStatus applicationStatus;
 
     private LocalDateTime appliedAt;
@@ -54,10 +57,15 @@ public class Application {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public enum ApplicationStatus {
+    public enum OpportunityStatus {
+        BOOKMARKED,
         APPLIED,
-        ACCEPTED,
-        REJECTED,
         COMPLETED
+    }
+
+    public enum ApplicationStatus {
+        PENDING,
+        ACCEPTED,
+        REJECTED
     }
 }

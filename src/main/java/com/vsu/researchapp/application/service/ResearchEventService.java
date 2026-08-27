@@ -11,16 +11,16 @@ import com.vsu.researchapp.application.dto.ResearchEventDto;
 import com.vsu.researchapp.application.dto.UpdateResearchEventDto;
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.ResearchEvent;
-import com.vsu.researchapp.domain.repository.ProfessorRepository;
-import com.vsu.researchapp.domain.repository.ResearchEventRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterface;
+import com.vsu.researchapp.infrastructure.Repository.ResearchEventRepository;
 
 @Service
 public class ResearchEventService {
     private final ResearchEventRepository researchEventRepository;
 
-    private final ProfessorRepository professorRepository;
+    private final ProfessorRepositoryInterface professorRepository;
 
-    public ResearchEventService(ResearchEventRepository researchEventRepository, ProfessorRepository professorRepository) {
+    public ResearchEventService(ResearchEventRepository researchEventRepository, ProfessorRepositoryInterface professorRepository) {
         this.researchEventRepository = researchEventRepository;
         this.professorRepository = professorRepository;
     }
@@ -52,7 +52,7 @@ public class ResearchEventService {
     }
 
     public ResearchEventDto createResearchEvent(CreateResearchEventDto dto, Long professorId) {
-        Professor professor = professorRepository.findById(professorId).orElseThrow(() -> new RuntimeException("Professor not found for id: " + professorId));
+        Professor professor = professorRepository.getProfessorById(professorId);
 
         //Validate Date
         if (dto.beginDate().isAfter(dto.endDate())) {
@@ -82,20 +82,19 @@ public class ResearchEventService {
 
         return entityToDto(saved);
     }
-    
+
     public ResearchEventDto updateResearchEvent(UpdateResearchEventDto dto, Long eventId) {
         ResearchEvent event = researchEventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found for id: " + eventId));
 
         //Validate Date
-        if (dto.beginDate().isAfter(dto.endDate())) {
+        LocalDate newBeginDate = dto.beginDate() != null ? dto.beginDate() : event.getBeginDate();
+        LocalDate newEndDate = dto.endDate() != null ? dto.endDate() : event.getEndDate();
+        if (newBeginDate != null && newEndDate != null && newBeginDate.isAfter(newEndDate)) {
             throw new IllegalArgumentException("The beginning date must be before the end date");
-        }
-        if (dto.beginDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("The beginning date must be after the today's date: " + LocalDate.now());
         }
 
         //Validate Time
-        if (dto.startTime().isAfter(dto.endTime())) {
+        if (dto.startTime() != null && dto.endTime() != null && dto.startTime().isAfter(dto.endTime())) {
             throw new IllegalArgumentException("The start time must be before the end time");
         }
 
