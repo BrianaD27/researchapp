@@ -58,6 +58,9 @@ interface AuthContextValue {
     verify2fa: (code: string) => Promise<{ role: string }>;
     register: (dto: registerRequest) => Promise<{ message: string; username: string }>;
     logout: () => Promise<void>;
+    // Drop the session immediately, no backend call, no redirect. Used when a
+    // login succeeded but we want to reject it (e.g. wrong role for this page).
+    abandonSession: () => void;
 }
 
 // Create the context. The default value is only used if a component tries to call
@@ -146,6 +149,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // log in afterwards (that matches how the backend works).
     const register = (dto: registerRequest) => authService.register(dto);
 
+    // Immediately forget the session locally. No backend call, no navigation -
+    // the caller decides what to do next (usually show an error and stay put).
+    const abandonSession = () => {
+        clearSession();
+        setUser(null);
+        setStatus('anon');
+        setPending2fa(null);
+    };
+
     // Log out: tell the backend (best effort), wipe local storage, go home.
     const logout = async () => {
         try {
@@ -165,7 +177,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // useMemo keeps this object stable between renders unless something inside
     // actually changed - a small performance nicety for context.
     const value = useMemo<AuthContextValue>(
-        () => ({ user, status, pending2fa, login, verify2fa, register, logout }),
+        () => ({ user, status, pending2fa, login, verify2fa, register, logout, abandonSession }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [user, status, pending2fa],
     );

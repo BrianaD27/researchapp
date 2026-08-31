@@ -6,7 +6,7 @@ public record CreateProfessorDto(
 
     @NotBlank(message = "A name is required")
     @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Name contains invalid characters")
+    @Pattern(regexp = "^[a-zA-Z\\s.'-]+$", message = "Name contains invalid characters")
     String name,
 
     @NotBlank(message = "A faculty email is required")

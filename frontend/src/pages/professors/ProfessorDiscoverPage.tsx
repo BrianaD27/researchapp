@@ -3,27 +3,30 @@ import FacultyNavBar from "../../components/common/FacultyNavBar";
 import StudentCard from "../../components/cards/StudentCard";
 import SkillInput from "../../components/forms/SkillInput";
 import DiscoverStudentInfoCard from "../../components/cards/DiscoverStudentsInfoCard";
+import { studentsService } from "../../api/services/students";
+import type { studentDto } from "../../types/dtos";
 
 const ProfessorDiscoverPage = () => {
   // const [isSortedByOpen, setIsSortedByOpen] = React.useState(false);
   const [selectedApplicant, setSelectedApplicant] = React.useState(Number);
   const [skills, setSkills] = React.useState<string[]>(["Python", "Machine Learning"]);
 
-  const applicants = [
-    {
-      availability: "Closed",
-      student: "James",
-      major: "Computer Science",
-      graduateYear: "2023",
-      applied: "Not Applied",
-    },
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-  ];
+  // the students we loaded from the backend
+  const [students, setStudents] = React.useState<studentDto[]>([]);
+  // true while the request is in flight, so we can show "Loading..."
+  const [loading, setLoading] = React.useState(true);
+  // a message to show if the request fails
+  const [error, setError] = React.useState<string | null>(null);
+
+  // Runs one time, right after the page appears on screen.
+  // The empty [] at the end means "only run once".
+  React.useEffect(() => {
+    studentsService
+      .getAllStudents()
+      .then((data) => setStudents(data)) // success: save the list
+      .catch(() => setError("Could not load students. Please try again."))
+      .finally(() => setLoading(false)); // either way, stop showing "Loading..."
+  }, []);
 
   return (
     <div className="h-screen bg-[#1B51A4] flex flex-col overflow-scroll">
@@ -128,22 +131,33 @@ const ProfessorDiscoverPage = () => {
 
           <div className="flex mt-5 flex-row justify-between items-center">
             <p className="text-white pt-2 text-lg">Matching Students</p>
-            <p className="text-white pt-2 text-lg ">24 Results</p>
+            <p className="text-white pt-2 text-lg ">{students.length} Results</p>
           </div>
 
           {/* Search Results Box */}
           <div className="h-93 xl:w-190 lg:w-150 md:w-130 w-100 gap-2 shadow-lg flex flex-col justify-start overflow-scroll">
-            {applicants.map((applicant, index) => (
-              <StudentCard
-                key={index}
-                graduateYear={applicant.graduateYear}
-                student={applicant.student}
-                major={applicant.major}
-                applied={applicant.applied}
-                isSelected={selectedApplicant === index}
-                onSelect={() => setSelectedApplicant(index)}
-              />
-            ))}
+            {loading && <p className="text-white p-4">Loading students...</p>}
+
+            {error && <p className="text-red-300 p-4">{error}</p>}
+
+            {!loading && !error && students.length === 0 && (
+              <p className="text-white p-4">No students yet.</p>
+            )}
+
+            {!loading &&
+              !error &&
+              students.map((s, index) => (
+                <StudentCard
+                  key={s.id}
+                  student={s.name}
+                  major={s.major}
+                  classification={s.classification}
+                  graduateYear={String(s.graduationYear)} // card expects a string
+                  applied="Not Applied" // no "applied" concept on Discover; keep a default
+                  isSelected={selectedApplicant === index}
+                  onSelect={() => setSelectedApplicant(index)}
+                />
+              ))}
           </div>
         </div>
 

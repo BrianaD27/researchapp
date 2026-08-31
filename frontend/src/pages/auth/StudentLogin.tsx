@@ -24,6 +24,17 @@ const StudentLogin = () => {
       navigate("/verify-2fa");
       return;
     }
+
+    // This is the STUDENT login page. If a professor's credentials were used,
+    // the login technically worked (there's one login endpoint for everyone),
+    // so undo it and show an error instead of letting them in here.
+    if (result.role !== "STUDENT" && result.role !== "ADMIN") {
+      auth.abandonSession();
+      throw new Error(
+        "That account isn't a student account. Please use the Faculty login page.",
+      );
+    }
+
     goToDashboard(result.role);
   };
 
