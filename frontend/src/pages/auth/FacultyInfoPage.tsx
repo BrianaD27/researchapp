@@ -1,14 +1,75 @@
-import React from "react";
+import React, { useState } from "react";
 import AuthNavBar from "../../components/common/AuthNavBar";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { professorsService } from "../../api/services/professors";
+import { mediaService } from "../../api/services/media";
 
 const FacultyInfoPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // The signup page passes the email it registered with via router "state".
+  const emailFromSignup =
+    (location.state as { email?: string } | null)?.email ?? "";
+
   const [name, setName] = React.useState("");
   const [department, setDepartment] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const navigate = useNavigate();
-
+  const [officeLocation, setOfficeLocation] = React.useState("");
+  const [email, setEmail] = React.useState(emailFromSignup);
   const [description, setDescription] = React.useState("");
+
+  // Profile picture the user optionally picks. Uploaded in handleSubmit, after
+  // the professor profile is created (we need its id).
+  const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
+  const [profilePicPreview, setProfilePicPreview] = useState<string>("");
+
+  // UI state for the save button / error message.
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string>("");
+
+  // Save the profile to the backend, then (optionally) upload the picture,
+  // then move on to the dashboard.
+  const handleSubmit = async () => {
+    setError("");
+    setSaving(true);
+    try {
+      // 1. Create the professor profile. createProfessorDto only accepts
+      //    name / email / department / officeLocation.
+      const professor = await professorsService.createProfessor({
+        name,
+        email, // must end in @vsu.edu (enforced by the backend)
+        department,
+        officeLocation,
+      });
+
+      // 2. Description isn't part of "create", so save it with a follow-up
+      //    update if the user typed one.
+      if (description.trim()) {
+        await professorsService.updateProfessor(professor.id, { description });
+      }
+
+      // 3. If the user picked a profile picture, upload it now.
+      if (profilePicFile) {
+        await mediaService.uploadProfessorProfilePicture(
+          professor.id,
+          profilePicFile,
+        );
+      }
+
+      navigate("/discover-students");
+    } catch (err) {
+      const anyErr = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      setError(
+        anyErr.response?.data?.message ??
+          anyErr.message ??
+          "Something went wrong saving your profile.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
@@ -87,6 +148,22 @@ const FacultyInfoPage = () => {
                 />
               </div>
 
+              {/* Office Location Row */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-vsu-blue" htmlFor="office-location">
+                  Office Location <span className="text-vsu-orange">*</span>
+                </label>
+                <input
+                  className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
+                  type="text"
+                  id="office-location"
+                  required={true}
+                  placeholder="e.g. Hunter-McDaniel Hall, Room 210"
+                  value={officeLocation}
+                  onChange={(e) => setOfficeLocation(e.target.value)}
+                />
+              </div>
+
               {/* Description */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-vsu-blue " htmlFor="description">
@@ -101,13 +178,57 @@ const FacultyInfoPage = () => {
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+
+              {/* Profile Picture (optional) */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-vsu-blue" htmlFor="profile-picture">
+                  Profile Picture
+                </label>
+                <input
+                  className="p-2 bg-gray-100 border border-slate-400 rounded-lg hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  id="profile-picture"
+                  title="profile picture"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    // Backend limit: PNG/JPG only, max 5 MB.
+                    if (file.size > 5 * 1024 * 1024) {
+                      setError("Profile picture must be under 5 MB.");
+                      return;
+                    }
+                    setError("");
+                    setProfilePicFile(file);
+                    setProfilePicPreview(URL.createObjectURL(file));
+                  }}
+                />
+                {profilePicPreview && (
+                  <img
+                    src={profilePicPreview}
+                    alt="Profile preview"
+                    className="h-20 w-20 rounded-full object-cover mt-1"
+                  />
+                )}
+              </div>
             </div>
+
+            {/* Error message (if saving failed) */}
+            {error && (
+              <p className="text-center text-red-600 text-sm mb-2 px-4">{error}</p>
+            )}
 
             {/* Buttons */}
             <div className="flex flex-row justify-center items-center mb-4 gap-4">
-              {name && email && department && description &&  (<button onClick={() => navigate("/discover-students")} className="text-white font-semibold hover:cursor-pointer text-xl bg-vsu-blue border hover:bg-vsu-blue/60 rounded-3xl py-2 px-8">
-                Continue
-              </button>)}
+              {name && email && department && officeLocation && description && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={saving}
+                  className="text-white font-semibold hover:cursor-pointer text-xl bg-vsu-blue border hover:bg-vsu-blue/60 rounded-3xl py-2 px-8 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? "Saving..." : "Continue"}
+                </button>
+              )}
               <button className="text-white font-semibold hover:cursor-pointer text-xl bg-red-500 border rounded-3xl py-2 px-6">
                 Clear
               </button>

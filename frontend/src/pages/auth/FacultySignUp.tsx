@@ -17,7 +17,20 @@ const FacultySignUp = () => {
       role: "PROFESSOR",
     });
 
-    navigate("/faculty-info");
+    // Registration does not log you in, and the next page (the profile form)
+    // needs a logged-in user to save anything. So log in right now using the
+    // same username/password the user just typed.
+    const result = await auth.login(values.username, values.password);
+
+    // Brand new accounts won't have 2FA turned on, but handle it just in case.
+    if (result.twoFactor) {
+      navigate("/verify-2fa");
+      return;
+    }
+
+    // Now logged in - go fill out the faculty profile. Pass along the email so
+    // the info page can pre-fill it (the backend profile needs a matching one).
+    navigate("/faculty-info", { state: { email: values.email } });
   };
 
   return (

@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import AuthNavBar from "../../components/common/AuthNavBar";
 import SkillInput from "../../components/forms/SkillInput";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { studentsService } from "../../api/services/students";
+import { mediaService } from "../../api/services/media";
+import type { createStudentDto } from "../../types/dtos";
 
 const StudentInfoPage = () => {
   const [skills, setSkills] = React.useState<string[]>([
@@ -9,32 +12,99 @@ const StudentInfoPage = () => {
     "Machine Learning",
   ]);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  // The signup page passes the email it registered with via router "state".
+  const emailFromSignup =
+    (location.state as { email?: string } | null)?.email ?? "";
+
   const [name, setName] = React.useState("");
-  const [availability, setAvailability] = React.useState("Open");
-  const [experience, setExperience] = React.useState("yes");
+  // Backend field: availableHoursPerWeek. The <select> below offers 5/10/15.
+  const [availability, setAvailability] = React.useState("5");
+  const [experience, setExperience] = React.useState("Yes");
   const experienceOptions = ["Yes", "No"];
-  const [email, setEmail] = React.useState("");
+  const [email, setEmail] = React.useState(emailFromSignup);
   const [major, setMajor] = React.useState("");
-  const [gpa, setGpa] = React.useState("Any");
+  // Backend requires a GPA between 0.0 and 4.0. Start at a valid value.
+  const [gpa, setGpa] = React.useState("3.0");
   const [graduationYear, setGraduationYear] = React.useState("");
-  const [resumeUrl, setResumeUrl] = useState<string>("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-    const handleResumeUpload = async () => {
-      if (!resumeFile) return;
 
-      const resumeData = new FormData();
-      resumeData.append("resume", resumeFile);
-      console.log("Resume url ready for upload:", resumeUrl); // Line not needed. Remove later
+  // Profile picture the user optionally picks. The actual upload happens in
+  // handleSubmit, after the student profile is created (we need its id).
+  const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
+  const [profilePicPreview, setProfilePicPreview] = useState<string>("");
 
-      // TODO: Implement API call to upload resume
-    };
+  // UI state for the save button / error message.
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const [description, setDescription] = React.useState("");
 
   const [classification, setClassification] = React.useState("");
   const classificationOptions = ["Freshman", "Sophomore", "Junior", "Senior"];
 
-  const navigate = useNavigate();
+  // Save the profile to the backend, then (optionally) upload the picture,
+  // then move on to the dashboard.
+  const handleSubmit = async () => {
+    setError("");
+
+    // A couple of quick checks so the user gets a clear message instead of a
+    // confusing 400 from the server.
+    if (!classification) {
+      setError("Please choose a classification.");
+      return;
+    }
+    if (skills.length === 0) {
+      setError("Please add at least one skill.");
+      return;
+    }
+    if (description.trim().length < 10) {
+      setError("Description must be at least 10 characters.");
+      return;
+    }
+
+    const dto: createStudentDto = {
+      name,
+      email, // must end in @students.vsu.edu (enforced by the backend)
+      major,
+      graduationYear: parseInt(graduationYear, 10),
+      classification,
+      description,
+      previousExperience: experience, // "Yes" / "No"
+      gpa: parseFloat(gpa),
+      availableHoursPerWeek: parseInt(availability, 10),
+      skills,
+    };
+
+    setSaving(true);
+    try {
+      // 1. Create the student profile (turns this login account into a student).
+      const student = await studentsService.createStudent(dto);
+
+      // 2. If the user picked a profile picture, upload it now.
+      if (profilePicFile) {
+        await mediaService.uploadStudentProfilePicture(student.id, profilePicFile);
+      }
+
+      // Note: there is no resume-upload endpoint yet, so the resume file is
+      // collected but not sent. That can be wired up later.
+
+      navigate("/discover-opportunities");
+    } catch (err) {
+      const anyErr = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      setError(
+        anyErr.response?.data?.message ??
+          anyErr.message ??
+          "Something went wrong saving your profile.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
@@ -239,14 +309,48 @@ const StudentInfoPage = () => {
                       title="resume"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          const url = URL.createObjectURL(file);
-                          setResumeUrl(url);
-                          setResumeFile(file);
-                        }
+                        if (file) setResumeFile(file);
                       }}
                     />
+                    {resumeFile && (
+                      <p className="text-xs text-gray-500">
+                        Selected: {resumeFile.name}
+                      </p>
+                    )}
                   </div>
+                </div>
+
+                {/* Profile Picture (optional) */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-vsu-blue" htmlFor="profile-picture">
+                    Profile Picture
+                  </label>
+                  <input
+                    className="p-2 bg-gray-100 border border-slate-400 rounded-lg hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    id="profile-picture"
+                    title="profile picture"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      // Backend limit: PNG/JPG only, max 5 MB.
+                      if (file.size > 5 * 1024 * 1024) {
+                        setError("Profile picture must be under 5 MB.");
+                        return;
+                      }
+                      setError("");
+                      setProfilePicFile(file);
+                      setProfilePicPreview(URL.createObjectURL(file));
+                    }}
+                  />
+                  {profilePicPreview && (
+                    <img
+                      src={profilePicPreview}
+                      alt="Profile preview"
+                      className="h-20 w-20 rounded-full object-cover mt-1"
+                    />
+                  )}
                 </div>
 
                 {/* Users Skills */}
@@ -281,17 +385,21 @@ const StudentInfoPage = () => {
                 </div>
               </div>
 
+              {/* Error message (if saving failed) */}
+              {error && (
+                <p className="text-center text-red-600 text-sm mb-2 px-4">
+                  {error}
+                </p>
+              )}
+
               {/* Buttons */}
               <div className="flex flex-row justify-center items-center mb-4 gap-4">
                 <button
-                  onClick={() => {
-                    navigate("/discover-opportunities");
-                    handleResumeUpload();
-
-                  }}
-                  className="text-white font-semibold hover:cursor-pointer text-xl bg-vsu-blue hover:bg-vsu-blue/60 border rounded-3xl py-2 px-8"
+                  onClick={handleSubmit}
+                  disabled={saving}
+                  className="text-white font-semibold hover:cursor-pointer text-xl bg-vsu-blue hover:bg-vsu-blue/60 border rounded-3xl py-2 px-8 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Continue
+                  {saving ? "Saving..." : "Continue"}
                 </button>
                 <button className="text-white font-semibold hover:cursor-pointer text-xl bg-red-500 border rounded-3xl py-2 px-6">
                   Clear
