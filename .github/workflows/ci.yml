@@ -1,0 +1,114 @@
+# CI/CD security pipeline for the Pathways Research App (Java Spring Boot)
+# Runs on every push and pull request to main.
+# Maven wrapper, Java 17, Spring Boot 4.
+
+name: CI Security Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 9 * * 1"   # weekly re-scan for newly published CVEs
+
+permissions:
+  contents: read
+
+jobs:
+  # 1. Compile and run unit tests
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: researchapp_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      SPRING_PROFILES_ACTIVE: test
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/researchapp_test
+      SPRING_DATASOURCE_USERNAME: test
+      SPRING_DATASOURCE_PASSWORD: test
+      SPRING_DATA_REDIS_HOST: localhost
+      JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}   # set in repo Settings > Secrets
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Build and test
+        run: ./mvnw -B verify
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: target/surefire-reports/
+
+  # 2. Secret scanning: catches committed keys like the old .env JWT secret
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # scan full git history, not just the latest commit
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 3. Static analysis (SAST): finds injection, auth, and crypto flaws in Java code
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: java-kotlin
+          queries: security-extended
+      - name: Build for analysis
+        run: ./mvnw -B -DskipTests package
+      - uses: github/codeql-action/analyze@v3
+
+  # 4. Dependency scanning (SCA): flags libraries with known CVEs
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: OWASP Dependency-Check
+        run: >
+          ./mvnw -B org.owasp:dependency-check-maven:check
+          -DfailBuildOnCVSS=7
+          -DnvdApiKey=${{ secrets.NVD_API_KEY }}
+      - name: Upload dependency report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
+
+  # Container scanning (Trivy) gets added once the repo has a Dockerfile;
+  # docker-compose.prod.yml builds from one that is not committed yet.
