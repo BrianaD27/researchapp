@@ -1,8 +1,16 @@
 package com.vsu.researchapp.presentation.controller;
 
+import com.vsu.researchapp.application.dto.ForgotPasswordRequest;
+import com.vsu.researchapp.application.dto.LoginRequest;
+import com.vsu.researchapp.application.dto.LogoutRequest;
+import com.vsu.researchapp.application.dto.RefreshTokenRequest;
+import com.vsu.researchapp.application.dto.RegisterRequest;
+import com.vsu.researchapp.application.dto.ResetPasswordRequest;
+import com.vsu.researchapp.application.dto.Verify2FARequest;
 import com.vsu.researchapp.application.service.UserAccountService;
 import com.vsu.researchapp.infrastructure.security.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +18,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final UserAccountService userAccountService;
@@ -24,14 +31,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestParam String username,
-            @RequestParam String password,
-            HttpServletRequest request) {
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
 
-        String ip = getClientIp(request);
-        String userAgent = request.getHeader("User-Agent");
+        String ip = getClientIp(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
         Map<String, String> result = userAccountService.login(
-            username, password, ip, userAgent);
+            request.username(), request.password(), ip, userAgent);
 
         if ("2FA_REQUIRED".equals(result.get("status"))) {
             return ResponseEntity.ok(Map.of(
@@ -45,23 +51,23 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(
-            @RequestParam String refreshToken) {
+            @Valid @RequestBody RefreshTokenRequest request) {
         return ResponseEntity.ok(
-            userAccountService.refreshAccessToken(refreshToken));
+            userAccountService.refreshAccessToken(request.refreshToken()));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
-            @RequestParam String username,
-            HttpServletRequest request) {
+            @Valid @RequestBody LogoutRequest request,
+            HttpServletRequest httpRequest) {
 
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = httpRequest.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             tokenBlacklistService.blacklist(token, 86400000);
         }
 
-        userAccountService.logout(username);
+        userAccountService.logout(request.username());
         return ResponseEntity.ok(Map.of(
             "message", "Logged out successfully"
         ));
@@ -69,9 +75,8 @@ public class AuthController {
 
     @PostMapping("/verify-2fa")
     public ResponseEntity<?> verify2FA(
-            @RequestParam String username,
-            @RequestParam String code) {
-        String token = userAccountService.verify2FA(username, code);
+            @Valid @RequestBody Verify2FARequest request) {
+        String token = userAccountService.verify2FA(request.username(), request.code());
         return ResponseEntity.ok(Map.of(
             "token", token,
             "type", "Bearer"
@@ -80,12 +85,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(
-            @RequestParam String username,
-            @RequestParam String email,
-            @RequestParam String password,
-            @RequestParam(defaultValue = "STUDENT") String role) {
+            @Valid @RequestBody RegisterRequest request) {
+        String role = request.role() == null || request.role().isBlank()
+            ? "STUDENT" : request.role();
         var user = userAccountService.createUser(
-            username, email, password, role);
+            request.username(), request.email(), request.password(), role);
         return ResponseEntity.ok(Map.of(
             "message", "User created successfully",
             "username", user.getUsername()
@@ -94,20 +98,17 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(
-            @RequestParam String username) {
-        String token = userAccountService
-            .generatePasswordResetToken(username);
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        userAccountService.generatePasswordResetToken(request.username());
         return ResponseEntity.ok(Map.of(
-            "message", "Password reset token generated",
-            "token", token
+            "message", "If an account exists for this user, a password reset email has been sent"
         ));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(
-            @RequestParam String token,
-            @RequestParam String newPassword) {
-        userAccountService.resetPassword(token, newPassword);
+            @Valid @RequestBody ResetPasswordRequest request) {
+        userAccountService.resetPassword(request.token(), request.newPassword());
         return ResponseEntity.ok(Map.of(
             "message", "Password reset successfully"
         ));

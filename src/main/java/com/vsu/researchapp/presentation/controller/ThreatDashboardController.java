@@ -9,7 +9,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin/threats")
-@CrossOrigin(origins = "*")
 public class ThreatDashboardController {
 
     private final SecurityAuditService securityAuditService;

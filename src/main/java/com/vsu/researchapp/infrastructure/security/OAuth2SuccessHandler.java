@@ -2,7 +2,7 @@ package com.vsu.researchapp.infrastructure.security;
 
 import com.vsu.researchapp.application.service.UserAccountService;
 import com.vsu.researchapp.domain.model.UserAccount;
-import com.vsu.researchapp.domain.repository.UserAccountRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

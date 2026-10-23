@@ -1,5 +1,6 @@
 package com.vsu.researchapp.presentation.controller;
 
+import com.vsu.researchapp.application.dto.UserAccountDto;
 import com.vsu.researchapp.application.service.UserAccountService;
 import com.vsu.researchapp.domain.model.UserAccount;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +16,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@CrossOrigin(origins = "*")
 @Validated
 public class UserAccountController {
 
@@ -26,32 +26,32 @@ public class UserAccountController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserAccount> registerUser(
+    public ResponseEntity<UserAccountDto> registerUser(
             @RequestParam @NotBlank String username,
             @RequestParam @NotBlank String email,
             @RequestParam @NotBlank String password,
             @RequestParam(defaultValue = "STUDENT") String role) {
         UserAccount newUser = userService.createUser(
             username, email, password, role);
-        return ResponseEntity.ok(newUser);
+        return ResponseEntity.ok(toDto(newUser));
     }
 
     // Paginated list of users
     @GetMapping
-    public ResponseEntity<Page<UserAccount>> getAllUsers(
+    public ResponseEntity<Page<UserAccountDto>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "username") String sortBy) {
         Pageable pageable = PageRequest.of(page, size,
             Sort.by(sortBy).ascending());
-        return ResponseEntity.ok(userService.findAllPaginated(pageable));
+        return ResponseEntity.ok(userService.findAllPaginated(pageable).map(this::toDto));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserAccount> getUserById(
+    public ResponseEntity<UserAccountDto> getUserById(
             @PathVariable Long id) {
         Optional<UserAccount> userOpt = userService.findById(id);
-        return userOpt.map(ResponseEntity::ok)
+        return userOpt.map(user -> ResponseEntity.ok(toDto(user)))
                       .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -60,5 +60,20 @@ public class UserAccountController {
             @PathVariable String username) {
         return ResponseEntity.ok(
             userService.getLoginHistory(username));
+    }
+
+    private UserAccountDto toDto(UserAccount user) {
+        return new UserAccountDto(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole(),
+            user.isActive(),
+            user.isAccountLocked(),
+            user.isTwoFactorEnabled(),
+            user.getLastLoginAt(),
+            user.getCreatedAt(),
+            user.getUpdatedAt()
+        );
     }
 }

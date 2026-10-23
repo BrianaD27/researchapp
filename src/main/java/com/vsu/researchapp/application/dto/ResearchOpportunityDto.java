@@ -2,16 +2,24 @@ package com.vsu.researchapp.application.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ResearchOpportunityDto(
     Long id,
     String title,
     String description,
-    String requirements,
-    LocalDate beginDate,
+    String department,
+    List<String> requiredMajors,
+    List<String> requiredClassifications,
+    List<String> requiredSkills,
+    String availability,
+    Float minimumGpa,
+    LocalDate applicationDeadline,
+    LocalDate startDate,
     LocalDate endDate,
+    List<String> researchMediaUrls,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
-    Long createdById,
-    String createdByName
+    Long professorId,
+    String professorName
 ) {}
