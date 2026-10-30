@@ -1,172 +1,191 @@
-import React from "react";
-import SkillInput from "../../components/forms/SkillInput";
+import { useEffect, useState } from "react";
+import { isAxiosError } from "axios";
 import StudentNavBar from "../../components/common/StudentNavBar";
-import OpportunityCard from "../../components/cards/OpportunityCard";
-import OpportunityDetailsCard from "../../components/cards/OpportunityDetailsCard";
+import apiClient from "../../api/client";
 
-const StudentDiscoverPage = () => {
-  // const [isSortedByOpen, setIsSortedByOpen] = React.useState(false);
-  const [selectedOpportunity, setSelectedOpportunity] = React.useState(Number);
-  const [skills, setSkills] = React.useState<string[]>([
-    "Python",
-    "Machine Learning",
-  ]);
+interface Opportunity {
+  id: number;
+  title: string;
+  description: string | null;
+  department: string | null;
+  requiredMajors: string[] | null;
+  requiredClassifications: string[] | null;
+  requiredSkills: string[] | null;
+  availability: string | null;
+  minimumGpa: number | null;
+  applicationDeadline: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  professorName: string | null;
+}
 
-  const opportunities = [
-    {
-      availability: "Closed",
-      isSelected: false,
-      title: "Biology Research Assistant",
-      department: "Biology",
-      professor: "Dr. Smith",
-      date: "9/23/2023",
-    },
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-  ];
+function dateLabel(value: string | null) {
+  if (!value) return "Not specified";
+  const parts = value.split("-");
+  return parts.length === 3 ? `${parts[1]}/${parts[2]}/${parts[0]}` : value;
+}
+
+function listLabel(values: string[] | null, fallback: string) {
+  return values?.length ? values.join(", ") : fallback;
+}
+
+export default function StudentDiscoverPage() {
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reload, setReload] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError("");
+    apiClient.get<Opportunity[]>("/research-opportunities")
+      .then(({ data }) => {
+        if (!Array.isArray(data)) throw new Error("Unexpected response");
+        if (!active) return;
+        setOpportunities(data);
+        setSelectedId((current) =>
+          data.some((item) => item.id === current) ? current : data[0]?.id ?? null
+        );
+      })
+      .catch((caught: unknown) => {
+        if (!active) return;
+        setOpportunities([]);
+        setError(isAxiosError(caught) && !caught.response
+          ? "Cannot reach the backend. Check that Java is running."
+          : "Could not load opportunities. Please try again.");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [reload]);
+
+  const filtered = opportunities.filter((item) => {
+    const text = [
+      item.title, item.description, item.department, item.professorName,
+      ...(item.requiredSkills ?? []), ...(item.requiredMajors ?? []),
+      ...(item.requiredClassifications ?? []),
+    ].join(" ").toLowerCase();
+    return text.includes(search.trim().toLowerCase())
+      && (!status || item.availability?.toLowerCase() === status);
+  });
+  const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0];
 
   return (
-    <div className="h-screen bg-[#1B51A4] flex flex-col overflow-scroll">
-      <div className="relative z-50">
-        <StudentNavBar />
-      </div>
-
-      <div className="pt-5 flex-1 flex items-start justify-evenly">
-        {/* Search Box */}
-        <div className="flex flex-col align-items-center justify-start">
-          <p className="text-white/70 text-xl pb-2 uppercase">Search</p>
-          {/* Search Bar */}
-          <div className="flex flex-row items-center gap-3 pb-4">
+    <div className="min-h-screen bg-[#1B51A4]">
+      <StudentNavBar />
+      <main className="max-w-7xl mx-auto p-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section>
+          <h1 className="text-white text-2xl mb-4">Discover Opportunities</h1>
+          <form
+            onSubmit={(event) => { event.preventDefault(); setSearch(query); }}
+            className="flex gap-3 mb-4"
+          >
             <input
-              className="w-full p-2 border border-gray-300 rounded-md bg-white"
-              type="text"
-              placeholder="Search for students..."
+              aria-label="Search opportunities"
+              placeholder="Search opportunities, professors, or skills..."
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="min-w-0 flex-1 bg-white border rounded-lg p-3"
             />
-            <button className="px-4 hover:cursor-pointer py-2 bg-vsu-orange font-semibold text-white rounded-md flex flex-row items-center gap-1">
+            <button className="bg-orange-600 text-white rounded-lg px-5 cursor-pointer">
               Search
-              <svg
-                width="30"
-                height="27"
-                viewBox="0 0 50 47"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlnsXlink="http://www.w3.org/1999/xlink"
-              >
-                <rect
-                  y="47"
-                  width="47"
-                  height="50"
-                  transform="rotate(-90 0 47)"
-                  fill="url(#pattern0_5_82)"
-                />
-                <defs>
-                  <pattern
-                    id="pattern0_5_82"
-                    patternContentUnits="objectBoundingBox"
-                    width="1"
-                    height="1"
-                  >
-                    <use
-                      xlinkHref="#image0_5_82"
-                      transform="matrix(0.01 0 0 0.0094 0 0.03)"
-                    />
-                  </pattern>
-                  <image
-                    id="image0_5_82"
-                    width="100"
-                    height="100"
-                    preserveAspectRatio="none"
-                    xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEmElEQVR4nO2dTY9URRSGSzECbojyFTSgK3UpcSsGE8AoAmrUnwDRmRFienPvL3ChRL4WQHThDyAhbkSNJATjDgXRjc4Ajk5MhBFc6UIec0J10jAM81lV59Q9TzKb7k7fW/1O1amPc94bguM4juM4juM4juM4zpwA1gAvAu8CR4CvgAvAKDAJ/Bv/JuNr8t6X8bMjwDZgdel2mAV4CNgFHIg/7k0WjnzHeeAjYCewvHQ7VQPcDzwHHAVukB65xqfADmBJ6farAVgGvAOMUQ4Z5t4GloaOD0s9YAI9TADvyb2FLhGHiUvoZRx4I9QO8ATwGXY4CWwINQK8Gqel1rgBvBVqQQJlnL5a56j5oA+sBL6lHs4CjwSLAI/GRV1t/ASsD5YAngZ+pV6uAE8FCwCPAZepn9+Ax4OBmCFduiv8qDamxNlUTQF8tnyjcvYFHKa7HAiakG0GdDIBfA78kPg6srX/elC0HXIdfbwPPDhwn9uBvxNe7y8VQV7p3lRvmnsdTnzdk/kVmLo/pY3mHve7NsP1d+RV4fbzjMsWekYfYF2GexgrcjwcD5fMiCHEhIcc7AsFjl0njImxMXFQv3MVn29tEs/A1ceMPsAzwNXM97UnZMwOKZmQMJ+ecY38/ALcl0OQF9BBo7RnDPJ8DkE+oTyNATGE46nFWK5gVd4YEaN/Hp9uChzTO0vSUxwzpmN7SkFKJis0hnrGIB+kFKTUGXljVAzhu5QlAYuRhd6FYWqQ/4BVKQSR+ozcNIZ7xiBbUggixTI5aSoRQxhKIYhUI+WiqUgM4WAKQaRELAc94zHjbpxKIUjqc+kae0af8ykEuaRAjI3GekafsRSCpPyv/HqmnVHsiiH8mUIQKTtOxXCFw9Qg/1gTZMQFmSOJf5DTPmTNEQ/q+oJ6jmlvO4v7sDh8JZn2+sJQ2cIw59ZJW1lPOVjD5mJbkShDtWy/t5WIkmT7fbUfUM37gGrlogtS+Ai3NdxTziURIzZazL9K0RoVJWmSgzixlaRncPh6ufZEudZQT7mevFYE+Lh0K7EjyrGkYsSGbkYHrQFRNuUqRxCPQg30FMeUn7OUI8RGimGkFlqlPWV3FjEGStp+Rw89ZSVt49ntNqJ7J8ZEGc50L3vzqDC1LFqbs2hPQVm0lLIty6fE7Q18CX20M7jc2a0HmQ3RStWKtcZI4uueyK/A1EZuiMYrGs1nlt5h3pwyqE+q8WIEXiu0NT8Tf0R7poukRdq+K2iiEm/e+bI/KLX4E7u7rnFm0JdLFcAK4Hu6w0W1JpgdtIkdN2PULybD0Wy4Vq4ATwZLxFWxPPOpRq/e9cEiMr5WFujPAA8HywAPxEWaxnXKbLkZp/U6Z1ML8Emx+kCXN0ONiK+t0r2v6ThhNl7MBeAVRa50d2O0+K5tbmJK0b5oGKlpbbG32HmGoi2XPfFgpxSSkLC7qqC9GADPxtnM1UxJbPLo1S3ZskOswq0kCjHP3y9+UzGDfKHId5wDPpT0zk4PSwsFWAVslcIX4BDwRdzEHI05V/3Hd1+Lr8l7p+Jnh2IvSFMS4DiO4ziO4ziO4zhOqJf/AZA9QlamcigfAAAAAElFTkSuQmCC"
-                  />
-                </defs>
-              </svg>
+            </button>
+          </form>
+
+          <div className="flex flex-wrap gap-3 mb-4">
+            <select
+              aria-label="Opportunity status"
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              className="bg-white border rounded-lg p-3"
+            >
+              <option value="">All statuses</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => { setQuery(""); setSearch(""); setStatus(""); }}
+              className="bg-white rounded-lg px-4 cursor-pointer"
+            >
+              Clear filters
+            </button>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => setReload((value) => value + 1)}
+              className="bg-white rounded-lg px-4 cursor-pointer disabled:opacity-50"
+            >
+              Reload
             </button>
           </div>
 
-          {/* Specific filters for sorting search results (e.g. by date, by major, etc.) */}
-          <div className="grid grid-cols-2 gap-2">
-            <select
-              title="major"
-              className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-            >
-              <option value="">All Majors</option>
-              <option value="computer science">Computer Science</option>
-              <option value="math">Mathematics</option>
-              <option value="business">Business</option>
-              <option value="biology">Biology</option>
-              <option value="history">History</option>
-              <option value="english">English</option>
-              <option value="art">Art</option>
-              <option value="psychology">Psychology</option>
-            </select>
-            <select
-              title="classification"
-              className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-            >
-              <option value="">All Classifications</option>
-              <option value="freshman">Freshman</option>
-              <option value="sophomore">Sophomore</option>
-              <option value="junior">Junior</option>
-              <option value="senior">Senior</option>
-            </select>
-            <select
-              title="gpa"
-              className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-            >
-              <option value="">Any GPA</option>
-              <option value="1.5-2.4">1.5-2.4</option>
-              <option value="2.5-3.4">2.5-3.4</option>
-              <option value="3.5-4.0">3.5-4.0</option>
-              <option value="4.0+">4.0+</option>
-            </select>
-            <select
-              title="availability"
-              className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-            >
-              <option value="">Any Availability</option>
-              <option value="5">5+ hrs/week</option>
-              <option value="10">10+ hrs/week</option>
-              <option value="15">15+ hrs/week</option>
-            </select>
-          </div>
+          {loading ? <p role="status" className="text-white">Loading opportunities...</p> : error ? (
+            <p role="alert" className="bg-white text-red-700 rounded-lg p-4">{error}</p>
+          ) : (
+            <>
+              <p role="status" className="text-white mb-3">{filtered.length} results</p>
+              {!filtered.length && (
+                <p className="bg-white rounded-lg p-4">
+                  {opportunities.length ? "No opportunities match your search." : "No opportunities have been posted yet."}
+                </p>
+              )}
+              <div className="flex flex-col gap-3">
+                {filtered.map((item) => (
+                  <button
+                    type="button"
+                    key={item.id}
+                    aria-pressed={selected?.id === item.id}
+                    onClick={() => setSelectedId(item.id)}
+                    className={`bg-white rounded-2xl p-4 text-left border-4 cursor-pointer ${
+                      selected?.id === item.id ? "border-orange-500" : "border-transparent"
+                    }`}
+                  >
+                    <h2 className="text-xl font-semibold">{item.title}</h2>
+                    <p className="text-gray-600">
+                      {item.professorName || "Faculty not specified"} | {item.department || "Department not specified"}
+                    </p>
+                    <p className="font-semibold mt-2">{item.availability || "Status not specified"}</p>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
 
-          <div className="flex flex-col align-items-center justify-start w-full max-w-190 pt-3">
-            <SkillInput value={skills} onChange={setSkills} />
-          </div>
-
-          <div className="flex mt-5 flex-row justify-between items-center">
-            <p className="text-white pt-2 text-lg">Matching Students</p>
-            <p className="text-white pt-2 text-lg ">24 Results</p>
-          </div>
-
-          {/* Search Results Box */}
-          <div className="h-93 xl:w-190 lg:w-150 md:w-130 w-100 gap-2 shadow-lg flex flex-col justify-start overflow-scroll">
-            {opportunities.map((opportunity, index) => (
-              <OpportunityCard
-                key={index}
-                title={opportunity.title}
-                department={opportunity.department}
-                professor={opportunity.professor}
-                date={opportunity.date}
-                availability={opportunity.availability}
-                isSelected={selectedOpportunity === index}
-                onSelect={() => setSelectedOpportunity(index)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Student Info Box */}
-        <div>
-          <OpportunityDetailsCard />
-        </div>
-      </div>
+        {!loading && !error && selected && (
+          <section className="bg-white rounded-xl p-6 self-start">
+            <h2 className="text-2xl font-bold mb-2">{selected.title}</h2>
+            <p>{selected.professorName || "Faculty not specified"}</p>
+            <p className="text-gray-600 mb-5">{selected.department}</p>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                ["Status", selected.availability || "Not specified"],
+                ["Minimum GPA", selected.minimumGpa == null ? "Not specified" : String(selected.minimumGpa)],
+                ["Classification", listLabel(selected.requiredClassifications, "Not specified")],
+                ["Application deadline", dateLabel(selected.applicationDeadline)],
+                ["Start date", dateLabel(selected.startDate)],
+                ["End date", dateLabel(selected.endDate)],
+              ].map(([label, value]) => (
+                <div key={label} className="bg-gray-100 rounded-lg p-3">
+                  <dt className="text-gray-600">{label}</dt>
+                  <dd className="font-semibold">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <h3 className="font-semibold mt-5">Target majors</h3>
+            <p>{listLabel(selected.requiredMajors, "Not specified")}</p>
+            <h3 className="font-semibold mt-5">Required skills</h3>
+            <p>{listLabel(selected.requiredSkills, "Not specified")}</p>
+            <h3 className="font-semibold mt-5">Description</h3>
+            <p className="whitespace-pre-wrap">{selected.description || "No description provided."}</p>
+          </section>
+        )}
+      </main>
     </div>
   );
-};
-
-export default StudentDiscoverPage;
+}

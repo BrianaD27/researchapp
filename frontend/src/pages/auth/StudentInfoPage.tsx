@@ -5,6 +5,8 @@ import AuthNavBar from "../../components/common/AuthNavBar";
 import apiClient from "../../api/client";
 
 interface Student {
+  profilePictureUrl?: string | null;
+  resumeUrl?: string | null;
   id: number;
   name: string;
   email: string;
@@ -44,6 +46,8 @@ export default function StudentInfoPage() {
   const navigate = useNavigate();
   const [fields, setFields] = useState(initial);
   const [id, setId] = useState<number | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [resume, setResume] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -76,6 +80,8 @@ export default function StudentInfoPage() {
         if (!active) return;
         setId(data.id);
         setFields(fieldsFrom(data));
+        setPhoto(data.profilePictureUrl ?? null);
+        setResume(data.resumeUrl ?? null);
         setReady(true);
       })
       .catch((caught: unknown) => {
@@ -124,7 +130,70 @@ export default function StudentInfoPage() {
 
       const { data } = await apiClient.get<Student>("/students/me");
       setFields(fieldsFrom(data));
+        setPhoto(data.profilePictureUrl ?? null);
+        setResume(data.resumeUrl ?? null);
       setMessage("Student profile saved and loaded back successfully.");
+    } catch (caught) {
+      showError(caught);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function uploadMedia(file: File, kind: "photo" | "resume") {
+    if (id === null || saving) return;
+    const allowed = kind === "photo"
+      ? ["image/jpeg", "image/png"]
+      : ["application/pdf"];
+
+    setMessage("");
+    if (!allowed.includes(file.type) || file.size === 0
+        || file.size > 5 * 1024 * 1024) {
+      setError(kind === "photo"
+        ? "Choose a JPG or PNG up to 5 MB."
+        : "Choose a PDF up to 5 MB.");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const url = kind === "photo"
+        ? `/students/${id}/profile-picture`
+        : "/students/me/resume";
+
+      await apiClient.post(url, body, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const { data } = await apiClient.get<Student>("/students/me");
+      setPhoto(data.profilePictureUrl ?? null);
+      setResume(data.resumeUrl ?? null);
+      setMessage(kind === "photo" ? "Profile photo saved." : "Resume saved.");
+    } catch (caught) {
+      showError(caught);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function downloadResume() {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const { data } = await apiClient.get<Blob>("/students/me/resume", {
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "resume.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (caught) {
       showError(caught);
     } finally {
@@ -157,6 +226,70 @@ export default function StudentInfoPage() {
           {message && <p role="status" className="text-green-800 mb-4">{message}</p>}
           {ready && (
             <form onSubmit={save} className="flex flex-col gap-4">
+              <section className="border rounded-lg p-4 flex flex-col gap-4">
+                <h2 className="text-xl font-semibold">Photo and Resume</h2>
+                {id === null ? (
+                  <p>Save your student profile first to enable uploads.</p>
+                ) : (
+                  <>
+                    {photo ? (
+                      <img
+                        src={new URL(photo, "http://localhost:8080").href}
+                        alt="Your profile"
+                        className="w-32 h-32 rounded-full object-cover"
+                      />
+                    ) : <p>No profile photo uploaded.</p>}
+
+                    <div className="flex flex-wrap gap-3">
+                      <label className={`bg-blue-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer ${saving ? "opacity-50" : ""}`}>
+                        Choose Photo
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png"
+                          disabled={saving}
+                          className="sr-only"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = "";
+                            if (file) void uploadMedia(file, "photo");
+                          }}
+                        />
+                      </label>
+
+                      <label className={`bg-blue-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer ${saving ? "opacity-50" : ""}`}>
+                        {resume ? "Replace Resume" : "Upload Resume"}
+                        <input
+                          type="file"
+                          accept="application/pdf,.pdf"
+                          disabled={saving}
+                          className="sr-only"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = "";
+                            if (file) void uploadMedia(file, "resume");
+                          }}
+                        />
+                      </label>
+
+                      {resume && (
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => void downloadResume()}
+                          className="bg-green-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer disabled:opacity-50"
+                        >
+                          Download Resume
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Photo: JPG or PNG. Resume: PDF. Maximum 5 MB each.
+                      Selecting a file saves it immediately.
+                    </p>
+                    {saving && <p role="status">Saving or downloading...</p>}
+                  </>
+                )}
+              </section>
               <fieldset disabled={saving} className="flex flex-col gap-4">
                 {inputs.map(({ key, label, ...attributes }) => (
                   <label key={key} className="flex flex-col gap-1">
