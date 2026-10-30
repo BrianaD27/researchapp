@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const AuthNavBar = () => {
+const AuthNavBar = ({ hideSignUp = false }: { hideSignUp?: boolean }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFacultyDropdownOpen, setIsFacultyDropdownOpen] = useState(false);
   const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
@@ -43,9 +43,9 @@ const AuthNavBar = () => {
               <a href="/FacultyLogin" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
                 Log In
               </a>
-              <a href="/FacultySignUp" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
+              {!hideSignUp && (<a href="/FacultySignUp" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
                 Sign Up
-              </a>
+              </a>)}
             </div>
           </div>
         </li>
@@ -53,7 +53,7 @@ const AuthNavBar = () => {
         <li className="nav-item items-center flex">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <a className="nav-link" href="/faculty-login">
+              <a className="nav-link" href="/StudentLogin">
                 Student
               </a>
               <img
@@ -67,9 +67,9 @@ const AuthNavBar = () => {
               <a href="/StudentLogin" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
                 Log In
               </a>
-              <a href="/StudentSignUp" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
+              {!hideSignUp && (<a href="/StudentSignUp" className="hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2">
                 Sign Up
-              </a>
+              </a>)}
             </div>
           </div>
         </li>
@@ -107,18 +107,18 @@ const AuthNavBar = () => {
             {isFacultyDropdownOpen && (
               <div className="flex flex-col items-center w-full">
                 <a
-                  href="/"
+                  href="/FacultyLogin"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
                   Log In
                 </a>
 
-                <a
+                {!hideSignUp && (<a
                   href="/"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
                   Sign Up
-                </a>
+                </a>)}
               </div>
             )}
 
@@ -139,18 +139,18 @@ const AuthNavBar = () => {
             {isStudentDropdownOpen && (
               <div className="flex flex-col items-center w-full">
                 <a
-                  href="/"
+                  href="/StudentLogin"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
                   Log In
                 </a>
 
-                <a
+                {!hideSignUp && (<a
                   href="/"
                   className="px-4 py-2 w-full text-center hover:bg-gray-100"
                 >
                   Sign Up
-                </a>
+                </a>)}
               </div>
             )}
           </div>

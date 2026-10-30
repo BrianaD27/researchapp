@@ -28,7 +28,7 @@ function clearSession() {
   sessionStorage.removeItem("researchapp.refreshToken");
 }
 
-export default function FacultySession() {
+export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginPath?: string }) {
   const navigate = useNavigate();
   const [valid, setValid] = useState(() => readSession() !== null);
   const [busy, setBusy] = useState(false);
@@ -67,7 +67,7 @@ export default function FacultySession() {
       await apiClient.post("/v1/auth/logout", { username: session.username });
       clearSession();
       setValid(false);
-      navigate("/FacultyLogin", { replace: true });
+      navigate(loginPath, { replace: true });
     } catch (caught) {
       if (isAxiosError(caught) && caught.response?.status === 401) {
         clearSession();
@@ -80,7 +80,7 @@ export default function FacultySession() {
     }
   }
 
-  if (!valid) return <Navigate to="/FacultyLogin" replace />;
+  if (!valid) return <Navigate to={loginPath} replace />;
 
   return (
     <>

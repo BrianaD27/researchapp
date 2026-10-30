@@ -148,7 +148,7 @@ export default function StudentInfoPage() {
 
   return (
     <div className="min-h-screen bg-[#1B51A4]">
-      <AuthNavBar />
+      <AuthNavBar hideSignUp />
       <main className="max-w-2xl mx-auto p-6">
         <section className="bg-white rounded-xl p-6">
           <h1 className="text-2xl font-bold mb-4">My Student Profile</h1>

@@ -32,9 +32,11 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/StudentLogin" element={<StudentLogin />} />
         <Route path="/StudentSignUp" element={<StudentSignUp />} />
         <Route path="/faculty-info" element={<FacultyInfoPage />} />
-        <Route path="/student-info" element={<StudentInfoPage />} />
+
 
         {/* Student Routes */}
+        <Route element={<FacultySession loginPath="/StudentLogin" />}>
+        <Route path="/student-info" element={<StudentInfoPage />} />
         <Route path="/discover-opportunities" element={<StudentDiscoverPage/>} />
         <Route path="/saved-opportunities" element={<StudentBookmarksPage />} />
         <Route path="/applied-opportunities" element={<StudentAppliedPage/>} />
@@ -42,6 +44,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/student-settings" element={<StudentInfoPage />} />
         
         
+        </Route>
         {/* Professor Routes */}
         <Route element={<FacultySession />}>
         <Route
