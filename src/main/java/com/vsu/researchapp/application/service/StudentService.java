@@ -25,6 +25,12 @@ public class StudentService {
         this.currentUserService = currentUserService;
     }
 
+    public Optional<StudentDto> getMyStudentProfile() {
+        UserAccount currentUser = currentUserService.getCurrentUserAccount();
+        return studentRepository.getStudentByUserAccountId(currentUser.getId())
+            .map(this::entityToDto);
+    }
+
     public List<StudentDto> getAllStudents() {
         return studentRepository.getAllStudents().stream().map(this::entityToDto).toList();
     }

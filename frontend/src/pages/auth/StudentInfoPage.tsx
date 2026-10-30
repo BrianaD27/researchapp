@@ -1,308 +1,227 @@
-import React, { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { isAxiosError } from "axios";
+import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
-import SkillInput from "../../components/forms/SkillInput";
-import { useNavigate } from "react-router-dom";
+import apiClient from "../../api/client";
 
-const StudentInfoPage = () => {
-  const [skills, setSkills] = React.useState<string[]>([
-    "Python",
-    "Machine Learning",
-  ]);
+interface Student {
+  id: number;
+  name: string;
+  email: string;
+  major: string;
+  classification: string;
+  graduationYear: number;
+  description: string;
+  previousExperience: string | null;
+  gpa: number | null;
+  availableHoursPerWeek: number | null;
+  skills: string[];
+}
 
-  const [name, setName] = React.useState("");
-  const [availability, setAvailability] = React.useState("Open");
-  const [experience, setExperience] = React.useState("yes");
-  const experienceOptions = ["Yes", "No"];
-  const [email, setEmail] = React.useState("");
-  const [major, setMajor] = React.useState("");
-  const [gpa, setGpa] = React.useState("Any");
-  const [graduationYear, setGraduationYear] = React.useState("");
-  const [resumeUrl, setResumeUrl] = useState<string>("");
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-    const handleResumeUpload = async () => {
-      if (!resumeFile) return;
-
-      const resumeData = new FormData();
-      resumeData.append("resume", resumeFile);
-      console.log("Resume url ready for upload:", resumeUrl); // Line not needed. Remove later
-
-      // TODO: Implement API call to upload resume
-    };
-
-  const [description, setDescription] = React.useState("");
-
-  const [classification, setClassification] = React.useState("");
-  const classificationOptions = ["Freshman", "Sophomore", "Junior", "Senior"];
-
-  const navigate = useNavigate();
-
-  return (
-    <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
-      <div className="relative z-50">
-        <AuthNavBar />
-      </div>
-
-      <img
-        src="/src/assets/studentsBg.png"
-        alt=""
-        className="flex-1 object-cover"
-      />
-
-      <div className="absolute top-[55%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col align-items-center justify-start">
-        <div className="flex flex-col align-items-center justify-start">
-          <div className="flex flex-col align-items-center justify-start">
-            <div className="h-159 bg-white rounded-lg px-2 xl:w-190 lg:w-150 md:w-130 w-100 gap-5 mb-3 shadow-lg flex flex-col justify-start">
-              {/* Form  */}
-              <div className="bg-white py-5 w-full px-5 overflow-scroll h-155 gap-5 flex flex-col justify-start">
-                <div className="mt-10">
-                  <h1 className="text-center font-bold text-3xl text-vsu-orange">
-                    Welcome to The Trojan Research Network
-                  </h1>
-                  <h1 className="text-center font-medium text-lg text-black">
-                    Fill Out the Information Below To Continue
-                  </h1>
-                </div>
-
-                {/* Name Row */}
-                <div className="flex flex-col gap-1">
-                  <label
-                    className="text-sm text-vsu-blue"
-                    htmlFor="opportunity-title"
-                  >
-                    Name <span className="text-vsu-orange">*</span>
-                  </label>
-                  <input
-                    className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-                    type="text"
-                    id="name"
-                    required={true}
-                    placeholder="Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-
-                {/* Major Row */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-vsu-blue" htmlFor="major">
-                    Major <span className="text-vsu-orange">*</span>
-                  </label>
-                  <input
-                    className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-                    type="text"
-                    id="major"
-                    required={true}
-                    placeholder="Major"
-                    value={major}
-                    onChange={(e) => setMajor(e.target.value)}
-                  />
-                </div>
-
-                {/* Email Row */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-vsu-blue" htmlFor="email">
-                    Email <span className="text-vsu-orange">*</span>
-                  </label>
-                  <input
-                    className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-                    type="text"
-                    id="email"
-                    required={true}
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-
-                {/* Classification and Experience Row */}
-                <div className="flex flex-row flex-wrap justify-between ">
-                  <div className="flex flex-col gap-1 w-auto">
-                    <label className="text-sm text-vsu-blue">
-                      Classification <span className="text-vsu-orange">*</span>
-                    </label>
-                    <div className="flex flex-row flex-wrap gap-2">
-                      {classificationOptions.map((option) => (
-                        <button
-                          onClick={() => setClassification(option)}
-                          className={`px-4 hover:cursor-pointer text-normal  rounded-full py-1 font-medium border  hover:bg-gray-300 ${classification === option ? "bg-[#E3F1FC] border-[#B7D0E8]" : "bg-gray-100 border-slate-400"}`}
-                          key={option}
-                          type="button"
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1 w-auto">
-                    <label className="text-sm text-vsu-blue">
-                      Previous Experience{" "}
-                      <span className="text-vsu-orange">*</span>
-                    </label>
-                    <div className="flex flex-row flex-wrap gap-2">
-                      {experienceOptions.map((option) => (
-                        <button
-                          onClick={() => setExperience(option)}
-                          className={`px-4 hover:cursor-pointer text-normal  rounded-full py-1 font-medium border  hover:bg-gray-300 ${experience === option ? "bg-[#E3F1FC] border-[#B7D0E8]" : "bg-gray-100 border-slate-400"}`}
-                          key={option}
-                          type="button"
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* GPA, Graduation Year Row */}
-                <div className="flex flex-row gap-3  ">
-                  <div className="flex flex-col gap-1 w-[50%]">
-                    <label className="text-sm text-vsu-blue" htmlFor="spots">
-                      GPA <span className="text-vsu-orange">*</span>
-                    </label>
-                    <select
-                      className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-                      title="gpa"
-                      name="gpa"
-                      id="gpa"
-                      value={gpa}
-                      onChange={(e) => setGpa(e.target.value)}
-                    >
-                      {Array.from({ length: 41 }, (_, i) =>
-                        parseFloat((i * 0.1).toFixed(1)),
-                      ).map((num) => (
-                        <option value={num} key={num}>
-                          {num}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 w-[50%]">
-                    <label className="text-sm text-vsu-blue" htmlFor="spots">
-                      Graduation Year <span className="text-vsu-orange">*</span>
-                    </label>
-                    <select
-                      className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-                      title="graduationYear"
-                      name="graduationYear"
-                      id="graduationYear"
-                      value={graduationYear}
-                      onChange={(e) => setGraduationYear(e.target.value)}
-                    >
-                      {Array.from(
-                        { length: 2080 - 2026 + 1 },
-                        (_, i) => 2026 + i,
-                      ).map((num) => (
-                        <option value={num} key={num}>
-                          {num}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Availability and Resume */}
-                <div className="flex flex-row gap-3 ">
-                  <div className="flex flex-col gap-1 w-[50%]">
-                    <label
-                      className="text-sm text-vsu-blue"
-                      htmlFor="time-commitment"
-                    >
-                      Availability <span className="text-vsu-orange">*</span>
-                    </label>
-                    <select
-                      className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-                      id="availability"
-                      title="availability"
-                      value={availability}
-                      onChange={(e) => setAvailability(e.target.value)}
-                    >
-                      <option value="5">5 hrs/week</option>
-                      <option value="10">10 hrs/week</option>
-                      <option value="15">15 hrs/week</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-1 w-[50%]">
-                    <label
-                      className="text-sm text-vsu-blue"
-                      htmlFor="opportunity-title"
-                    >
-                      Upload Resume
-                    </label>
-                    <input
-                      className="p-2 bg-gray-100 border border-slate-400 rounded-lg hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      id="resume"
-                      title="resume"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const url = URL.createObjectURL(file);
-                          setResumeUrl(url);
-                          setResumeFile(file);
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Users Skills */}
-                <div className="flex flex-col gap-1">
-                  <label
-                    className="text-sm text-vsu-blue "
-                    htmlFor="required-skills"
-                  >
-                    Skills <span className="text-vsu-orange">*</span>
-                  </label>
-                  <div>
-                    <SkillInput value={skills} onChange={setSkills} />
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div className="flex flex-col gap-1">
-                  <label
-                    className="text-sm text-vsu-blue "
-                    htmlFor="description"
-                  >
-                    Description <span className="text-vsu-orange">*</span>
-                  </label>
-                  <textarea
-                    id="description"
-                    required={true}
-                    value={description}
-                    placeholder="Opportunity Description"
-                    className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent h-24 resize-none"
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex flex-row justify-center items-center mb-4 gap-4">
-                <button
-                  onClick={() => {
-                    navigate("/discover-opportunities");
-                    handleResumeUpload();
-
-                  }}
-                  className="text-white font-semibold hover:cursor-pointer text-xl bg-vsu-blue hover:bg-vsu-blue/60 border rounded-3xl py-2 px-8"
-                >
-                  Continue
-                </button>
-                <button className="text-white font-semibold hover:cursor-pointer text-xl bg-red-500 border rounded-3xl py-2 px-6">
-                  Clear
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+const initial = {
+  name: "", email: "", major: "", classification: "Freshman",
+  graduationYear: String(new Date().getFullYear()),
+  description: "", previousExperience: "", gpa: "",
+  availableHoursPerWeek: "5", skills: "",
 };
 
-export default StudentInfoPage;
+function fieldsFrom(student: Student) {
+  return {
+    name: student.name ?? "",
+    email: student.email ?? "",
+    major: student.major ?? "",
+    classification: student.classification ?? "Freshman",
+    graduationYear: String(student.graduationYear),
+    description: student.description ?? "",
+    previousExperience: student.previousExperience ?? "",
+    gpa: student.gpa == null ? "" : String(student.gpa),
+    availableHoursPerWeek: String(student.availableHoursPerWeek ?? 5),
+    skills: (student.skills ?? []).join(", "),
+  };
+}
+
+export default function StudentInfoPage() {
+  const navigate = useNavigate();
+  const [fields, setFields] = useState(initial);
+  const [id, setId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  function showError(caught: unknown) {
+    if (isAxiosError(caught)) {
+      const status = caught.response?.status;
+      if (status === 401) {
+        navigate("/StudentLogin", { replace: true });
+        return;
+      }
+      setError(!caught.response
+        ? "Cannot reach the backend. Check that Java is running."
+        : `Request failed (HTTP ${status}). Your changes have not been confirmed.`);
+    } else {
+      setError("Request failed. Your changes have not been confirmed.");
+    }
+  }
+
+  useEffect(() => {
+    let active = true;
+    if (!sessionStorage.getItem("researchapp.accessToken")) {
+      navigate("/StudentLogin", { replace: true });
+      return;
+    }
+    apiClient.get<Student>("/students/me")
+      .then(({ data }) => {
+        if (!active) return;
+        setId(data.id);
+        setFields(fieldsFrom(data));
+        setReady(true);
+      })
+      .catch((caught: unknown) => {
+        if (!active) return;
+        if (isAxiosError(caught) && caught.response?.status === 404) {
+          setReady(true);
+        } else if (isAxiosError(caught) && caught.response?.status === 401) {
+          navigate("/StudentLogin", { replace: true });
+        } else {
+          setError("Could not load your profile. Check Java is running, then refresh.");
+        }
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [navigate]);
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!ready || saving) return;
+    setError("");
+    setMessage("");
+    const skills = fields.skills.split(",").map((skill) => skill.trim()).filter(Boolean);
+    if (!skills.length) {
+      setError("Enter at least one skill.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const body = {
+        name: fields.name.trim(),
+        email: fields.email.trim().toLowerCase(),
+        major: fields.major.trim(),
+        classification: fields.classification,
+        graduationYear: Number(fields.graduationYear),
+        description: fields.description.trim(),
+        previousExperience: fields.previousExperience.trim(),
+        gpa: fields.gpa === "" ? null : Number(fields.gpa),
+        availableHoursPerWeek: Number(fields.availableHoursPerWeek),
+        skills,
+      };
+      const result = id === null
+        ? await apiClient.post<Student>("/students", body)
+        : await apiClient.put<Student>(`/students/${id}`, body);
+      setId(result.data.id);
+
+      const { data } = await apiClient.get<Student>("/students/me");
+      setFields(fieldsFrom(data));
+      setMessage("Student profile saved and loaded back successfully.");
+    } catch (caught) {
+      showError(caught);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputs: {
+    key: keyof typeof initial; label: string; type?: string;
+    min?: number; max?: number; step?: string;
+    minLength?: number; maxLength?: number; pattern?: string; required?: boolean;
+  }[] = [
+    { key: "name", label: "Full name", required: true, minLength: 2, maxLength: 100, pattern: "[a-zA-Z\\s'-]+" },
+    { key: "email", label: "Student email (@students.vsu.edu)", type: "email", required: true, pattern: "[A-Za-z0-9._%+-]+@students\\.vsu\\.edu", maxLength: 255 },
+    { key: "major", label: "Major", required: true, minLength: 2, maxLength: 100, pattern: "[a-zA-Z\\s,&()\\-]+" },
+    { key: "graduationYear", label: "Graduation year", type: "number", min: 2000, max: 2100, required: true },
+    { key: "gpa", label: "GPA (optional)", type: "number", min: 0, max: 4, step: "0.01" },
+    { key: "availableHoursPerWeek", label: "Available hours per week", type: "number", min: 0, max: 80, required: true },
+    { key: "skills", label: "Skills, separated by commas", required: true },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#1B51A4]">
+      <AuthNavBar />
+      <main className="max-w-2xl mx-auto p-6">
+        <section className="bg-white rounded-xl p-6">
+          <h1 className="text-2xl font-bold mb-4">My Student Profile</h1>
+          {loading && <p>Loading your profile...</p>}
+          {error && <p role="alert" className="text-red-700 mb-4">{error}</p>}
+          {message && <p role="status" className="text-green-800 mb-4">{message}</p>}
+          {ready && (
+            <form onSubmit={save} className="flex flex-col gap-4">
+              <fieldset disabled={saving} className="flex flex-col gap-4">
+                {inputs.map(({ key, label, ...attributes }) => (
+                  <label key={key} className="flex flex-col gap-1">
+                    {label}
+                    <input
+                      {...attributes}
+                      readOnly={key === "email" && id !== null}
+                      value={fields[key]}
+                      onChange={(event) => setFields((current) => ({
+                        ...current, [key]: event.target.value,
+                      }))}
+                      className="border border-gray-400 rounded-lg p-3"
+                    />
+                  </label>
+                ))}
+                <label className="flex flex-col gap-1">
+                  Classification
+                  <select
+                    value={fields.classification}
+                    onChange={(event) => setFields((current) => ({
+                      ...current, classification: event.target.value,
+                    }))}
+                    className="border rounded-lg p-3"
+                  >
+                    {["Freshman", "Sophomore", "Junior", "Senior"].map((item) => (
+                      <option key={item}>{item}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  About you (10-1000 characters)
+                  <textarea
+                    required minLength={10} maxLength={1000} rows={4}
+                    value={fields.description}
+                    onChange={(event) => setFields((current) => ({
+                      ...current, description: event.target.value,
+                    }))}
+                    className="border rounded-lg p-3"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  Previous experience (optional)
+                  <textarea
+                    maxLength={1000} rows={3}
+                    value={fields.previousExperience}
+                    onChange={(event) => setFields((current) => ({
+                      ...current, previousExperience: event.target.value,
+                    }))}
+                    className="border rounded-lg p-3"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="bg-blue-700 text-white rounded-lg p-3 cursor-pointer"
+                >
+                  {saving ? "Saving..." : "Save Student Profile"}
+                </button>
+              </fieldset>
+              <Link to="/discover-opportunities" className="text-blue-700 underline">
+                Back to opportunities
+              </Link>
+            </form>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+}

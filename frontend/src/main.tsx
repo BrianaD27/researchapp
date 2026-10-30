@@ -18,7 +18,6 @@ import StudentAppliedPage from "./pages/students/StudentAppliedPage.tsx";
 import StudentCompletedPage from "./pages/students/StudentCompletedPage.tsx";
 import ProfessorViewAllPage from "./pages/professors/ProfessorViewAllPage.tsx";
 import ProfessorProfilePage from "./pages/professors/ProfessorProfilePage.tsx";
-import StudentSettingsPage from "./pages/students/StudentSettingsPage.tsx";
 import FacultyInfoPage from "./pages/auth/FacultyInfoPage.tsx";
 import StudentInfoPage from "./pages/auth/StudentInfoPage.tsx";
 
@@ -40,7 +39,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/saved-opportunities" element={<StudentBookmarksPage />} />
         <Route path="/applied-opportunities" element={<StudentAppliedPage/>} />
         <Route path="/completed-opportunities" element={<StudentCompletedPage/>} />
-        <Route path="/student-settings" element={<StudentSettingsPage />} />
+        <Route path="/student-settings" element={<StudentInfoPage />} />
         
         
         {/* Professor Routes */}

@@ -32,6 +32,13 @@ public class StudentController {
         return ResponseEntity.ok(students);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<StudentDto> getMyStudentProfile() {
+        return studentService.getMyStudentProfile()
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
         StudentDto student = studentService.getStudentById(id);
