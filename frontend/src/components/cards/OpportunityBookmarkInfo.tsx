@@ -1,4 +1,3 @@
-import React from "react";
 
 const OpportunityBookmarkInfo = ({
   name = "Professor Name",

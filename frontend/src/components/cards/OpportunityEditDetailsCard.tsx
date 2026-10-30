@@ -1,4 +1,3 @@
-import React from "react";
 
 const OpportunityDetailsCard = ({
   name = "Professor Name",
@@ -164,7 +163,7 @@ const OpportunityDetailsCard = ({
         <button className="text-white font-semibold text-xl hover:cursor-pointer bg-blue-500 border rounded-3xl py-2 px-8">
           Edit
         </button>
-        
+
         <button className="text-white font-semibold text-xl hover:cursor-pointer bg-red-500 border rounded-3xl py-2 px-6">
           Delete
         </button>

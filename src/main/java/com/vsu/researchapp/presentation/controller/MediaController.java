@@ -39,6 +39,12 @@ public class MediaController {
         return ResponseEntity.ok(mediaUploadService.uploadProfessorProfilePicture(id, file));
     }
 
+    @DeleteMapping("/api/professors/{id}/profile-picture")
+    public ResponseEntity<Void> deleteProfessorProfilePicture(@PathVariable Long id) {
+        mediaUploadService.deleteProfessorProfilePicture(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping(value = "/api/research-opportunities/{id}/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MediaUploadResponseDto> uploadResearchMedia(
             @PathVariable Long id, @RequestPart("file") MultipartFile file) throws IOException {

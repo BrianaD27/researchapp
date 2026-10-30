@@ -104,6 +104,19 @@ public class MediaUploadService {
         return new MediaUploadResponseDto(url, file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
 
+    public void deleteProfessorProfilePicture(Long professorId) {
+        Professor professor = professorRepository.getProfessorById(professorId);
+        assertCanModifyProfessor(professor);
+
+        String oldUrl = professor.getProfilePictureUrl();
+        professor.setProfilePictureUrl(null);
+        professorRepository.updateProfessor(professor, professorId);
+
+        if (oldUrl != null && !oldUrl.isBlank()) {
+            fileStorage.delete(oldUrl);
+        }
+    }
+
     public MediaUploadResponseDto uploadResearchMedia(Long researchOpportunityId, MultipartFile file) throws IOException {
         ResearchOpportunity researchOpportunity = researchOpportunityRepository.getResearchOpportunity(researchOpportunityId);
         assertCanModifyResearchOpportunity(researchOpportunity);
@@ -233,4 +246,3 @@ public class MediaUploadService {
         }
     }
 }
-

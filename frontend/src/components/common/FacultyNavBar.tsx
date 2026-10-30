@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
 const FacultyNavBar = () => {
@@ -53,7 +53,7 @@ const FacultyNavBar = () => {
                 <p className="">Post New</p>
                 <p className="text-4xl mb-2 text-[#F29D38] font-light">+</p>
               </div>
-              
+
             </Link>
           </div>
         </li>

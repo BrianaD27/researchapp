@@ -1,4 +1,3 @@
-import React from "react";
 import AuthNavBar from "../../components/common/AuthNavBar";
 import AuthForm from "../../components/common/AuthForm";
 

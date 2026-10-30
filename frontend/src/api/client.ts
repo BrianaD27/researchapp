@@ -1,25 +1,28 @@
-import axios from 'axios';
+import axios from "axios";
 
-// Create an Axios instance with default configuration to be used for all API requests
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api', // Adjust the base URL as needed
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: "http://localhost:8080/api",
+  timeout: 30000,
+  headers: { "Content-Type": "application/json" },
 });
 
-// TODO: Add interceptors for for authentication tokens
+apiClient.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem("researchapp.accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-// Add a response interceptor to handle unauthorized access globally
-apiClient.interceptors.request.use(
-    (response) => response,
-    (error) => {
-        if (error.response?.staus === 401){
-            // Handle unauthorized access, e.g., redirect to login page
-            console.error('Unauthorized access - redirecting to login');
-        }
-        return Promise.reject(error);
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      sessionStorage.removeItem("researchapp.accessToken");
+      sessionStorage.removeItem("researchapp.refreshToken");
     }
+    return Promise.reject(error);
+  },
 );
 
 export default apiClient;

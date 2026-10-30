@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
 const StudentNavBar = () => {
@@ -169,7 +169,7 @@ const StudentNavBar = () => {
               </Link>
             </div>
 
-          
+
           </div>
         </div>
       )}

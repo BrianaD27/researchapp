@@ -1,202 +1,296 @@
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { isAxiosError } from "axios";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
-const ProfessorProfilePage = () => {
-  const options = [
-    "Change Name",
-    "Change Department",
-    "Change Email",
-    "Update Profile Picture",
-    "Update Profile Description",
-  ];
-  const [selectedOption, setSelectedOption] = useState<string>("name");
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [department, setDepartment] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [profilePicture, setProfilePicture] = useState<string>("");
-  const optionsContent: Record<string, React.ReactNode> = {
-    "Change Name": (
-      <div className="w-full p-4 flex flex-row items-end gap-5 ">
-        <div className="flex flex-col gap-1 w-[50%]">
-          <label className="text-sm text-vsu-blue" htmlFor="opportunity-title">
-            New Name
-          </label>
-          <input
-            className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-            type="text"
-            id="name"
-            required={true}
-            placeholder="Opportunity Title"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <button className="px-4 hover:cursor-pointer py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors duration-300">
-          Save
-        </button>
-      </div>
-    ),
-    "Change Department": (
-      <div className="w-full p-4 flex flex-row items-end gap-5 ">
-        <div className="flex flex-col gap-1 w-[50%]">
-          <label className="text-sm text-vsu-blue" htmlFor="opportunity-title">
-            New Department
-          </label>
-          <input
-            className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-            type="text"
-            id="department"
-            required={true}
-            placeholder="CompSci, Math, etc."
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-          />
-        </div>
-        <button className="hover:cursor-pointer px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors duration-300">
-          Save
-        </button>
-      </div>
-    ),
-    "Change Email": (
-      <div className="w-full p-4 flex flex-row items-end gap-5 ">
-        <div className="flex flex-col gap-1 w-[50%]">
-          <label className="text-sm text-vsu-blue" htmlFor="opportunity-title">
-            New Email
-          </label>
-          <input
-            className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-            type="email"
-            id="email"
-            required={true}
-            placeholder="new.email@vsu.edu"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <button className="hover:cursor-pointer px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors duration-300">
-          Save
-        </button>
-      </div>
-    ),
-    "Update Profile Picture": (
-      <div className="w-full p-4 flex flex-row items-center justify-start gap-5">
-        {/* Circle Display */}
-        <div className="border-1 border-black rounded-full w-50 h-50 bg-gray-800">
-          {profilePicture ? (
-            <img
-              src={profilePicture}
-              alt="Profile"
-              className="w-full h-full object-cover rounded-full"
-            />
-          ) : (
-            <p className="w-full h-full flex items-center justify-center text-white">
-              No Image
-            </p>
-          )}
-        </div>
+import apiClient from "../../api/client";
 
-        {/* File Input */}
-        <div className="flex flex-col gap-1 w-[50%]">
-          <label className="text-sm text-vsu-blue" htmlFor="opportunity-title">
-            Upload Photo
-          </label>
-          <div className="flex flex-row items-center gap-5">
-            <input
-              className="p-2 bg-gray-100 border border-slate-400 rounded-lg hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-              type="file"
-              accept="image/*"
-              id="picture"
-              title="picture"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const url = URL.createObjectURL(file);
-                  setProfilePicture(url);
-                }
-              }}
-            />
-            <button className="px-4 hover:cursor-pointer py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors duration-300 ">
-              Update Photo
-            </button>
+interface Professor {
+  id: number;
+  name: string | null;
+  email: string | null;
+  department: string | null;
+  officeLocation: string | null;
+  description: string | null;
+  profilePictureUrl: string | null;
+}
 
-            {profilePicture && (
-          <button className="px-4 hover:cursor-pointer py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors duration-300">
-            Remove
-          </button>
-        )}
-          </div>
-        </div>
+interface ProfileFields {
+  name: string;
+  department: string;
+  officeLocation: string;
+  description: string;
+}
 
-        
-      </div>
-    ),
-    "Update Profile Description": (
-      <div className="w-full p-4 flex flex-row items-end gap-5 ">
-        <div className="flex flex-col gap-1 w-[50%]">
-          <label className="text-sm text-vsu-blue" htmlFor="opportunity-title">
-            New Description
-          </label>
-          <textarea
-            className="p-2 bg-gray-100 border border-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4481ba] focus:border-transparent"
-            id="description"
-            required={true}
-            placeholder="New description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        <button className="hover:cursor-pointer px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors duration-300">
-          Save
-        </button>
-      </div>
-    ),
+const emptyFields: ProfileFields = {
+  name: "",
+  department: "",
+  officeLocation: "",
+  description: "",
+};
+
+function fieldsFrom(profile: Professor): ProfileFields {
+  return {
+    name: profile.name ?? "",
+    department: profile.department ?? "",
+    officeLocation: profile.officeLocation ?? "",
+    description: profile.description ?? "",
   };
+}
+
+function errorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    if (!error.response) return "Cannot reach the backend. Check that Java is running.";
+    if (error.response.status === 401) return "Your login has expired. Log in again.";
+    if (error.response.status === 403) return "You do not have permission to edit this profile.";
+    return `The request failed (HTTP ${error.response.status}). Changes were not confirmed.`;
+  }
+  return "The request failed. Changes were not confirmed.";
+}
+
+const ProfessorProfilePage = () => {
+  const [profiles, setProfiles] = useState<Professor[]>([]);
+  const [selected, setSelected] = useState<Professor | null>(null);
+  const [fields, setFields] = useState<ProfileFields>(emptyFields);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    apiClient.get<Professor[]>("/professors")
+      .then(({ data }) => {
+        if (active) setProfiles(data);
+      })
+      .catch((caught: unknown) => {
+        if (active) setError(errorMessage(caught));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
+
+  function chooseProfile(id: string) {
+    const profile = profiles.find((item) => String(item.id) === id) ?? null;
+    setSelected(profile);
+    setFields(profile ? fieldsFrom(profile) : emptyFields);
+    setMessage("");
+    setError("");
+  }
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selected || saving) return;
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      await apiClient.put(`/professors/${selected.id}`, {
+        name: fields.name.trim(),
+        department: fields.department.trim(),
+        officeLocation: fields.officeLocation.trim(),
+        description: fields.description.trim(),
+      });
+
+      // Read the record back from the backend after saving.
+      const { data } = await apiClient.get<Professor>(`/professors/${selected.id}`);
+      setSelected(data);
+      setFields(fieldsFrom(data));
+      setProfiles((current) => current.map((item) => item.id === data.id ? data : item));
+      setMessage("Profile saved and loaded back from the database.");
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function changePhoto(file: File | null) {
+    if (!selected || saving) return;
+
+    if (file && (!["image/jpeg", "image/png"].includes(file.type)
+        || file.size > 5 * 1024 * 1024)) {
+      setError("Choose a JPG or PNG picture smaller than 5 MB.");
+      setMessage("");
+      return;
+    }
+
+    const id = selected.id;
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      if (file) {
+        const body = new FormData();
+        body.append("file", file);
+        await apiClient.post(`/professors/${id}/profile-picture`, body, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        await apiClient.delete(`/professors/${id}/profile-picture`);
+      }
+
+      const { data } = await apiClient.get<Professor>(`/professors/${id}`);
+      setSelected(data);
+      setProfiles((current) =>
+        current.map((item) => item.id === data.id ? data : item)
+      );
+      setMessage(file ? "Profile photo saved." : "Profile photo removed.");
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputs: { key: keyof ProfileFields; label: string; required?: boolean }[] = [
+    { key: "name", label: "Name", required: true },
+    { key: "department", label: "Department", required: true },
+    { key: "officeLocation", label: "Office location" },
+  ];
 
   return (
-    <div className="h-screen bg-[#1B51A4] flex flex-col overflow-scroll">
-      <div className="relative z-50">
-        <FacultyNavBar />
-      </div>
+    <div className="min-h-screen bg-[#1B51A4]">
+      <FacultyNavBar />
+      <main className="max-w-3xl mx-auto p-6">
+        <h1 className="text-2xl text-white mb-4">Faculty Profile Settings</h1>
+        <section className="bg-white rounded-xl p-6">
+          <label htmlFor="profile-select" className="block font-semibold mb-2">
+            Select faculty profile to edit
+          </label>
+          <select
+            id="profile-select"
+            value={selected ? String(selected.id) : ""}
+            disabled={loading || saving}
+            onChange={(event) => chooseProfile(event.target.value)}
+            className="w-full border rounded p-2 mb-4"
+          >
+            <option value="">{loading ? "Loading profiles..." : "Choose a profile"}</option>
+            {profiles.map((profile) => (
+              <option key={profile.id} value={String(profile.id)}>
+                {profile.name || "Unnamed faculty"} - {profile.email || `ID ${profile.id}`}
+              </option>
+            ))}
+          </select>
 
-      <div className="flex-1 my-10 mx-10 rounded-2xl items-center justify-center overflow-scroll">
-        <div>
-          <p className="text-white/70 text-xl pb-2 uppercase">
-            Account Settings
-          </p>
-          <div className="flex h-auto justify-start p-8 items-start rounded-lg bg-white">
-            <div className="flex flex-col items-start w-full">
-              {options.map((option) => (
-                <div className="w-full flex flex-col items-start " key={option}>
-                  <div
-                    onClick={() => {
-                      if (selectedOption === option) {
-                        setSelectedOption("");
-                      } else {
-                        setSelectedOption(option);
-                      }
-                    }}
-                    className="flex flex-col items-start hover:bg-gray-100 cursor-pointer transition-colors duration-300 pt-5 w-full gap-5"
-                  >
-                    <button className="cursor-pointer">{option}</button>
-                    <div className="w-full border-b-2 border-slate-200"></div>
-                  </div>
+          {error && <p role="alert" className="text-red-700 mb-4">{error}</p>}
+          {message && <p role="status" className="text-green-800 mb-4">{message}</p>}
+          {!loading && !error && profiles.length === 0 && (
+            <p>No faculty profiles have been created yet.</p>
+          )}
 
-                  {selectedOption === option && optionsContent[option]}
-                </div>
+          {selected && (
+            <form onSubmit={save} className="flex flex-col gap-4">
+              <p className="text-sm text-gray-600">
+                Editing: {selected.name || "Unnamed faculty"} (ID {selected.id}).
+                Administrators can edit any profile; faculty can save only their own.
+              </p>
+
+              <label className="flex flex-col gap-1">
+                Email
+                <input
+                  value={selected.email ?? ""}
+                  readOnly
+                  className="border rounded p-2 bg-gray-100"
+                />
+                <span className="text-sm text-gray-600">
+                  Email changes are not available here yet.
+                </span>
+              </label>
+
+              {inputs.map((input) => (
+                <label key={input.key} className="flex flex-col gap-1">
+                  {input.label}
+                  <input
+                    required={input.required}
+                    maxLength={255}
+                    value={fields[input.key]}
+                    disabled={saving}
+                    onChange={(event) => setFields((current) => ({
+                      ...current, [input.key]: event.target.value,
+                    }))}
+                    className="border rounded p-2"
+                  />
+                </label>
               ))}
-            </div>
-          </div>
-        </div>
 
-        <div className="my-5">
-          <p className="text-white/70 text-xl pb-2 uppercase">Exit</p>
-          <div className="flex h-auto justify-start p-8 items-start rounded-lg bg-white">
-            <div className="flex flex-col items-start w-full gap-5">
-              <a href="/FacultyLogin" className="text-red-500 font-semibold">Log Out</a>
-            </div>
-          </div>
-        </div>
-      </div>
+              <label className="flex flex-col gap-1">
+                Description
+                <textarea
+                  maxLength={255}
+                  rows={4}
+                  value={fields.description}
+                  disabled={saving}
+                  onChange={(event) => setFields((current) => ({
+                    ...current, description: event.target.value,
+                  }))}
+                  className="border rounded p-2"
+                />
+              </label>
+
+              <section className="border rounded p-4 flex flex-col gap-3">
+                <h2 className="font-semibold">Profile photo</h2>
+
+                {selected.profilePictureUrl ? (
+                  <img
+                    src={new URL(
+                      selected.profilePictureUrl,
+                      "http://localhost:8080"
+                    ).href}
+                    alt="Faculty profile"
+                    className="w-32 h-32 rounded-full object-cover"
+                  />
+                ) : (
+                  <p>No profile photo saved.</p>
+                )}
+
+                <label className="inline-flex self-start items-center justify-center bg-blue-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer hover:bg-blue-800">
+                  {saving ? "Saving photo..." : "Choose Photo"}
+                  <input
+                    key={selected.id}
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    disabled={saving}
+                    className="sr-only"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      event.target.value = "";
+                      if (file) void changePhoto(file);
+                    }}
+                  />
+                </label>
+
+                <p className="text-sm text-gray-600">
+                  JPG or PNG, up to 5 MB. Selecting a file saves it immediately.
+                </p>
+
+                {selected.profilePictureUrl && (
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => void changePhoto(null)}
+                    className="bg-red-700 text-white rounded px-4 py-2 disabled:opacity-50"
+                  >
+                    Remove photo
+                  </button>
+                )}
+
+                {saving && <p role="status">Saving changes...</p>}
+              </section>
+
+              <button
+                type="submit"
+                disabled={saving || !fields.name.trim() || !fields.department.trim()}
+                className="bg-green-700 text-white rounded px-4 py-2 disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save profile"}
+              </button>
+            </form>
+          )}
+        </section>
+      </main>
     </div>
   );
 };
