@@ -1,3 +1,4 @@
+import FacultySession from "./components/common/FacultySession";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -43,6 +44,7 @@ createRoot(document.getElementById("root")!).render(
         
         
         {/* Professor Routes */}
+        <Route element={<FacultySession />}>
         <Route
           path="discover-students"
           element={<ProfessorDiscoverPage />}
@@ -61,6 +63,7 @@ createRoot(document.getElementById("root")!).render(
           element={<ProfessorApplicantsPage />}
         />
         <Route path="/faculty-settings" element={<ProfessorProfilePage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   </StrictMode>,
