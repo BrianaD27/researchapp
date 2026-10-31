@@ -91,6 +91,12 @@ public class ApplicationService {
     public ApplicationDto updateApplication(UpdateApplicationDto updated, Long id) {
         Application application = applicationRepository.getApplicationById(id);
 
+        OpportunityStatus nextOpportunityStatus = updated.opportunityStatus() != null
+            ? updated.opportunityStatus() : application.getOpportunityStatus();
+        ApplicationStatus nextApplicationStatus = updated.applicationStatus() != null
+            ? updated.applicationStatus() : application.getApplicationStatus();
+        requireAcceptedForCompletion(nextOpportunityStatus, nextApplicationStatus);
+
         Optional.ofNullable(updated.opportunityStatus()).ifPresent(application::setOpportunityStatus);
         Optional.ofNullable(updated.applicationStatus()).ifPresent(application::setApplicationStatus);
 
@@ -100,6 +106,8 @@ public class ApplicationService {
     // Faculty accepts/rejects/resets an applicant's status
     @PreAuthorize("@studentOpportunityAccess.decideApplication(#p0)")
     public ApplicationDto updateApplicationStatus(Long id, ApplicationStatus status) {
+        Application application = applicationRepository.getApplicationById(id);
+        requireAcceptedForCompletion(application.getOpportunityStatus(), status);
         return entityToDto(applicationRepository.updateApplicationStatus(id, status));
     }
 
@@ -117,6 +125,15 @@ public class ApplicationService {
                 return entityToDto(applicationRepository.updateApplication(app.getId(), app));
             })
             .toList();
+    }
+
+    // Completed research must stay tied to an accepted application.
+    private void requireAcceptedForCompletion(OpportunityStatus opportunityStatus, ApplicationStatus applicationStatus) {
+        if (opportunityStatus == OpportunityStatus.COMPLETED && applicationStatus != ApplicationStatus.ACCEPTED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT,
+                "Only accepted applications can be marked completed. Undo completion before changing the decision.");
+        }
     }
 
     private ApplicationDto entityToDto(Application application) {

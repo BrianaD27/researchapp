@@ -18,6 +18,7 @@ interface Application {
   studentId: number;
   studentName: string;
   researchOpportunityId: number;
+  opportunityStatus: "BOOKMARKED" | "APPLIED" | "COMPLETED";
   applicationStatus: "PENDING" | "ACCEPTED" | "REJECTED";
   appliedAt: string | null;
 }
@@ -43,6 +44,10 @@ const statusLabels = {
   ACCEPTED: "Accepted",
   REJECTED: "Not Selected",
 };
+
+function statusLabel(item: Application) {
+  return item.opportunityStatus === "COMPLETED" ? "Completed" : statusLabels[item.applicationStatus];
+}
 
 function failure(caught: unknown) {
   if (isAxiosError(caught)) {
@@ -181,6 +186,31 @@ export default function ProfessorApplicantsPage() {
     }
   }
 
+  async function setCompleted(completed: boolean) {
+    if (!selected || busy || uncertain) return;
+    const id = selected.id;
+    const target = completed ? "COMPLETED" : "APPLIED";
+    setBusy(true);
+    setActionError("");
+    setMessage("");
+    try {
+      await apiClient.put(`/applications/${id}`, { opportunityStatus: target });
+      const { data } = await apiClient.get<Application>(`/applications/${id}`);
+      if (data.opportunityStatus !== target) throw new Error("Completion not confirmed");
+      setApplications((current) => current.map((item) => item.id === id ? data : item));
+      setMessage(completed ? "Marked completed. It now appears on the student's Completed page." : "Completion removed.");
+    } catch (caught) {
+      if (isAxiosError(caught) && caught.response?.status === 409) {
+        setActionError("Only accepted applicants can be marked completed.");
+      } else {
+        setUncertain(true);
+        setActionError(`${failure(caught)} The change has not been confirmed. Refresh the page before trying again.`);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function downloadResume() {
     if (!selected || busy) return;
     const id = selected.id;
@@ -209,6 +239,7 @@ export default function ProfessorApplicantsPage() {
 
   const buttonClass = "rounded-lg px-4 py-2 text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
   const profile = student?.id === selectedStudentId ? student : null;
+  const completed = selected?.opportunityStatus === "COMPLETED";
 
   return (
     <div className="min-h-screen bg-[#1B51A4]">
@@ -263,7 +294,7 @@ export default function ProfessorApplicantsPage() {
                         aria-pressed={selected?.id === item.id}
                         className={`bg-white rounded-xl p-4 text-left border-4 cursor-pointer ${selected?.id === item.id ? "border-orange-500" : "border-transparent"}`}>
                         <h3 className="font-semibold text-lg">{item.studentName}</h3>
-                        <p>{statusLabels[item.applicationStatus]}</p>
+                        <p>{statusLabel(item)}</p>
                         <p className="text-sm text-gray-600">Applied: {item.appliedAt ? new Date(item.appliedAt).toLocaleDateString() : "Not recorded"}</p>
                       </button>
                     ))}
@@ -274,7 +305,7 @@ export default function ProfessorApplicantsPage() {
             {selected && !loadingApplicants && (
               <section className="bg-white rounded-xl p-6">
                 <h2 className="text-2xl font-bold mb-3">{selected.studentName}</h2>
-                <p className="font-semibold mb-4">Status: {statusLabels[selected.applicationStatus]}</p>
+                <p className="font-semibold mb-4">Status: {statusLabel(selected)}</p>
                 {loadingStudent && <p role="status">Loading student profile...</p>}
                 {studentError && <p role="alert" className="text-red-700">{studentError}</p>}
                 {profile && <>
@@ -311,15 +342,22 @@ export default function ProfessorApplicantsPage() {
                 {actionError && <p role="alert" className="text-red-700 mt-4">{actionError}</p>}
                 {message && <p role="status" className="text-green-800 mt-4">{message}</p>}
                 <div className="flex flex-wrap gap-3 mt-5">
-                  <button type="button" disabled={busy || uncertain || selected.applicationStatus === "ACCEPTED"}
+                  <button type="button" disabled={busy || uncertain || completed || selected.applicationStatus === "ACCEPTED"}
                     onClick={() => void decide("ACCEPTED")}
                     className={`${buttonClass} bg-green-700 text-white`}>Accept</button>
-                  <button type="button" disabled={busy || uncertain || selected.applicationStatus === "REJECTED"}
+                  <button type="button" disabled={busy || uncertain || completed || selected.applicationStatus === "REJECTED"}
                     onClick={() => void decide("REJECTED")}
                     className={`${buttonClass} bg-red-700 text-white`}>Decline</button>
-                  <button type="button" disabled={busy || uncertain || selected.applicationStatus === "PENDING"}
+                  <button type="button" disabled={busy || uncertain || completed || selected.applicationStatus === "PENDING"}
                     onClick={() => void decide("PENDING")}
                     className={`${buttonClass} bg-gray-700 text-white`}>Reset to Pending</button>
+                  {selected.applicationStatus === "ACCEPTED" && (
+                    <button type="button" disabled={busy || uncertain}
+                      onClick={() => void setCompleted(!completed)}
+                      className={`${buttonClass} ${completed ? "bg-gray-200 text-gray-900 border" : "bg-emerald-700 text-white"}`}>
+                      {completed ? "Undo Completed" : "Mark Completed"}
+                    </button>
+                  )}
                   {profile?.resumeUrl ? (
                     <button type="button" disabled={busy}
                       onClick={() => void downloadResume()}
