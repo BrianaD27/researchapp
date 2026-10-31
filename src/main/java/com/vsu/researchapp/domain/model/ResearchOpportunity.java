@@ -45,6 +45,7 @@ public class ResearchOpportunity {
     private String availability;
     private Float minimumGpa;
     private LocalDate applicationDeadline;
+    private LocalDate applicationOpenDate;
     private LocalDate startDate;
     private LocalDate endDate;
 

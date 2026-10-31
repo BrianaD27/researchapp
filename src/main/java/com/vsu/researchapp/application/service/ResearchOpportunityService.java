@@ -82,6 +82,18 @@ public class ResearchOpportunityService {
             throw new IllegalArgumentException("The start date must be after today's date: " + LocalDate.now());
         }
 
+        if (dto.applicationOpenDate() != null
+                && dto.applicationOpenDate().isAfter(dto.applicationDeadline())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST,
+                "Applications must open on or before they close");
+        }
+        if (dto.applicationDeadline().isAfter(dto.startDate())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST,
+                "Applications must close on or before the project starts");
+        }
+
         ResearchOpportunity newOpportunity = new ResearchOpportunity();
         newOpportunity.setTitle(dto.title());
         newOpportunity.setDescription(dto.description());
@@ -92,6 +104,7 @@ public class ResearchOpportunityService {
         newOpportunity.setAvailability(dto.availability());
         newOpportunity.setMinimumGpa(dto.minimumGpa());
         newOpportunity.setApplicationDeadline(dto.applicationDeadline());
+        newOpportunity.setApplicationOpenDate(dto.applicationOpenDate());
         newOpportunity.setStartDate(dto.startDate());
         newOpportunity.setEndDate(dto.endDate());
         newOpportunity.setResearchMediaUrls(dto.researchMediaUrls());
@@ -110,6 +123,21 @@ public class ResearchOpportunityService {
             throw new IllegalArgumentException("The start date must be before the end date");
         }
 
+        LocalDate opens = updated.applicationOpenDate() != null
+            ? updated.applicationOpenDate() : opportunity.getApplicationOpenDate();
+        LocalDate closes = updated.applicationDeadline() != null
+            ? updated.applicationDeadline() : opportunity.getApplicationDeadline();
+        if (opens != null && closes != null && opens.isAfter(closes)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST,
+                "Applications must open on or before they close");
+        }
+        if (closes != null && newStart != null && closes.isAfter(newStart)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST,
+                "Applications must close on or before the project starts");
+        }
+
         Optional.ofNullable(updated.title()).ifPresent(opportunity::setTitle);
         Optional.ofNullable(updated.description()).ifPresent(opportunity::setDescription);
         Optional.ofNullable(updated.department()).ifPresent(opportunity::setDepartment);
@@ -119,6 +147,7 @@ public class ResearchOpportunityService {
         Optional.ofNullable(updated.availability()).ifPresent(opportunity::setAvailability);
         Optional.ofNullable(updated.minimumGpa()).ifPresent(opportunity::setMinimumGpa);
         Optional.ofNullable(updated.applicationDeadline()).ifPresent(opportunity::setApplicationDeadline);
+        Optional.ofNullable(updated.applicationOpenDate()).ifPresent(opportunity::setApplicationOpenDate);
         Optional.ofNullable(updated.startDate()).ifPresent(opportunity::setStartDate);
         Optional.ofNullable(updated.endDate()).ifPresent(opportunity::setEndDate);
         Optional.ofNullable(updated.researchMediaUrls()).ifPresent(opportunity::setResearchMediaUrls);
@@ -143,6 +172,7 @@ public class ResearchOpportunityService {
             opportunity.getAvailability(),
             opportunity.getMinimumGpa(),
             opportunity.getApplicationDeadline(),
+            opportunity.getApplicationOpenDate(),
             opportunity.getStartDate(),
             opportunity.getEndDate(),
             opportunity.getResearchMediaUrls(),

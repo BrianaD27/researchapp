@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import AuthNavBar from "../../components/common/AuthNavBar";
+import StudentNavBar from "../../components/common/StudentNavBar";
+import ProfilePhotoPreview from "../../components/common/ProfilePhotoPreview";
 import apiClient from "../../api/client";
 
 interface Student {
@@ -217,7 +218,7 @@ export default function StudentInfoPage() {
 
   return (
     <div className="min-h-screen bg-[#1B51A4]">
-      <AuthNavBar hideSignUp />
+      <StudentNavBar />
       <main className="max-w-2xl mx-auto p-6">
         <section className="bg-white rounded-xl p-6">
           <h1 className="text-2xl font-bold mb-4">My Student Profile</h1>
@@ -233,11 +234,7 @@ export default function StudentInfoPage() {
                 ) : (
                   <>
                     {photo ? (
-                      <img
-                        src={new URL(photo, "http://localhost:8080").href}
-                        alt="Your profile"
-                        className="w-32 h-32 rounded-full object-cover"
-                      />
+                      <ProfilePhotoPreview src={photo} name={fields.name || "Student"} />
                     ) : <p>No profile photo uploaded.</p>}
 
                     <div className="flex flex-wrap gap-3">

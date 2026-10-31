@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
+import ProfilePhotoPreview from "../../components/common/ProfilePhotoPreview";
 import apiClient from "../../api/client";
 
 interface Opportunity {
@@ -277,9 +278,10 @@ export default function ProfessorApplicantsPage() {
                 {loadingStudent && <p role="status">Loading student profile...</p>}
                 {studentError && <p role="alert" className="text-red-700">{studentError}</p>}
                 {profile && <>
-                  {profile.profilePictureUrl && <img
-                    src={new URL(profile.profilePictureUrl, "http://localhost:8080").href}
-                    alt="Applicant profile" className="w-28 h-28 rounded-full object-cover mb-4" />}
+                  {profile.profilePictureUrl && (
+                    <ProfilePhotoPreview key={profile.id}
+                      src={profile.profilePictureUrl} name={profile.name} />
+                  )}
                   <p className="mb-3">{profile.email}</p>
                   <dl className="grid grid-cols-2 gap-3">
                     {[
@@ -297,10 +299,14 @@ export default function ProfessorApplicantsPage() {
                   </dl>
                   <h3 className="font-semibold mt-4">Skills</h3>
                   <p>{profile.skills?.join(", ") || "Not specified"}</p>
-                  <h3 className="font-semibold mt-4">About the applicant</h3>
-                  <p className="whitespace-pre-wrap">{profile.description || "Not provided"}</p>
-                  <h3 className="font-semibold mt-4">Previous experience</h3>
-                  <p className="whitespace-pre-wrap">{profile.previousExperience || "Not provided"}</p>
+                  {profile.description?.trim() && <>
+                    <h3 className="font-semibold mt-4">About the applicant</h3>
+                    <p className="whitespace-pre-wrap">{profile.description}</p>
+                  </>}
+                  {profile.previousExperience?.trim() && <>
+                    <h3 className="font-semibold mt-4">Previous experience</h3>
+                    <p className="whitespace-pre-wrap">{profile.previousExperience}</p>
+                  </>}
                 </>}
                 {actionError && <p role="alert" className="text-red-700 mt-4">{actionError}</p>}
                 {message && <p role="status" className="text-green-800 mt-4">{message}</p>}
@@ -314,9 +320,13 @@ export default function ProfessorApplicantsPage() {
                   <button type="button" disabled={busy || uncertain || selected.applicationStatus === "PENDING"}
                     onClick={() => void decide("PENDING")}
                     className={`${buttonClass} bg-gray-700 text-white`}>Reset to Pending</button>
-                  <button type="button" disabled={busy}
-                    onClick={() => void downloadResume()}
-                    className={`${buttonClass} bg-blue-700 text-white`}>Download Resume</button>
+                  {profile?.resumeUrl ? (
+                    <button type="button" disabled={busy}
+                      onClick={() => void downloadResume()}
+                      className={`${buttonClass} bg-blue-700 text-white`}>Download Resume</button>
+                  ) : profile ? (
+                    <p className="text-sm text-gray-600 self-center">No resume uploaded.</p>
+                  ) : null}
                 </div>
                 {busy && <p role="status" className="mt-3">Processing...</p>}
               </section>

@@ -14,6 +14,7 @@ interface Opportunity {
   availability: string | null;
   minimumGpa: number | null;
   applicationDeadline: string | null;
+  applicationOpenDate: string | null;
   startDate: string | null;
   endDate: string | null;
   professorName: string | null;
@@ -255,9 +256,10 @@ export default function StudentDiscoverPage() {
                 ["Status", selected.availability || "Not specified"],
                 ["Minimum GPA", selected.minimumGpa == null ? "Not specified" : String(selected.minimumGpa)],
                 ["Classification", listLabel(selected.requiredClassifications, "Not specified")],
-                ["Application deadline", dateLabel(selected.applicationDeadline)],
-                ["Start date", dateLabel(selected.startDate)],
-                ["End date", dateLabel(selected.endDate)],
+                ["Applications Open", selected.applicationOpenDate ? dateLabel(selected.applicationOpenDate) : "Already open"],
+                ["Applications Close", dateLabel(selected.applicationDeadline)],
+                ["Project Starts", dateLabel(selected.startDate)],
+                ["Project Ends", dateLabel(selected.endDate)],
               ].map(([label, value]) => (
                 <div key={label} className="bg-gray-100 rounded-lg p-3">
                   <dt className="text-gray-600">{label}</dt>
@@ -284,12 +286,13 @@ export default function StudentDiscoverPage() {
                   type="button"
                   disabled={!actionsReady || actionBusy || appliedIds.includes(selected.id)
                     || selected.availability?.toLowerCase() !== "open"
+                    || Boolean(selected.applicationOpenDate && selected.applicationOpenDate > new Date().toLocaleDateString("en-CA"))
                     || Boolean(selected.applicationDeadline
                       && selected.applicationDeadline < new Date().toLocaleDateString("en-CA"))}
                   onClick={() => void changeOpportunity("apply", selected.id)}
                   className="bg-green-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {appliedIds.includes(selected.id) ? "Applied" : "Apply"}
+                  {appliedIds.includes(selected.id) ? "Applied" : selected.availability?.toLowerCase() !== "open" || Boolean(selected.applicationDeadline && selected.applicationDeadline < new Date().toLocaleDateString("en-CA")) ? "Applications Closed" : selected.applicationOpenDate && selected.applicationOpenDate > new Date().toLocaleDateString("en-CA") ? `Opens ${dateLabel(selected.applicationOpenDate)}` : "Apply"}
                 </button>
                 <button
                   type="button"

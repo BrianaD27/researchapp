@@ -15,7 +15,21 @@ apiClient.interceptors.request.use((config) => {
 });
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const replacement = response.headers["x-new-token"];
+    const current = sessionStorage.getItem("researchapp.accessToken");
+    const sent = response.config.headers.Authorization;
+
+    // Accept rotation only for the session that made this request.
+    // Late responses must not restore a logged-out or different session.
+    if (typeof replacement === "string"
+        && replacement.split(".").length === 3
+        && current
+        && sent === `Bearer ${current}`) {
+      sessionStorage.setItem("researchapp.accessToken", replacement);
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       sessionStorage.removeItem("researchapp.accessToken");

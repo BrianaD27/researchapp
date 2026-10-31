@@ -15,6 +15,7 @@ public record ResearchOpportunityDto(
     String availability,
     Float minimumGpa,
     LocalDate applicationDeadline,
+    LocalDate applicationOpenDate,
     LocalDate startDate,
     LocalDate endDate,
     List<String> researchMediaUrls,

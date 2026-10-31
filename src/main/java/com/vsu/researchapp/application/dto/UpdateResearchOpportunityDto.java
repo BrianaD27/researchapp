@@ -17,6 +17,7 @@ public record UpdateResearchOpportunityDto(
 
     @Schema(example = "2025-12-01", type = "string", format = "date")
     LocalDate applicationDeadline,
+    LocalDate applicationOpenDate,
 
     @Schema(example = "2025-12-25", type = "string", format = "date")
     LocalDate startDate,

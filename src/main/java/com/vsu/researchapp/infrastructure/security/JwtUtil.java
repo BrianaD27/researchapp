@@ -19,8 +19,8 @@ public class JwtUtil {
     private final SecretKey secretKey;
     private final long expirationMs;
 
-    // Short lived access tokens - 15 minutes
-    private static final long ACCESS_TOKEN_MS = 15 * 60 * 1000;
+    // Access tokens last 30 minutes
+    private static final long ACCESS_TOKEN_MS = 30 * 60 * 1000;
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
@@ -29,7 +29,7 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    // Generate short-lived access token (15 min)
+    // Generate access token (30 min)
     public String generateToken(String username, String role) {
         return buildToken(username, role, ACCESS_TOKEN_MS);
     }

@@ -90,6 +90,20 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process file. Please try again later.");
     }
 
+    // Preserve intentional HTTP statuses such as a missing resume (404).
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(
+            org.springframework.web.server.ResponseStatusException ex) {
+        String message = ex.getReason() == null ? "Request failed" : ex.getReason();
+        return ResponseEntity.status(ex.getStatusCode())
+            .headers(ex.getHeaders())
+            .body(Map.of(
+                "error", message,
+                "status", ex.getStatusCode().value(),
+                "timestamp", LocalDateTime.now().toString()
+            ));
+    }
+
     // Business logic errors
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(

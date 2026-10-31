@@ -67,6 +67,16 @@ public class ApplicationService {
 
         Student student = studentRepository.getStudentById(dto.studentId());
         ResearchOpportunity opportunity = opportunityRepository.getResearchOpportunity(dto.researchOpportunityId());
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if (!"Open".equalsIgnoreCase(opportunity.getAvailability())
+                || (opportunity.getApplicationOpenDate() != null
+                    && today.isBefore(opportunity.getApplicationOpenDate()))
+                || (opportunity.getApplicationDeadline() != null
+                    && today.isAfter(opportunity.getApplicationDeadline()))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT,
+                "This opportunity is not currently accepting applications");
+        }
 
         Application application = new Application();
         application.setStudent(student);

@@ -29,6 +29,6 @@ public interface ResearchOpportunityJpaRepository extends JpaRepository<Research
         "LOWER(o.professor.department) LIKE LOWER(CONCAT('%', :term, '%'))")
     List<ResearchOpportunity> searchByTerm(@Param("term") String term);
 
-    @Query("SELECT o FROM ResearchOpportunity o WHERE o.applicationDeadline >= CURRENT_DATE ORDER BY o.applicationDeadline")
+    @Query("SELECT o FROM ResearchOpportunity o WHERE LOWER(o.availability) = 'open' AND (o.applicationOpenDate IS NULL OR o.applicationOpenDate <= CURRENT_DATE) AND o.applicationDeadline >= CURRENT_DATE ORDER BY o.applicationDeadline")
     List<ResearchOpportunity> findOpenForApplications();
 }

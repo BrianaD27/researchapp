@@ -15,6 +15,7 @@ interface Opportunity {
   availability: string | null;
   minimumGpa: number | null;
   applicationDeadline: string | null;
+  applicationOpenDate: string | null;
   startDate: string | null;
   endDate: string | null;
   professorId: number | null;
@@ -32,6 +33,7 @@ function fieldsFrom(item: Opportunity) {
     availability: item.availability ?? "",
     minimumGpa: item.minimumGpa == null ? "" : String(item.minimumGpa),
     applicationDeadline: item.applicationDeadline ?? "",
+    applicationOpenDate: item.applicationOpenDate ?? "",
     startDate: item.startDate ?? "",
     endDate: item.endDate ?? "",
   };
@@ -89,6 +91,16 @@ function Editor({ item, onSaved, onDirty }: {
       setError("The end date must be on or after the start date.");
       return;
     }
+    if (fields.applicationOpenDate && fields.applicationDeadline
+        && fields.applicationOpenDate > fields.applicationDeadline) {
+      setError("Applications must open on or before they close.");
+      return;
+    }
+    if (fields.applicationDeadline && fields.startDate
+        && fields.applicationDeadline > fields.startDate) {
+      setError("Applications must close on or before the project starts.");
+      return;
+    }
     setSaving(true);
     try {
       await apiClient.put(`/research-opportunities/${item.id}`, {
@@ -101,6 +113,7 @@ function Editor({ item, onSaved, onDirty }: {
         requiredSkills: splitList(fields.requiredSkills),
         ...(fields.minimumGpa !== "" ? { minimumGpa: Number(fields.minimumGpa) } : {}),
         ...(fields.applicationDeadline ? { applicationDeadline: fields.applicationDeadline } : {}),
+        ...(fields.applicationOpenDate ? { applicationOpenDate: fields.applicationOpenDate } : {}),
         ...(fields.startDate ? { startDate: fields.startDate } : {}),
         ...(fields.endDate ? { endDate: fields.endDate } : {}),
       });
@@ -163,9 +176,10 @@ function Editor({ item, onSaved, onDirty }: {
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {([
-              ["applicationDeadline", "Application deadline"],
-              ["startDate", "Start date"],
-              ["endDate", "End date"],
+              ["applicationOpenDate", "Applications Open"],
+              ["applicationDeadline", "Applications Close"],
+              ["startDate", "Project Starts"],
+              ["endDate", "Project Ends"],
             ] as const).map(([key, label]) => (
               <label key={key} className="flex flex-col gap-1">
                 {label}

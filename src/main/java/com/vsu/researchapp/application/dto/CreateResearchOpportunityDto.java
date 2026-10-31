@@ -33,6 +33,7 @@ public record CreateResearchOpportunityDto(
     @NotNull(message = "An application deadline is required")
     @Schema(example = "2025-12-01", type = "string", format = "date")
     LocalDate applicationDeadline,
+    LocalDate applicationOpenDate,
 
     @NotNull(message = "A start date is required")
     @Schema(example = "2025-12-25", type = "string", format = "date")

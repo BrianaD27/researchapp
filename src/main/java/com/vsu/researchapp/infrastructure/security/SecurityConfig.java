@@ -62,6 +62,7 @@ public class SecurityConfig {
             "X-Requested-With"
         ));
         config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("X-New-Token", "X-Token-Rotated"));
         config.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
