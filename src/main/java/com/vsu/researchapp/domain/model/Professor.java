@@ -39,6 +39,17 @@ public class Professor {
     private LocalDateTime updatedAt;
     private String profilePictureUrl;
 
+    // Interests and achievements outside the lab, shown on the profile page.
+    @jakarta.persistence.Column(length = 1000)
+    private String outsideInterests;
+
+    // Degrees, shown so students can see where faculty studied.
+    @jakarta.persistence.ElementCollection
+    @jakarta.persistence.CollectionTable(name = "professor_education",
+        joinColumns = @jakarta.persistence.JoinColumn(name = "professor_id"))
+    @jakarta.persistence.OrderColumn(name = "position")
+    private List<EducationEntry> education = new java.util.ArrayList<>();
+
     // Links this profile back to the login account that owns it - same reasoning
     // as Student.userAccountId. Lets the backend verify a PROFESSOR-role user is
     // only editing their own profile, not someone else's by guessing an id.

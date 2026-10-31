@@ -39,6 +39,10 @@ public class Student {
     private String classification;
     private String description;
     private String previousExperience;
+
+    // Interests and achievements outside school, shown on the profile page.
+    @Column(length = 1000)
+    private String outsideInterests;
     private Float gpa;
     private Integer availableHoursPerWeek;
     private String resumeUrl;

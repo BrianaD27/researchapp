@@ -9,6 +9,8 @@ public record UpdateStudentDto(
     String classification,
     String description,
     String previousExperience,
+    @jakarta.validation.constraints.Size(max = 1000, message = "Outside interests must be under 1000 characters")
+    String outsideInterests,
     Float gpa,
     Integer availableHoursPerWeek,
     String resumeUrl,

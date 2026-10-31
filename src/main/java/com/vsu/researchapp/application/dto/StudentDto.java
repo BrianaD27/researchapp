@@ -12,6 +12,7 @@ public record StudentDto(
     String classification,
     String description,
     String previousExperience,
+    String outsideInterests,
     Float gpa,
     Integer availableHoursPerWeek,
     String resumeUrl,

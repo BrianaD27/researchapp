@@ -84,6 +84,13 @@ public class ProfessorService {
         Optional.ofNullable(updated.officeLocation()).ifPresent(professor::setOfficeLocation);
         Optional.ofNullable(updated.description()).ifPresent(professor::setDescription);
         Optional.ofNullable(updated.profilePictureUrl()).ifPresent(professor::setProfilePictureUrl);
+        Optional.ofNullable(updated.outsideInterests()).ifPresent(professor::setOutsideInterests);
+        Optional.ofNullable(updated.education()).ifPresent(list -> {
+            professor.getEducation().clear();
+            list.forEach(entry -> professor.getEducation().add(new com.vsu.researchapp.domain.model.EducationEntry(
+                entry.degree().trim(), entry.school().trim(),
+                entry.graduationYear() == null ? null : entry.graduationYear().trim())));
+        });
 
         return entityToDto(professorRepository.updateProfessor(professor, id));
     }
@@ -117,6 +124,12 @@ public class ProfessorService {
             professor.getOfficeLocation(),
             professor.getDescription(),
             professor.getProfilePictureUrl(),
+            professor.getOutsideInterests(),
+            professor.getEducation() == null ? java.util.List.of()
+                : professor.getEducation().stream()
+                    .map(e -> new com.vsu.researchapp.application.dto.EducationDto(
+                        e.getDegree(), e.getSchool(), e.getGraduationYear()))
+                    .toList(),
             professor.getCreatedAt(),
             professor.getUpdatedAt()
         );

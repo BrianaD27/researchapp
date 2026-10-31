@@ -9,6 +9,8 @@ public record ProfessorDto(
     String officeLocation,
     String description,
     String profilePictureUrl,
+    String outsideInterests,
+    java.util.List<EducationDto> education,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

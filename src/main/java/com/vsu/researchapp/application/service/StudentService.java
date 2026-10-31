@@ -95,6 +95,7 @@ public class StudentService {
         Optional.ofNullable(updated.classification()).ifPresent(existingStudent::setClassification);
         Optional.ofNullable(updated.description()).ifPresent(existingStudent::setDescription);
         Optional.ofNullable(updated.previousExperience()).ifPresent(existingStudent::setPreviousExperience);
+        Optional.ofNullable(updated.outsideInterests()).ifPresent(existingStudent::setOutsideInterests);
         Optional.ofNullable(updated.gpa()).ifPresent(existingStudent::setGpa);
         Optional.ofNullable(updated.availableHoursPerWeek()).ifPresent(existingStudent::setAvailableHoursPerWeek);
         Optional.ofNullable(updated.resumeUrl()).ifPresent(existingStudent::setResumeUrl);
@@ -124,7 +125,19 @@ public class StudentService {
         }
     }
 
+    // GPA and the resume link are visible to the student who owns the profile,
+    // faculty, and admins - not to other students browsing profiles.
+    private boolean canSeePrivateFields(Student student) {
+        UserAccount viewer = currentUserService.getCurrentUserAccount();
+        if (currentUserService.isAdmin(viewer) || "PROFESSOR".equalsIgnoreCase(viewer.getRole())) {
+            return true;
+        }
+        return student.getUserAccountId() != null
+            && student.getUserAccountId().equals(viewer.getId());
+    }
+
     private StudentDto entityToDto(Student student) {
+        boolean showPrivate = canSeePrivateFields(student);
         return new StudentDto(
             student.getId(),
             student.getName(),
@@ -134,9 +147,10 @@ public class StudentService {
             student.getClassification(),
             student.getDescription(),
             student.getPreviousExperience(),
-            student.getGpa(),
+            student.getOutsideInterests(),
+            showPrivate ? student.getGpa() : null,
             student.getAvailableHoursPerWeek(),
-            student.getResumeUrl(),
+            showPrivate ? student.getResumeUrl() : null,
             student.getProfilePictureUrl(),
             student.getSkills(),
             student.getCreatedAt(),
