@@ -299,36 +299,75 @@ public class UserAccountService {
             .findTop10ByUsernameOrderByLoginTimeDesc(username);
     }
 
-    public String generatePasswordResetToken(String username) {
-        UserAccount user = userAccountRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+    // Accepts a username or the account's email. Unknown accounts return silently
+    // so the caller always gets the same response and cannot tell which accounts
+    // exist.
+    public void generatePasswordResetToken(String usernameOrEmail) {
+        String identifier = usernameOrEmail == null ? "" : usernameOrEmail.trim();
+        Optional<UserAccount> found = userAccountRepository.findByUsername(identifier);
+        if (found.isEmpty() && identifier.contains("@")) {
+            List<UserAccount> matches = userAccountRepository.findAllByEmailIgnoreCase(identifier);
+            if (matches.size() == 1) {
+                found = Optional.of(matches.get(0));
+            }
+        }
+        if (found.isEmpty()) {
+            logger.info("[RESET] Password reset requested for an unknown account");
+            return;
+        }
+
+        UserAccount user = found.get();
+        String username = user.getUsername();
+
+        // At most one reset email per account per minute.
+        Optional<PasswordResetToken> recent =
+            passwordResetTokenRepository.findFirstByUsernameOrderByIdDesc(username);
+        if (recent.isPresent() && !recent.get().isUsed()
+                && recent.get().getExpiresAt() != null
+                && recent.get().getExpiresAt().isAfter(LocalDateTime.now().plusMinutes(14))) {
+            logger.info("[RESET] Ignoring repeat reset request within one minute");
+            return;
+        }
 
         passwordResetTokenRepository.deleteByUsername(username);
 
         String token = UUID.randomUUID().toString() +
             UUID.randomUUID().toString();
 
+        // Only a SHA-256 hash of the token is stored; the raw token exists only in
+        // the emailed link.
         PasswordResetToken resetToken = new PasswordResetToken();
-        resetToken.setToken(token);
+        resetToken.setToken(hashResetToken(token));
         resetToken.setUsername(username);
         passwordResetTokenRepository.save(resetToken);
 
-        // Send reset email
-        try {
-            emailService.sendPasswordReset(user.getEmail(), token);
-        } catch (Exception e) {
-            logger.warn("[EMAIL] Could not send password reset email: {}",
-                e.getMessage());
-        }
+        // Sent in the background so known and unknown accounts respond in similar time.
+        String email = user.getEmail();
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                emailService.sendPasswordReset(email, token);
+            } catch (Exception e) {
+                logger.warn("[EMAIL] Could not send password reset email: {}",
+                    e.getMessage());
+            }
+        });
+    }
 
-        return token;
+    private static String hashResetToken(String token) {
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                .digest(token.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(digest);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is not available", e);
+        }
     }
 
     public void resetPassword(String token, String newPassword) {
         validatePasswordStrength(newPassword);
 
         PasswordResetToken resetToken = passwordResetTokenRepository
-            .findByToken(token)
+            .findByToken(hashResetToken(token == null ? "" : token.trim()))
             .orElseThrow(() -> new RuntimeException("Invalid reset token"));
 
         if (resetToken.isUsed()) {
@@ -352,10 +391,16 @@ public class UserAccountService {
         String newHash = passwordEncoder.encode(newPassword);
         user.setPasswordHash(newHash);
         user.getPasswordHistory().add(newHash);
+        // Proving control of the account's email also clears a lockout.
+        user.setFailedAttempts(0);
+        user.setAccountLocked(false);
         userAccountRepository.save(user);
 
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
+
+        // Sign the account out of every device that holds a refresh token.
+        refreshTokenRepository.deleteByUsername(user.getUsername());
     }
 
     public UserAccount assignRole(String username, String role) {

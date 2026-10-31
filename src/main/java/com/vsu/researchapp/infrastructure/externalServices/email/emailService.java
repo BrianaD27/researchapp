@@ -2,6 +2,7 @@ package com.vsu.researchapp.infrastructure.externalServices.email;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -13,9 +14,12 @@ public class emailService {
         LoggerFactory.getLogger(emailService.class);
 
     private final JavaMailSender mailSender;
+    private final String frontendUrl;
 
-    public emailService(JavaMailSender mailSender) {
+    public emailService(JavaMailSender mailSender,
+            @Value("${app.frontend-url:http://localhost:3000}") String frontendUrl) {
         this.mailSender = mailSender;
+        this.frontendUrl = frontendUrl.replaceAll("/+$", "");
     }
 
     public void send2FACode(String toEmail, String code) {
@@ -30,9 +34,10 @@ public class emailService {
     public void sendPasswordReset(String toEmail, String token) {
         sendEmail(toEmail,
             "VSU Research App - Password Reset",
-            "Use this token to reset your password: " + token + "\n\n" +
-            "This token expires in 15 minutes.\n\n" +
-            "If you did not request this, ignore this email."
+            "Use this link to reset your password:\n\n" +
+            frontendUrl + "/reset-password?token=" + token + "\n\n" +
+            "The link expires in 15 minutes and works once.\n\n" +
+            "If you did not request this, you can ignore this email."
         );
     }
 

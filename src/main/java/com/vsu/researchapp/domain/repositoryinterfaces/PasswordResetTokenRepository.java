@@ -12,6 +12,8 @@ public interface PasswordResetTokenRepository
 
     Optional<PasswordResetToken> findByToken(String token);
 
+    Optional<PasswordResetToken> findFirstByUsernameOrderByIdDesc(String username);
+
     @Modifying
     @Transactional
     void deleteByUsername(String username);

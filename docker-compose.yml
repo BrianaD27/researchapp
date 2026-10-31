@@ -22,5 +22,15 @@ services:
       - "6379:6379"
     restart: unless-stopped
 
+  # Local-only email inbox for development. The app sends to port 1025;
+  # read the messages at http://localhost:8025. Nothing reaches real inboxes.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: vsu-research-mailpit
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
