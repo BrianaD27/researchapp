@@ -182,7 +182,7 @@ export default function StudentAccountPage({ register = false }: { register?: bo
               {register && (
                 <>
                   <p className="text-sm text-gray-600">
-                    Use at least 8 characters with an uppercase letter, a lowercase letter, a number, and a special character.
+                    Use 8 to 72 characters with an uppercase letter, a lowercase letter, a number, and a symbol or space.
                   </p>
                   <label className="flex flex-col gap-1">
                     Confirm password
@@ -220,6 +220,12 @@ export default function StudentAccountPage({ register = false }: { register?: bo
                 >
                   Back to login
                 </button>
+              )}
+
+              {!register && !needsCode && (
+                <Link className="text-blue-700 underline" to="/forgot-password">
+                  Forgot password?
+                </Link>
               )}
 
               <Link

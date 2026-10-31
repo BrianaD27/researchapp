@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
 import apiClient from "../../api/client";
 import background from "../../assets/studentsBg.png";
@@ -153,6 +153,11 @@ const FacultyLogin = () => {
             >
               {busy ? "Checking..." : needsCode ? "Verify code" : "Log In"}
             </button>
+            {!needsCode && (
+              <Link to="/forgot-password" className="text-blue-700 underline text-center">
+                Forgot password?
+              </Link>
+            )}
           </form>
         </section>
       </main>

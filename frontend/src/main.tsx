@@ -20,6 +20,8 @@ import ProfessorViewAllPage from "./pages/professors/ProfessorViewAllPage.tsx";
 import ProfessorProfilePage from "./pages/professors/ProfessorProfilePage.tsx";
 import FacultyInfoPage from "./pages/auth/FacultyInfoPage.tsx";
 import StudentInfoPage from "./pages/auth/StudentInfoPage.tsx";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.tsx";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -32,6 +34,8 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/StudentLogin" element={<StudentLogin />} />
         <Route path="/StudentSignUp" element={<StudentSignUp />} />
         <Route path="/faculty-info" element={<FacultyInfoPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
 
         {/* Student Routes */}
