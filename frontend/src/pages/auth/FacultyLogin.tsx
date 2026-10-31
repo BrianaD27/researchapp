@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
 import apiClient from "../../api/client";
+import { authErrorMessage } from "../../api/authErrors";
 import background from "../../assets/studentsBg.png";
 import logo from "../../assets/vsuCircleLogo.png";
 
@@ -62,15 +63,7 @@ const FacultyLogin = () => {
       navigate("/discover-students", { replace: true });
     } catch (caught) {
       if (isAxiosError(caught)) {
-        if (!caught.response) {
-          setError("Cannot reach the backend. Check that Java is running on port 8080.");
-        } else {
-          setError(
-            needsCode
-              ? "Verification failed. Check the code or start again."
-              : `Login failed (HTTP ${caught.response.status}). Check your username and password.`
-          );
-        }
+        setError(authErrorMessage(caught, needsCode ? "verify" : "login"));
       } else {
         setError(
           caught instanceof Error ? caught.message : "Login failed. Please try again."

@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
 import apiClient from "../../api/client";
+import { authErrorMessage } from "../../api/authErrors";
 import studentsBg from "../../assets/studentsBg.png";
 
 export default function StudentAccountPage({ register = false }: { register?: boolean }) {
@@ -76,18 +77,7 @@ export default function StudentAccountPage({ register = false }: { register?: bo
       navigate("/student-info", { replace: true });
     } catch (caught) {
       if (isAxiosError(caught)) {
-        const status = caught.response?.status;
-        if (!caught.response) {
-          setError("Cannot reach the backend. Check that Java is running.");
-        } else if (status === 429) {
-          setError("Too many attempts. Please wait before trying again.");
-        } else if (register) {
-          setError(`Registration failed (HTTP ${status}). Check the school email, password requirements, and whether the username or email is already registered.`);
-        } else if (needsCode) {
-          setError(`Verification failed (HTTP ${status}). Check the code or return to login to request another.`);
-        } else {
-          setError(`Login failed (HTTP ${status}). Check your username and password. Your account may also be locked.`);
-        }
+        setError(authErrorMessage(caught, register ? "register" : needsCode ? "verify" : "login"));
       } else {
         setError("The request failed. Please try again.");
       }
