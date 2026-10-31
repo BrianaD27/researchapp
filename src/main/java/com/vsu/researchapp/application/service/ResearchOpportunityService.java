@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.vsu.researchapp.domain.model.UserAccount;
+import com.vsu.researchapp.infrastructure.security.CurrentUserService;
 
 import com.vsu.researchapp.application.dto.CreateResearchOpportunityDto;
 import com.vsu.researchapp.application.dto.ResearchOpportunityDto;
@@ -20,10 +24,12 @@ public class ResearchOpportunityService {
 
     private final ResearchOpportunityRepositoryInterface repo;
     private final ProfessorRepositoryInterface professorRepo;
+    private final CurrentUserService currentUserService;
 
-    public ResearchOpportunityService(ResearchOpportunityRepositoryInterface repo, ProfessorRepositoryInterface professorRepo) {
+    public ResearchOpportunityService(ResearchOpportunityRepositoryInterface repo, ProfessorRepositoryInterface professorRepo, CurrentUserService currentUserService) {
         this.repo = repo;
         this.professorRepo = professorRepo;
+        this.currentUserService = currentUserService;
     }
 
     public List<ResearchOpportunityDto> getAllResearchOpportunities() {
@@ -58,8 +64,16 @@ public class ResearchOpportunityService {
         return repo.searchOpportunitiesByCriteria(criteria).stream().map(this::entityToDto).toList();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResearchOpportunityDto createResearchOpportunity(CreateResearchOpportunityDto dto, Long professorId) {
         Professor professor = professorRepo.getProfessorById(professorId);
+        UserAccount account = currentUserService.getCurrentUserAccount();
+        if (!currentUserService.isAdmin(account)
+                && (professor.getUserAccountId() == null
+                    || !professor.getUserAccountId().equals(account.getId()))) {
+            throw new AccessDeniedException(
+                "You can only create opportunities for your own faculty profile");
+        }
 
         if (dto.startDate().isAfter(dto.endDate())) {
             throw new IllegalArgumentException("The start date must be before the end date");
@@ -86,6 +100,7 @@ public class ResearchOpportunityService {
         return entityToDto(repo.createResearchOpportunity(newOpportunity));
     }
 
+    @PreAuthorize("@studentOpportunityAccess.opportunity(#p1)")
     public ResearchOpportunityDto updateResearchOpportunity(UpdateResearchOpportunityDto updated, Long id) {
         ResearchOpportunity opportunity = repo.getResearchOpportunity(id);
 
@@ -111,6 +126,7 @@ public class ResearchOpportunityService {
         return entityToDto(repo.updateResearchOpportunity(opportunity, id));
     }
 
+    @PreAuthorize("@studentOpportunityAccess.opportunity(#p0)")
     public void deleteResearchOpportunity(Long id) {
         repo.deleteResearchOpportunity(id);
     }

@@ -241,7 +241,7 @@ export default function StudentInfoPage() {
                     ) : <p>No profile photo uploaded.</p>}
 
                     <div className="flex flex-wrap gap-3">
-                      <label className={`bg-blue-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer ${saving ? "opacity-50" : ""}`}>
+                      <label className={`bg-blue-700 text-white font-semibold text-sm rounded-md px-3 py-2 cursor-pointer ${saving ? "opacity-50" : ""}`}>
                         Choose Photo
                         <input
                           type="file"
@@ -256,7 +256,7 @@ export default function StudentInfoPage() {
                         />
                       </label>
 
-                      <label className={`bg-blue-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer ${saving ? "opacity-50" : ""}`}>
+                      <label className={`bg-blue-700 text-white font-semibold text-sm rounded-md px-3 py-2 cursor-pointer ${saving ? "opacity-50" : ""}`}>
                         {resume ? "Replace Resume" : "Upload Resume"}
                         <input
                           type="file"
@@ -276,7 +276,7 @@ export default function StudentInfoPage() {
                           type="button"
                           disabled={saving}
                           onClick={() => void downloadResume()}
-                          className="bg-green-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer disabled:opacity-50"
+                          className="bg-green-700 text-white font-semibold text-sm rounded-md px-3 py-2 cursor-pointer disabled:opacity-50"
                         >
                           Download Resume
                         </button>

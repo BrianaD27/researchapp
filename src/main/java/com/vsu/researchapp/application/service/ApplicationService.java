@@ -3,6 +3,7 @@ package com.vsu.researchapp.application.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.vsu.researchapp.application.dto.ApplicationDto;
@@ -33,26 +34,32 @@ public class ApplicationService {
         this.opportunityRepository = opportunityRepository;
     }
 
+    @PreAuthorize("@studentOpportunityAccess.admin()")
     public List<ApplicationDto> getAllApplications() {
         return applicationRepository.getAllApplications().stream().map(this::entityToDto).toList();
     }
 
+    @PreAuthorize("@studentOpportunityAccess.readApplication(#p0)")
     public ApplicationDto getApplicationById(Long id) {
         return entityToDto(applicationRepository.getApplicationById(id));
     }
 
+    @PreAuthorize("@studentOpportunityAccess.student(#p0)")
     public List<ApplicationDto> getApplicationsByStudentId(Long studentId) {
         return applicationRepository.getApplicationsByStudentId(studentId).stream().map(this::entityToDto).toList();
     }
 
+    @PreAuthorize("@studentOpportunityAccess.opportunity(#p0)")
     public List<ApplicationDto> getApplicationsByOpportunityId(Long opportunityId) {
         return applicationRepository.getApplicationsByOpportunityId(opportunityId).stream().map(this::entityToDto).toList();
     }
 
+    @PreAuthorize("@studentOpportunityAccess.opportunity(#p0)")
     public List<ApplicationDto> getApplicationsByOpportunityIdAndStatus(Long opportunityId, ApplicationStatus status) {
         return applicationRepository.getApplicationsByOpportunityIdAndStatus(opportunityId, status).stream().map(this::entityToDto).toList();
     }
 
+    @PreAuthorize("@studentOpportunityAccess.student(#p0.studentId())")
     public ApplicationDto applyToOpportunity(CreateApplicationDto dto) {
         if (applicationRepository.findByStudentIdAndOpportunityId(dto.studentId(), dto.researchOpportunityId()).isPresent()) {
             throw new IllegalArgumentException("This student has already applied to this opportunity");
@@ -70,6 +77,7 @@ public class ApplicationService {
         return entityToDto(applicationRepository.createApplication(application));
     }
 
+    @PreAuthorize("@studentOpportunityAccess.decideApplication(#p1)")
     public ApplicationDto updateApplication(UpdateApplicationDto updated, Long id) {
         Application application = applicationRepository.getApplicationById(id);
 
@@ -80,15 +88,18 @@ public class ApplicationService {
     }
 
     // Faculty accepts/rejects/resets an applicant's status
+    @PreAuthorize("@studentOpportunityAccess.decideApplication(#p0)")
     public ApplicationDto updateApplicationStatus(Long id, ApplicationStatus status) {
         return entityToDto(applicationRepository.updateApplicationStatus(id, status));
     }
 
+    @PreAuthorize("@studentOpportunityAccess.deleteApplication(#p0)")
     public void deleteApplication(Long id) {
         applicationRepository.deleteApplication(id);
     }
 
     // Flip accepted applications to COMPLETED once the opportunity's end date has passed
+    @PreAuthorize("@studentOpportunityAccess.admin()")
     public List<ApplicationDto> completeExpiredAcceptedApplications() {
         return applicationRepository.getAcceptedApplicationsPassEndDate().stream()
             .map(app -> {

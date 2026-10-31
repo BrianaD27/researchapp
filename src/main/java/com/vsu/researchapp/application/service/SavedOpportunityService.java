@@ -2,6 +2,7 @@ package com.vsu.researchapp.application.service;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.vsu.researchapp.application.dto.CreateSavedOpportunityDto;
@@ -30,10 +31,12 @@ public class SavedOpportunityService {
         this.opportunityRepository = opportunityRepository;
     }
 
+    @PreAuthorize("@studentOpportunityAccess.student(#p0)")
     public List<SavedOpportunityDto> getSavedOpportunitiesByStudentId(Long studentId) {
         return savedOpportunityRepository.getSavedOpportunitiesByStudentId(studentId).stream().map(this::entityToDto).toList();
     }
 
+    @PreAuthorize("@studentOpportunityAccess.student(#p0.studentId())")
     public SavedOpportunityDto saveOpportunity(CreateSavedOpportunityDto dto) {
         if (savedOpportunityRepository.isOpportunitySavedByStudent(dto.studentId(), dto.opportunityId())) {
             throw new IllegalArgumentException("This opportunity is already saved");
@@ -49,6 +52,7 @@ public class SavedOpportunityService {
         return entityToDto(savedOpportunityRepository.saveOpportunity(savedOpportunity));
     }
 
+    @PreAuthorize("@studentOpportunityAccess.student(#p0)")
     public void unsaveOpportunity(Long studentId, Long opportunityId) {
         savedOpportunityRepository.unsaveOpportunityByStudentIdAndOpportunityId(studentId, opportunityId);
     }

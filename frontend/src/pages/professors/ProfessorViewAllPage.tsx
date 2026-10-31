@@ -1,265 +1,290 @@
-import React from "react";
-import FacultyOpportunityCard from "../../components/cards/FacultyOpportunityCard";
+import { useEffect, useState, type FormEvent } from "react";
+import { isAxiosError } from "axios";
+import { Link } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
-import SkillInput from "../../components/forms/SkillInput";
-import OpportunityEditDetailsCard from "../../components/cards/OpportunityEditDetailsCard";
+import apiClient from "../../api/client";
 
-const ProfessorViewAllPage = () => {
-  // const [isSortedByOpen, setIsSortedByOpen] = React.useState(false);
-  const [selectedOpportunity, setSelectedOpportunity] = React.useState(Number);
-  const [skills, setSkills] = React.useState<string[]>([
-    "Python",
-    "Machine Learning",
-  ]);
+interface Opportunity {
+  id: number;
+  title: string;
+  description: string | null;
+  department: string | null;
+  requiredMajors: string[] | null;
+  requiredClassifications: string[] | null;
+  requiredSkills: string[] | null;
+  availability: string | null;
+  minimumGpa: number | null;
+  applicationDeadline: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  professorId: number | null;
+  professorName: string | null;
+}
 
-  const opportunities = [
-    {},
-    {
-      title: "Research Paper",
-      department: "Biology",
-      date: "9/15/2023",
-      availability: "Closed",
-      applicants: "17",
-    },
-    {},
-    {},
-    {},
-    {},
+function fieldsFrom(item: Opportunity) {
+  return {
+    title: item.title ?? "",
+    description: item.description ?? "",
+    department: item.department ?? "",
+    requiredMajors: (item.requiredMajors ?? []).join(", "),
+    requiredClassifications: (item.requiredClassifications ?? []).join(", "),
+    requiredSkills: (item.requiredSkills ?? []).join(", "),
+    availability: item.availability ?? "",
+    minimumGpa: item.minimumGpa == null ? "" : String(item.minimumGpa),
+    applicationDeadline: item.applicationDeadline ?? "",
+    startDate: item.startDate ?? "",
+    endDate: item.endDate ?? "",
+  };
+}
+
+function errorText(caught: unknown) {
+  if (isAxiosError(caught)) {
+    if (!caught.response) return "Cannot reach the backend. Check that Java is running.";
+    if (caught.response.status === 403) return "Only the owning professor or an administrator can edit this project.";
+    if (caught.response.status === 401) return "Your login expired. Log in again.";
+    return `Request failed (HTTP ${caught.response.status}). Changes have not been confirmed.`;
+  }
+  return "The request failed. Changes have not been confirmed.";
+}
+
+function splitList(value: string) {
+  return [...new Set(value.split(",").map((item) => item.trim()).filter(Boolean))];
+}
+
+function Editor({ item, onSaved, onDirty }: {
+  item: Opportunity;
+  onSaved: (item: Opportunity) => void;
+  onDirty: (dirty: boolean) => void;
+}) {
+  const [fields, setFields] = useState(() => fieldsFrom(item));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const dirty = JSON.stringify(fields) !== JSON.stringify(fieldsFrom(item));
+
+  useEffect(() => { onDirty(dirty || saving); }, [dirty, saving, onDirty]);
+
+  useEffect(() => {
+    function warn(event: BeforeUnloadEvent) {
+      if (dirty || saving) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    }
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, saving]);
+
+  function change(key: keyof typeof fields, value: string) {
+    setFields((current) => ({ ...current, [key]: value }));
+    setMessage("");
+  }
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (saving) return;
+    setError("");
+    setMessage("");
+    if (fields.startDate && fields.endDate && fields.startDate > fields.endDate) {
+      setError("The end date must be on or after the start date.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await apiClient.put(`/research-opportunities/${item.id}`, {
+        title: fields.title.trim(),
+        department: fields.department.trim(),
+        description: fields.description.trim(),
+        availability: fields.availability,
+        requiredMajors: splitList(fields.requiredMajors),
+        requiredClassifications: splitList(fields.requiredClassifications),
+        requiredSkills: splitList(fields.requiredSkills),
+        ...(fields.minimumGpa !== "" ? { minimumGpa: Number(fields.minimumGpa) } : {}),
+        ...(fields.applicationDeadline ? { applicationDeadline: fields.applicationDeadline } : {}),
+        ...(fields.startDate ? { startDate: fields.startDate } : {}),
+        ...(fields.endDate ? { endDate: fields.endDate } : {}),
+      });
+      const { data } = await apiClient.get<Opportunity>(`/research-opportunities/${item.id}`);
+      setFields(fieldsFrom(data));
+      onSaved(data);
+      setMessage("Changes saved and loaded back successfully.");
+    } catch (caught) {
+      setError(errorText(caught));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputClass = "border border-gray-400 rounded-lg p-3 w-full";
+  const textInputs: { key: keyof typeof fields; label: string; required?: boolean }[] = [
+    { key: "title", label: "Project title", required: true },
+    { key: "department", label: "Department", required: true },
+    { key: "requiredMajors", label: "Target majors (separate with commas)" },
+    { key: "requiredClassifications", label: "Classifications (separate with commas)" },
+    { key: "requiredSkills", label: "Required skills (separate with commas)" },
   ];
+
   return (
-    <div className="h-screen bg-[#1B51A4] flex flex-col overflow-scroll">
-      <div className="relative z-50">
-        <FacultyNavBar />
-      </div>
-
-      <div className="pt-5 flex-1 flex items-start justify-evenly">
-        {/* Search Box */}
-        <div className="flex flex-col align-items-center justify-start">
-          {/* Search Bar */}
-          {/* <div className="flex flex-row items-center gap-3 pb-4">
-            <input
-              className="w-[73%] p-2 border border-gray-300 rounded-md bg-white"
-              type="text"
-              placeholder="Search for research projects..."
-            />
-            <div className="relative">
-              <button
-                onClick={() => setIsSortedByOpen(!isSortedByOpen)}
-                className="px-4 hover:cursor-pointer py-2 bg-vsu-orange font-semibold text-white rounded-md flex flex-row items-center gap-1"
-              >
-                Sort By
-                <svg
-                  width="30"
-                  height="27"
-                  viewBox="0 0 50 47"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlnsXlink="http://www.w3.org/1999/xlink"
-                >
-                  <rect
-                    y="47"
-                    width="47"
-                    height="50"
-                    transform="rotate(-90 0 47)"
-                    fill="url(#pattern0_5_82)"
-                  />
-                  <defs>
-                    <pattern
-                      id="pattern0_5_82"
-                      patternContentUnits="objectBoundingBox"
-                      width="1"
-                      height="1"
-                    >
-                      <use
-                        xlinkHref="#image0_5_82"
-                        transform="matrix(0.01 0 0 0.0094 0 0.03)"
-                      />
-                    </pattern>
-                    <image
-                      id="image0_5_82"
-                      width="100"
-                      height="100"
-                      preserveAspectRatio="none"
-                      xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEmElEQVR4nO2dTY9URRSGSzECbojyFTSgK3UpcSsGE8AoAmrUnwDRmRFienPvL3ChRL4WQHThDyAhbkSNJATjDgXRjc4Ajk5MhBFc6UIec0J10jAM81lV59Q9TzKb7k7fW/1O1amPc94bguM4juM4juM4juM4zpwA1gAvAu8CR4CvgAvAKDAJ/Bv/JuNr8t6X8bMjwDZgdel2mAV4CNgFHIg/7k0WjnzHeeAjYCewvHQ7VQPcDzwHHAVukB65xqfADmBJ6farAVgGvAOMUQ4Z5t4GloaOD0s9YAI9TADvyb2FLhGHiUvoZRx4I9QO8ATwGXY4CWwINQK8Gqel1rgBvBVqQQJlnL5a56j5oA+sBL6lHs4CjwSLAI/GRV1t/ASsD5YAngZ+pV6uAE8FCwCPAZepn9+Ax4OBmCFduiv8qDamxNlUTQF8tnyjcvYFHKa7HAiakG0GdDIBfA78kPg6srX/elC0HXIdfbwPPDhwn9uBvxNe7y8VQV7p3lRvmnsdTnzdk/kVmLo/pY3mHve7NsP1d+RV4fbzjMsWekYfYF2GexgrcjwcD5fMiCHEhIcc7AsFjl0njImxMXFQv3MVn29tEs/A1ceMPsAzwNXM97UnZMwOKZmQMJ+ecY38/ALcl0OQF9BBo7RnDPJ8DkE+oTyNATGE46nFWK5gVd4YEaN/Hp9uChzTO0vSUxwzpmN7SkFKJis0hnrGIB+kFKTUGXljVAzhu5QlAYuRhd6FYWqQ/4BVKQSR+ozcNIZ7xiBbUggixTI5aSoRQxhKIYhUI+WiqUgM4WAKQaRELAc94zHjbpxKIUjqc+kae0af8ykEuaRAjI3GekafsRSCpPyv/HqmnVHsiiH8mUIQKTtOxXCFw9Qg/1gTZMQFmSOJf5DTPmTNEQ/q+oJ6jmlvO4v7sDh8JZn2+sJQ2cIw59ZJW1lPOVjD5mJbkShDtWy/t5WIkmT7fbUfUM37gGrlogtS+Ai3NdxTziURIzZazL9K0RoVJWmSgzixlaRncPh6ufZEudZQT7mevFYE+Lh0K7EjyrGkYsSGbkYHrQFRNuUqRxCPQg30FMeUn7OUI8RGimGkFlqlPWV3FjEGStp+Rw89ZSVt49ntNqJ7J8ZEGc50L3vzqDC1LFqbs2hPQVm0lLIty6fE7Q18CX20M7jc2a0HmQ3RStWKtcZI4uueyK/A1EZuiMYrGs1nlt5h3pwyqE+q8WIEXiu0NT8Tf0R7poukRdq+K2iiEm/e+bI/KLX4E7u7rnFm0JdLFcAK4Hu6w0W1JpgdtIkdN2PULybD0Wy4Vq4ATwZLxFWxPPOpRq/e9cEiMr5WFujPAA8HywAPxEWaxnXKbLkZp/U6Z1ML8Emx+kCXN0ONiK+t0r2v6ThhNl7MBeAVRa50d2O0+K5tbmJK0b5oGKlpbbG32HmGoi2XPfFgpxSSkLC7qqC9GADPxtnM1UxJbPLo1S3ZskOswq0kCjHP3y9+UzGDfKHId5wDPpT0zk4PSwsFWAVslcIX4BDwRdzEHI05V/3Hd1+Lr8l7p+Jnh2IvSFMS4DiO4ziO4ziO4zhOqJf/AZA9QlamcigfAAAAAElFTkSuQmCC"
-                    />
-                  </defs>
-                </svg>
-              </button>
-
-              {isSortedByOpen && (
-                <div className="flex flex-col absolute bg-white shadow-lg w-full">
-                  <button className="hover:bg-gray-200 py-3 border-b border-gray-300">Most Recent</button>
-                  <button className="hover:bg-gray-200 py-3 border-b border-gray-300">Least Recent</button>
-                  <button className="hover:bg-gray-200 py-3 border-b border-gray-300">Applied</button>
-                  <button className="hover:bg-gray-200 py-3 border-b border-gray-300">Not Applied</button>
-                  <button className="hover:bg-gray-200 py-3 border-b border-gray-300">Bookmarked</button>
-                </div>
+    <section className="bg-white rounded-xl p-6">
+      <h2 className="text-2xl font-semibold mb-2">Edit Opportunity</h2>
+      <p className="text-gray-600 mb-4">Faculty: {item.professorName || "Not specified"}</p>
+      {error && <p role="alert" className="text-red-700 mb-4">{error}</p>}
+      {message && <p role="status" className="text-green-800 mb-4">{message}</p>}
+      <form onSubmit={save}>
+        <fieldset disabled={saving} className="flex flex-col gap-4">
+          {textInputs.map(({ key, label, required }) => (
+            <label key={key} className="flex flex-col gap-1">
+              {label}
+              <input required={required} maxLength={255}
+                value={fields[key]} onChange={(event) => change(key, event.target.value)}
+                className={inputClass} />
+            </label>
+          ))}
+          <label className="flex flex-col gap-1">
+            Status
+            <select required value={fields.availability}
+              onChange={(event) => change("availability", event.target.value)}
+              className={inputClass}>
+              <option value="">Choose status</option>
+              {!["", "Open", "Closed"].includes(fields.availability) && (
+                <option value={fields.availability}>{fields.availability}</option>
               )}
-            </div>
-
-            <svg
-              width="50"
-              height="50"
-              viewBox="0 0 73 73"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              xmlnsXlink="http://www.w3.org/1999/xlink"
-            >
-              <rect width="73" height="73" fill="url(#pattern0_11_521)" />
-              <defs>
-                <pattern
-                  id="pattern0_11_521"
-                  patternContentUnits="objectBoundingBox"
-                  width="1"
-                  height="1"
-                >
-                  <use
-                    xlinkHref="#image0_11_521"
-                    transform="matrix(0.01 0 0 0.01 -0.00046439 0.00264685)"
-                  />
-                </pattern>
-                <image
-                  id="image0_11_521"
-                  width="100"
-                  height="100"
-                  preserveAspectRatio="none"
-                  xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAApElEQVR4nO3awQnEMBAEQQfiDC50BzmXg9GjMVWwEfRLjK4LAAAAAAAAAHhl273t53bi7hNBnnHKI0iLIDGCxAgSI0iMIDGCfDGIh+FCD0MAAAAAAOA4e8hae4jF8CgTbowgMYLECBIjSIwgMYLE+Ci31vkoBwAAAAAAQfaQtfYQi+FRJtwYQWIEiREkRpAYQWIEifFRbq3zUQ4AAAAAAAAArnf+vVSI+NX0C4YAAAAASUVORK5CYII="
-                />
-              </defs>
-            </svg>
-          </div> */}
-
-          {/* Search Box */}
-          <div className="flex flex-col align-items-center justify-start">
-            <p className="text-white/70 text-xl pb-2 uppercase">Search</p>
-            {/* Search Bar */}
-            <div className="flex flex-row items-center gap-3 pb-4">
-              <input
-                className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                type="text"
-                placeholder="Search for students..."
-              />
-              <button className="px-4 hover:cursor-pointer py-2 bg-vsu-orange font-semibold text-white rounded-md flex flex-row items-center gap-1">
-                Search
-                <svg
-                  width="30"
-                  height="27"
-                  viewBox="0 0 50 47"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlnsXlink="http://www.w3.org/1999/xlink"
-                >
-                  <rect
-                    y="47"
-                    width="47"
-                    height="50"
-                    transform="rotate(-90 0 47)"
-                    fill="url(#pattern0_5_82)"
-                  />
-                  <defs>
-                    <pattern
-                      id="pattern0_5_82"
-                      patternContentUnits="objectBoundingBox"
-                      width="1"
-                      height="1"
-                    >
-                      <use
-                        xlinkHref="#image0_5_82"
-                        transform="matrix(0.01 0 0 0.0094 0 0.03)"
-                      />
-                    </pattern>
-                    <image
-                      id="image0_5_82"
-                      width="100"
-                      height="100"
-                      preserveAspectRatio="none"
-                      xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEmElEQVR4nO2dTY9URRSGSzECbojyFTSgK3UpcSsGE8AoAmrUnwDRmRFienPvL3ChRL4WQHThDyAhbkSNJATjDgXRjc4Ajk5MhBFc6UIec0J10jAM81lV59Q9TzKb7k7fW/1O1amPc94bguM4juM4juM4juM4zpwA1gAvAu8CR4CvgAvAKDAJ/Bv/JuNr8t6X8bMjwDZgdel2mAV4CNgFHIg/7k0WjnzHeeAjYCewvHQ7VQPcDzwHHAVukB65xqfADmBJ6farAVgGvAOMUQ4Z5t4GloaOD0s9YAI9TADvyb2FLhGHiUvoZRx4I9QO8ATwGXY4CWwINQK8Gqel1rgBvBVqQQJlnL5a56j5oA+sBL6lHs4CjwSLAI/GRV1t/ASsD5YAngZ+pV6uAE8FCwCPAZepn9+Ax4OBmCFduiv8qDamxNlUTQF8tnyjcvYFHKa7HAiakG0GdDIBfA78kPg6srX/elC0HXIdfbwPPDhwn9uBvxNe7y8VQV7p3lRvmnsdTnzdk/kVmLo/pY3mHve7NsP1d+RV4fbzjMsWekYfYF2GexgrcjwcD5fMiCHEhIcc7AsFjl0njImxMXFQv3MVn29tEs/A1ceMPsAzwNXM97UnZMwOKZmQMJ+ecY38/ALcl0OQF9BBo7RnDPJ8DkE+oTyNATGE46nFWK5gVd4YEaN/Hp9uChzTO0vSUxwzpmN7SkFKJis0hnrGIB+kFKTUGXljVAzhu5QlAYuRhd6FYWqQ/4BVKQSR+ozcNIZ7xiBbUggixTI5aSoRQxhKIYhUI+WiqUgM4WAKQaRELAc94zHjbpxKIUjqc+kae0af8ykEuaRAjI3GekafsRSCpPyv/HqmnVHsiiH8mUIQKTtOxXCFw9Qg/1gTZMQFmSOJf5DTPmTNEQ/q+oJ6jmlvO4v7sDh8JZn2+sJQ2cIw59ZJW1lPOVjD5mJbkShDtWy/t5WIkmT7fbUfUM37gGrlogtS+Ai3NdxTziURIzZazL9K0RoVJWmSgzixlaRncPh6ufZEudZQT7mevFYE+Lh0K7EjyrGkYsSGbkYHrQFRNuUqRxCPQg30FMeUn7OUI8RGimGkFlqlPWV3FjEGStp+Rw89ZSVt49ntNqJ7J8ZEGc50L3vzqDC1LFqbs2hPQVm0lLIty6fE7Q18CX20M7jc2a0HmQ3RStWKtcZI4uueyK/A1EZuiMYrGs1nlt5h3pwyqE+q8WIEXiu0NT8Tf0R7poukRdq+K2iiEm/e+bI/KLX4E7u7rnFm0JdLFcAK4Hu6w0W1JpgdtIkdN2PULybD0Wy4Vq4ATwZLxFWxPPOpRq/e9cEiMr5WFujPAA8HywAPxEWaxnXKbLkZp/U6Z1ML8Emx+kCXN0ONiK+t0r2v6ThhNl7MBeAVRa50d2O0+K5tbmJK0b5oGKlpbbG32HmGoi2XPfFgpxSSkLC7qqC9GADPxtnM1UxJbPLo1S3ZskOswq0kCjHP3y9+UzGDfKHId5wDPpT0zk4PSwsFWAVslcIX4BDwRdzEHI05V/3Hd1+Lr8l7p+Jnh2IvSFMS4DiO4ziO4ziO4zhOqJf/AZA9QlamcigfAAAAAElFTkSuQmCC"
-                    />
-                  </defs>
-                </svg>
-              </button>
-            </div>
-
-            {/* Specific filters for sorting search results (e.g. by date, by major, etc.) */}
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                title="major"
-                className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-              >
-                <option value="">All Majors</option>
-                <option value="computer science">Computer Science</option>
-                <option value="math">Mathematics</option>
-                <option value="business">Business</option>
-                <option value="biology">Biology</option>
-                <option value="history">History</option>
-                <option value="english">English</option>
-                <option value="art">Art</option>
-                <option value="psychology">Psychology</option>
-              </select>
-              <select
-                title="classification"
-                className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-              >
-                <option value="">All Classifications</option>
-                <option value="freshman">Freshman</option>
-                <option value="sophomore">Sophomore</option>
-                <option value="junior">Junior</option>
-                <option value="senior">Senior</option>
-              </select>
-              <select
-                title="gpa"
-                className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-              >
-                <option value="">Any GPA</option>
-                <option value="1.5-2.4">1.5-2.4</option>
-                <option value="2.5-3.4">2.5-3.4</option>
-                <option value="3.5-4.0">3.5-4.0</option>
-                <option value="4.0+">4.0+</option>
-              </select>
-              <select
-                title="availability"
-                className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full"
-              >
-                <option value="">Any Availability</option>
-                <option value="5">5+ hrs/week</option>
-                <option value="10">10+ hrs/week</option>
-                <option value="15">15+ hrs/week</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col align-items-center justify-start w-full max-w-190 pt-3">
-              <SkillInput value={skills} onChange={setSkills} />
-            </div>
-
-            {/* Opportunity Results Box */}
-            <p className="text-white/70 mt-5 text-xl pb-2 uppercase">
-              My Opportunities
-            </p>
-
-            <div className="h-93  xl:w-190 lg:w-150 md:w-130 w-100 gap-2 mb-3 shadow-lg flex flex-col justify-start overflow-scroll">
-              {opportunities.map((opportunity, index) => (
-                <FacultyOpportunityCard
-                  key={index}
-                  title={opportunity.title}
-                  department={opportunity.department}
-                  date={opportunity.date}
-                  availability={opportunity.availability}
-                  applicants={opportunity.applicants}
-                  isSelected={selectedOpportunity === index}
-                  onSelect={() => setSelectedOpportunity(index)}
-                />
-              ))}
-            </div>
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            Minimum GPA
+            <input type="number" min={0} max={4} step="0.01"
+              required={item.minimumGpa !== null}
+              value={fields.minimumGpa}
+              onChange={(event) => change("minimumGpa", event.target.value)}
+              className={inputClass} />
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {([
+              ["applicationDeadline", "Application deadline"],
+              ["startDate", "Start date"],
+              ["endDate", "End date"],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="flex flex-col gap-1">
+                {label}
+                <input type="date" required={Boolean(item[key])}
+                  value={fields[key]} onChange={(event) => change(key, event.target.value)}
+                  className={inputClass} />
+              </label>
+            ))}
           </div>
-        </div>
+          <label className="flex flex-col gap-1">
+            Description
+            <textarea required rows={6} value={fields.description}
+              onChange={(event) => change("description", event.target.value)}
+              className={inputClass} />
+          </label>
+          <div className="flex flex-wrap gap-3 items-center">
+            <button type="submit" disabled={!dirty || saving || !fields.title.trim() || !fields.department.trim()}
+              className="bg-green-700 text-white font-semibold rounded-lg px-4 py-2 cursor-pointer disabled:opacity-50">
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+            <button type="button" disabled={saving || !dirty}
+              onClick={() => { setFields(fieldsFrom(item)); setError(""); setMessage(""); }}
+              className="border rounded-lg px-4 py-2 cursor-pointer disabled:opacity-50">
+              Cancel Changes
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+  );
+}
 
-        {/* My Opportunity Info Box */}
-        <div>
-          <OpportunityEditDetailsCard  />
-        </div>
-      </div>
+export default function ProfessorViewAllPage() {
+  const [items, setItems] = useState<Opportunity[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        const { data: context } = await apiClient.get<{
+          admin: boolean; professorId: number | null;
+        }>("/faculty-review/context");
+        if (!context.admin && context.professorId === null) {
+          if (active) setError("This account has no linked faculty profile. Ask a faculty administrator to link your account.");
+          return;
+        }
+        const { data } = await apiClient.get<Opportunity[]>(
+          context.admin ? "/research-opportunities"
+            : `/research-opportunities/professor/${context.professorId}`
+        );
+        if (!active) return;
+        setItems(data);
+        setSelectedId(data[0]?.id ?? null);
+      } catch (caught) {
+        if (active) setError(errorText(caught));
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    void load();
+    return () => { active = false; };
+  }, []);
+
+  const visible = items.filter((item) =>
+    [item.title, item.department, item.professorName, item.description]
+      .join(" ").toLowerCase().includes(query.trim().toLowerCase())
+  );
+  const selected = items.find((item) => item.id === selectedId);
+
+  return (
+    <div className="min-h-screen bg-[#1B51A4]">
+      <FacultyNavBar />
+      <main className="max-w-7xl mx-auto p-5">
+        <h1 className="text-2xl text-white mb-4">My Opportunities</h1>
+        {loading && <p role="status" className="text-white">Loading opportunities...</p>}
+        {error && <p role="alert" className="bg-white text-red-700 rounded-lg p-4">{error}</p>}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <section>
+              <input aria-label="Search your opportunities"
+                placeholder="Search your opportunities..."
+                value={query} onChange={(event) => setQuery(event.target.value)}
+                className="bg-white border rounded-lg p-3 w-full mb-4" />
+              <p className="text-white mb-3">{visible.length} opportunities</p>
+              {!visible.length && <p className="bg-white rounded-lg p-4">
+                {items.length ? "No opportunities match your search." : "No opportunities have been posted for this account."}
+              </p>}
+              <div className="flex flex-col gap-3">
+                {visible.map((item) => (
+                  <button key={item.id} type="button" disabled={dirty && item.id !== selectedId}
+                    onClick={() => setSelectedId(item.id)}
+                    aria-pressed={item.id === selectedId}
+                    className={`bg-white rounded-xl border-4 p-4 text-left cursor-pointer disabled:opacity-50 ${
+                      item.id === selectedId ? "border-orange-500" : "border-transparent"
+                    }`}>
+                    <h2 className="text-xl font-semibold">{item.title}</h2>
+                    <p>{item.department || "Department not specified"}</p>
+                    <p>{item.professorName}</p>
+                    <p className="font-semibold mt-2">{item.availability || "Status not specified"}</p>
+                  </button>
+                ))}
+              </div>
+              {dirty && <p className="text-white mt-3">Save or cancel your changes before selecting another project.</p>}
+              <Link to="/faculty-applicants" className="inline-block text-white underline mt-5">
+                Review applicants
+              </Link>
+            </section>
+            {selected && <Editor key={selected.id} item={selected} onDirty={setDirty}
+              onSaved={(updated) => setItems((current) =>
+                current.map((item) => item.id === updated.id ? updated : item)
+              )} />}
+          </div>
+        )}
+      </main>
     </div>
   );
-};
-
-export default ProfessorViewAllPage;
+}

@@ -38,6 +38,49 @@ export default function StudentDiscoverPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
+  const [studentId, setStudentId] = useState<number | null>(null);
+  const [savedIds, setSavedIds] = useState<number[]>([]);
+  const [appliedIds, setAppliedIds] = useState<number[]>([]);
+  const [actionsReady, setActionsReady] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setActionsReady(false);
+    setActionError("");
+
+    async function loadStudentActions() {
+      try {
+        const profile = await apiClient.get<{ id: number }>("/students/me");
+        const id = profile.data.id;
+        const [saved, applications] = await Promise.all([
+          apiClient.get<{ opportunityId: number }[]>(`/saved-opportunities/student/${id}`),
+          apiClient.get<{ researchOpportunityId: number }[]>(`/applications/student/${id}`),
+        ]);
+        if (!active) return;
+        setStudentId(id);
+        setSavedIds(saved.data.map((item) => item.opportunityId));
+        setAppliedIds(applications.data.map((item) => item.researchOpportunityId));
+        setActionsReady(true);
+      } catch (caught) {
+        if (!active) return;
+        setStudentId(null);
+        setActionError(isAxiosError(caught) && caught.response?.status === 404
+          ? "Save your student profile first, then return here."
+          : "Could not load your saved opportunities and applications. Click Reload to retry.");
+      }
+    }
+
+    void loadStudentActions();
+    return () => { active = false; };
+  }, [reload]);
+
+  useEffect(() => {
+    setActionMessage("");
+    setActionError("");
+  }, [selectedId]);
 
   useEffect(() => {
     let active = true;
@@ -62,6 +105,51 @@ export default function StudentDiscoverPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [reload]);
+
+  async function changeOpportunity(action: "apply" | "save", opportunityId: number) {
+    if (!studentId || !actionsReady || actionBusy) return;
+    setActionBusy(true);
+    setActionError("");
+    setActionMessage("");
+
+    try {
+      if (action === "apply") {
+        await apiClient.post("/applications", {
+          studentId,
+          researchOpportunityId: opportunityId,
+        });
+        const { data } = await apiClient.get<{ researchOpportunityId: number }[]>(
+          `/applications/student/${studentId}`
+        );
+        setAppliedIds(data.map((item) => item.researchOpportunityId));
+        setActionMessage("Application submitted and loaded back successfully.");
+      } else {
+        const removing = savedIds.includes(opportunityId);
+        if (removing) {
+          await apiClient.delete(
+            `/saved-opportunities/student/${studentId}/opportunity/${opportunityId}`
+          );
+        } else {
+          await apiClient.post("/saved-opportunities", {
+            studentId,
+            opportunityId,
+          });
+        }
+        const { data } = await apiClient.get<{ opportunityId: number }[]>(
+          `/saved-opportunities/student/${studentId}`
+        );
+        setSavedIds(data.map((item) => item.opportunityId));
+        setActionMessage(removing ? "Opportunity removed from saved." : "Opportunity saved.");
+      }
+    } catch (caught) {
+      setActionError(isAxiosError(caught) && caught.response?.status === 403
+        ? "You do not have permission to change this student's records."
+        : "The change could not be confirmed. Click Reload to check its current status before trying again.");
+      setActionsReady(false);
+    } finally {
+      setActionBusy(false);
+    }
+  }
 
   const filtered = opportunities.filter((item) => {
     const text = [
@@ -181,6 +269,39 @@ export default function StudentDiscoverPage() {
             <p>{listLabel(selected.requiredMajors, "Not specified")}</p>
             <h3 className="font-semibold mt-5">Required skills</h3>
             <p>{listLabel(selected.requiredSkills, "Not specified")}</p>
+            <div className="border-t mt-5 pt-5">
+              {!actionsReady && !actionError && (
+                <p role="status">Loading your application and saved status...</p>
+              )}
+              {actionError && (
+                <p role="alert" className="text-red-700 mb-3">{actionError}</p>
+              )}
+              {actionMessage && (
+                <p role="status" className="text-green-800 mb-3">{actionMessage}</p>
+              )}
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  disabled={!actionsReady || actionBusy || appliedIds.includes(selected.id)
+                    || selected.availability?.toLowerCase() !== "open"
+                    || Boolean(selected.applicationDeadline
+                      && selected.applicationDeadline < new Date().toLocaleDateString("en-CA"))}
+                  onClick={() => void changeOpportunity("apply", selected.id)}
+                  className="bg-green-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {appliedIds.includes(selected.id) ? "Applied" : "Apply"}
+                </button>
+                <button
+                  type="button"
+                  disabled={!actionsReady || actionBusy}
+                  onClick={() => void changeOpportunity("save", selected.id)}
+                  className="bg-blue-700 text-white font-semibold rounded-lg px-5 py-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {savedIds.includes(selected.id) ? "Remove Saved" : "Save Opportunity"}
+                </button>
+              </div>
+              {actionBusy && <p role="status" className="mt-3">Saving changes...</p>}
+            </div>
             <h3 className="font-semibold mt-5">Description</h3>
             <p className="whitespace-pre-wrap">{selected.description || "No description provided."}</p>
           </section>
