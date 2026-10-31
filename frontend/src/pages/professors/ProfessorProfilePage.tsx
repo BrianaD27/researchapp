@@ -54,19 +54,37 @@ const ProfessorProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let active = true;
-    apiClient.get<Professor[]>("/professors")
-      .then(({ data }) => {
-        if (active) setProfiles(data);
-      })
-      .catch((caught: unknown) => {
+    async function load() {
+      try {
+        const [{ data: context }, { data }] = await Promise.all([
+          apiClient.get<{ admin: boolean; professorId: number | null }>("/faculty-review/context"),
+          apiClient.get<Professor[]>("/professors"),
+        ]);
+        if (!active) return;
+        if (context.admin) {
+          setIsAdmin(true);
+          setProfiles(data);
+          return;
+        }
+        const own = data.find((profile) => profile.id === context.professorId) ?? null;
+        if (!own) {
+          setError("This account has no linked faculty profile. Ask a faculty administrator to link your account.");
+          return;
+        }
+        setProfiles([own]);
+        setSelected(own);
+        setFields(fieldsFrom(own));
+      } catch (caught) {
         if (active) setError(errorMessage(caught));
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    }
+    void load();
     return () => { active = false; };
   }, []);
 
@@ -157,6 +175,8 @@ const ProfessorProfilePage = () => {
       <main className="max-w-3xl mx-auto p-6">
         <h1 className="text-2xl text-white mb-4">Faculty Profile Settings</h1>
         <section className="bg-white rounded-xl p-6">
+          {loading && <p role="status" className="mb-4">Loading profile...</p>}
+          {isAdmin && <>
           <label htmlFor="profile-select" className="block font-semibold mb-2">
             Select faculty profile to edit
           </label>
@@ -174,19 +194,21 @@ const ProfessorProfilePage = () => {
               </option>
             ))}
           </select>
+          </>}
 
           {error && <p role="alert" className="text-red-700 mb-4">{error}</p>}
           {message && <p role="status" className="text-green-800 mb-4">{message}</p>}
-          {!loading && !error && profiles.length === 0 && (
+          {isAdmin && !loading && !error && profiles.length === 0 && (
             <p>No faculty profiles have been created yet.</p>
           )}
 
           {selected && (
             <form onSubmit={save} className="flex flex-col gap-4">
-              <p className="text-sm text-gray-600">
-                Editing: {selected.name || "Unnamed faculty"} (ID {selected.id}).
-                Administrators can edit any profile; faculty can save only their own.
-              </p>
+              {isAdmin && (
+                <p className="text-sm text-gray-600">
+                  Editing: {selected.name || "Unnamed faculty"} (ID {selected.id}).
+                </p>
+              )}
 
               <label className="flex flex-col gap-1">
                 Email
