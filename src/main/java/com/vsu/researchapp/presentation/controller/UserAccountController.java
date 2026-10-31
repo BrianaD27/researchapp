@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/users")
 @Validated
+// Account administration: creating accounts with a chosen role, listing users,
+// and reading login history are admin-only.
+@PreAuthorize("hasRole('ADMIN')")
 public class UserAccountController {
 
     private final UserAccountService userService;

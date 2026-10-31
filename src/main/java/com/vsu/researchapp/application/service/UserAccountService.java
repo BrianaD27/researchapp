@@ -361,10 +361,14 @@ public class UserAccountService {
     public UserAccount assignRole(String username, String role) {
         UserAccount user = userAccountRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
-        if (!role.startsWith("ROLE_")) {
-            role = "ROLE_" + role.toUpperCase();
+        // Store roles without the "ROLE_" prefix, matching createUser(); JwtFilter
+        // adds the prefix. Storing "ROLE_X" here produced "ROLE_ROLE_X" authorities
+        // that matched no role check, so promoted accounts lost access.
+        String normalizedRole = role == null ? "" : role.trim().toUpperCase().replaceFirst("^ROLE_", "");
+        if (!java.util.Set.of("STUDENT", "PROFESSOR", "ADMIN").contains(normalizedRole)) {
+            throw new IllegalArgumentException("Role must be STUDENT, PROFESSOR, or ADMIN");
         }
-        user.setRole(role);
+        user.setRole(normalizedRole);
         return userAccountRepository.save(user);
     }
 

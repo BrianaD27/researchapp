@@ -86,10 +86,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @Valid @RequestBody RegisterRequest request) {
-        String role = request.role() == null || request.role().isBlank()
-            ? "STUDENT" : request.role();
+        // Public sign-up always creates a student account. Any role sent in the
+        // request is ignored; faculty accounts are created or promoted by an admin.
         var user = userAccountService.createUser(
-            request.username(), request.email(), request.password(), role);
+            request.username(), request.email(), request.password(), "STUDENT");
         return ResponseEntity.ok(Map.of(
             "message", "User created successfully",
             "username", user.getUsername()
