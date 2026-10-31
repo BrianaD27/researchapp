@@ -421,8 +421,13 @@ public class UserAccountService {
             throw new RuntimeException("Password must contain at least one lowercase letter");
         if (!password.matches(".*\\d.*"))
             throw new RuntimeException("Password must contain at least one number");
-        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*"))
-            throw new RuntimeException("Password must contain at least one special character");
+        // Any symbol or space counts as a special character, not just a fixed list.
+        if (password.chars().allMatch(Character::isLetterOrDigit))
+            throw new RuntimeException("Password must contain at least one special character or space");
+        // BCrypt only uses the first 72 bytes; reject longer passwords clearly
+        // instead of silently ignoring the rest.
+        if (password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72)
+            throw new RuntimeException("Password must be 72 bytes or fewer (about 72 standard characters)");
     }
 
     // Registration is limited to VSU accounts: faculty/staff (@vsu.edu) and
