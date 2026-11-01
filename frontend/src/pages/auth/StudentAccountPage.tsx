@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
+import IdleSignOutNotice from "../../components/common/IdleSignOutNotice";
 import apiClient from "../../api/client";
 import { authErrorMessage } from "../../api/authErrors";
 import studentsBg from "../../assets/studentsBg.png";
@@ -108,6 +109,7 @@ export default function StudentAccountPage({ register = false }: { register?: bo
             </div>
           ) : (
             <form onSubmit={submit} className="flex flex-col gap-4">
+              <IdleSignOutNotice />
               {error && <p role="alert" className="text-red-700">{error}</p>}
 
               <label className="flex flex-col gap-1">

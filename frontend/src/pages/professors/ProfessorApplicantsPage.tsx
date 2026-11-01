@@ -21,6 +21,7 @@ interface Application {
   opportunityStatus: "BOOKMARKED" | "APPLIED" | "COMPLETED";
   applicationStatus: "PENDING" | "ACCEPTED" | "REJECTED";
   appliedAt: string | null;
+  mentorNote: string | null;
 }
 
 interface Student {
@@ -150,6 +151,12 @@ export default function ProfessorApplicantsPage() {
     && item.studentName.toLowerCase().includes(query.trim().toLowerCase())
   );
   const selected = visible.find((item) => item.id === applicationId) ?? visible[0];
+  const [note, setNote] = useState("");
+  const [noteFor, setNoteFor] = useState<number | null>(null);
+  if ((selected?.id ?? null) !== noteFor) {
+    setNoteFor(selected?.id ?? null);
+    setNote(selected?.mentorNote ?? "");
+  }
   const selectedStudentId = selected?.studentId;
   const opportunity = opportunities.find((item) => item.id === opportunityId);
 
@@ -194,7 +201,8 @@ export default function ProfessorApplicantsPage() {
     setActionError("");
     setMessage("");
     try {
-      await apiClient.put(`/applications/${id}`, { opportunityStatus: target });
+      await apiClient.put(`/applications/${id}`,
+        completed ? { opportunityStatus: target, mentorNote: note } : { opportunityStatus: target });
       const { data } = await apiClient.get<Application>(`/applications/${id}`);
       if (data.opportunityStatus !== target) throw new Error("Completion not confirmed");
       setApplications((current) => current.map((item) => item.id === id ? data : item));
@@ -206,6 +214,23 @@ export default function ProfessorApplicantsPage() {
         setUncertain(true);
         setActionError(`${failure(caught)} The change has not been confirmed. Refresh the page before trying again.`);
       }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveNote() {
+    if (!selected || busy || uncertain) return;
+    const id = selected.id;
+    setBusy(true);
+    setActionError("");
+    setMessage("");
+    try {
+      const { data } = await apiClient.put<Application>(`/applications/${id}`, { mentorNote: note });
+      setApplications((current) => current.map((item) => item.id === id ? data : item));
+      setMessage("Mentor note saved. It shows on the student's research history.");
+    } catch (caught) {
+      setActionError(`${failure(caught)} The note was not saved.`);
     } finally {
       setBusy(false);
     }
@@ -339,6 +364,27 @@ export default function ProfessorApplicantsPage() {
                     <p className="whitespace-pre-wrap">{profile.previousExperience}</p>
                   </>}
                 </>}
+                {selected.applicationStatus === "ACCEPTED" && (
+                  <div className="mt-5">
+                    <label htmlFor="mentor-note" className="font-semibold block">
+                      Mentor contribution note (optional)
+                    </label>
+                    <p className="text-sm text-gray-600 mb-2">
+                      What the student contributed. Shown on their research history when the project is completed.
+                    </p>
+                    <textarea id="mentor-note" value={note} maxLength={1000} rows={3}
+                      onChange={(event) => setNote(event.target.value)}
+                      disabled={busy || uncertain}
+                      placeholder="e.g. Built the data pipeline and co-presented the poster at the spring symposium."
+                      className="w-full border rounded-lg p-2" />
+                    <p className="text-xs text-gray-500 text-right">{note.length}/1000</p>
+                    {completed && (
+                      <button type="button" disabled={busy || uncertain || note.trim() === (selected.mentorNote ?? "")}
+                        onClick={() => void saveNote()}
+                        className={`${buttonClass} bg-blue-700 text-white mt-1`}>Save Note</button>
+                    )}
+                  </div>
+                )}
                 {actionError && <p role="alert" className="text-red-700 mt-4">{actionError}</p>}
                 {message && <p role="status" className="text-green-800 mt-4">{message}</p>}
                 <div className="flex flex-wrap gap-3 mt-5">

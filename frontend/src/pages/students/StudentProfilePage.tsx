@@ -28,6 +28,7 @@ interface Application {
   researchOpportunityTitle: string;
   opportunityStatus: string;
   applicationStatus: string;
+  mentorNote: string | null;
 }
 
 interface Opportunity {
@@ -47,6 +48,7 @@ interface Completed {
   department: string | null;
   startDate: string | null;
   endDate: string | null;
+  mentorNote: string | null;
 }
 
 export default function StudentProfilePage() {
@@ -73,12 +75,13 @@ export default function StudentProfilePage() {
               id: item.id, ongoing: item.opportunityStatus !== "COMPLETED",
               title: opportunity.title, mentor: opportunity.professorName,
               department: opportunity.department, startDate: opportunity.startDate, endDate: opportunity.endDate,
+              mentorNote: item.mentorNote,
             };
           } catch {
             return {
               id: item.id, ongoing: item.opportunityStatus !== "COMPLETED",
               title: item.researchOpportunityTitle, mentor: null,
-              department: null, startDate: null, endDate: null,
+              department: null, startDate: null, endDate: null, mentorNote: item.mentorNote,
             };
           }
         }));
@@ -178,6 +181,12 @@ export default function StudentProfilePage() {
                         </p>
                       )}
                       {years(item) && <p className="text-gray-700">{years(item)}</p>}
+                      {item.mentorNote && (
+                        <blockquote className="mt-1 border-l-4 border-orange-400 pl-3 text-gray-800 italic whitespace-pre-wrap">
+                          {item.mentorNote}
+                          {item.mentor && <span className="block not-italic text-sm text-gray-600 mt-1">{`- ${item.mentor}`}</span>}
+                        </blockquote>
+                      )}
                     </article>
                   ))}
                 </ProfileCard>

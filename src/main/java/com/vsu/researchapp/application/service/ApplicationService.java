@@ -115,6 +115,14 @@ public class ApplicationService {
         OpportunityStatus previousStage = application.getOpportunityStatus();
         Optional.ofNullable(updated.opportunityStatus()).ifPresent(application::setOpportunityStatus);
         Optional.ofNullable(updated.applicationStatus()).ifPresent(application::setApplicationStatus);
+        if (updated.mentorNote() != null) {
+            String note = updated.mentorNote().trim();
+            if (note.length() > 1000) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Mentor note must be 1000 characters or fewer.");
+            }
+            application.setMentorNote(note.isEmpty() ? null : note);
+        }
 
         ApplicationDto saved = entityToDto(applicationRepository.updateApplication(id, application));
         notifyStudentOfChange(application, previousDecision, previousStage);
@@ -195,7 +203,8 @@ public class ApplicationService {
             application.getOpportunityStatus(),
             application.getApplicationStatus(),
             application.getAppliedAt(),
-            application.getUpdatedAt()
+            application.getUpdatedAt(),
+            application.getMentorNote()
         );
     }
 }

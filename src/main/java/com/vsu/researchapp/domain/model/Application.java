@@ -1,5 +1,6 @@
 package com.vsu.researchapp.domain.model;
 import java.time.LocalDateTime;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -45,6 +46,10 @@ public class Application {
 
     private LocalDateTime appliedAt;
     private LocalDateTime updatedAt;
+
+    // Optional note from the mentor when research is marked completed.
+    @Column(length = 1000)
+    private String mentorNote;
     
     @PrePersist
     protected void onCreate() {

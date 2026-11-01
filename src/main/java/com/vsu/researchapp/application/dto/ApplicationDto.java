@@ -14,5 +14,6 @@ public record ApplicationDto(
     OpportunityStatus opportunityStatus,
     ApplicationStatus applicationStatus,
     LocalDateTime appliedAt,
-    LocalDateTime updatedAt
+    LocalDateTime updatedAt,
+    String mentorNote
 ) {}

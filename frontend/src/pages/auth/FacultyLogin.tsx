@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
+import IdleSignOutNotice from "../../components/common/IdleSignOutNotice";
 import apiClient from "../../api/client";
 import { authErrorMessage } from "../../api/authErrors";
 import background from "../../assets/studentsBg.png";
@@ -85,6 +86,7 @@ const FacultyLogin = () => {
           <p className="text-center mt-2 mb-6">Bridging VSU talent with research opportunities</p>
 
           <form onSubmit={submit} className="flex flex-col gap-3">
+            <IdleSignOutNotice />
             <label htmlFor="faculty-username">Username</label>
             <input
               id="faculty-username"

@@ -7,5 +7,7 @@ import com.vsu.researchapp.domain.model.Application.OpportunityStatus;
 // faculty-side pending/accepted/rejected decision, so both fields are optional.
 public record UpdateApplicationDto(
     OpportunityStatus opportunityStatus,
-    ApplicationStatus applicationStatus
+    ApplicationStatus applicationStatus,
+    // Faculty only: contribution note shown on the student's research history.
+    String mentorNote
 ) {}
