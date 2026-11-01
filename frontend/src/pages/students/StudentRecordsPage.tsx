@@ -199,9 +199,9 @@ export default function StudentRecordsPage({ mode }: { mode: Mode }) {
   );
   const selected = visible.find((row) => row.id === selectedId) ?? visible[0];
   const opportunity = selected?.opportunity;
-  // Green dots for the professors of projects you applied to (not on the Saved list).
-  const online = usePresence("professors", mode === "saved" ? []
-    : rows.map((row) => row.opportunity?.professorId).filter((id): id is number => typeof id === "number"));
+  // Green dots for the professors of these projects.
+  const online = usePresence("professors",
+    rows.map((row) => row.opportunity?.professorId).filter((id): id is number => typeof id === "number"));
 
   async function unsave() {
     if (!selected || studentId === null || busy || uncertain) return;
@@ -288,10 +288,10 @@ export default function StudentRecordsPage({ mode }: { mode: Mode }) {
               {!opportunity ? <p>Project details are no longer available.</p> : <>
                 <div className="flex flex-wrap items-center gap-3">
                   <p>{opportunity.professorName || "Faculty not specified"}</p>
-                  {opportunity.professorId != null && mode !== "saved" && <>
-                    <ActiveDot active={Boolean(online[opportunity.professorId])} />
+                  {opportunity.professorId != null && <ActiveDot active={Boolean(online[opportunity.professorId])} />}
+                  {opportunity.professorId != null && mode !== "saved" && (
                     <MessageButton targetId={opportunity.professorId} label="Message professor" />
-                  </>}
+                  )}
                 </div>
                 <p className="text-gray-600 mb-4">{opportunity.department}</p>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">

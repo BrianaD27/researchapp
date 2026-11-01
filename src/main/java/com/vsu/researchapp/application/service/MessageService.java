@@ -188,13 +188,14 @@ public class MessageService {
     }
 
     // ---- active-now dots outside the Messages page ----
-    // Students see faculty; faculty and associates see students; students never
-    // see other students. Anyone else just gets an empty answer.
+    // Everyone signed in to the VSU app can see who is online (people who turned
+    // off "Show when I'm active" always show as offline). Partner-school accounts
+    // are blocked from /api/messages in SecurityConfig.
 
     @Transactional(readOnly = true)
-    public Map<Long, Boolean> studentPresence(Ctx ctx, List<Long> studentIds) {
+    public Map<Long, Boolean> studentPresence(List<Long> studentIds) {
         Map<Long, Boolean> out = new LinkedHashMap<>();
-        if (!FACULTY.equals(ctx.side()) || studentIds == null) return out;
+        if (studentIds == null) return out;
         for (Student s : students.findAllById(studentIds.stream().limit(200).toList())) {
             out.put(s.getId(), presence.isActive(s.getUserAccountId()));
         }
@@ -202,9 +203,9 @@ public class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Long, Boolean> professorPresence(Ctx ctx, List<Long> professorIds) {
+    public Map<Long, Boolean> professorPresence(List<Long> professorIds) {
         Map<Long, Boolean> out = new LinkedHashMap<>();
-        if (!STUDENT.equals(ctx.side()) || professorIds == null) return out;
+        if (professorIds == null) return out;
         for (Professor p : professors.findAllById(professorIds.stream().limit(200).toList())) {
             out.put(p.getId(), presence.isActive(p.getUserAccountId()));
         }

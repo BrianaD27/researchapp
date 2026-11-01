@@ -3,6 +3,8 @@ import { isAxiosError } from "axios";
 import StudentNavBar from "../../components/common/StudentNavBar";
 import apiClient from "../../api/client";
 import { fit, isRecommended, type FitStudent } from "../../api/match";
+import { usePresence } from "../../api/presence";
+import ActiveDot from "../../components/common/ActiveDot";
 
 interface Opportunity {
   id: number;
@@ -19,6 +21,7 @@ interface Opportunity {
   startDate: string | null;
   endDate: string | null;
   professorName: string | null;
+  professorId: number | null;
 }
 
 function dateLabel(value: string | null) {
@@ -166,6 +169,9 @@ export default function StudentDiscoverPage() {
   });
   const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0];
 
+  const online = usePresence("professors",
+    opportunities.map((item) => item.professorId).filter((id): id is number => typeof id === "number"));
+
   // Recommended for you: open projects you haven't applied to that fit your
   // major, classification, skills, and GPA.
   const today = new Date().toISOString().slice(0, 10);
@@ -267,7 +273,9 @@ export default function StudentDiscoverPage() {
                   >
                     <h2 className="text-xl font-semibold">{item.title}</h2>
                     <p className="text-gray-600">
-                      {item.professorName || "Faculty not specified"} | {item.department || "Department not specified"}
+                      {item.professorName || "Faculty not specified"}
+                      {item.professorId != null && <> <ActiveDot active={Boolean(online[item.professorId])} label={false} /></>}
+                      {" "}| {item.department || "Department not specified"}
                     </p>
                     <p className="font-semibold mt-2">{item.availability || "Status not specified"}</p>
                   </button>
@@ -280,7 +288,10 @@ export default function StudentDiscoverPage() {
         {!loading && !error && selected && (
           <section className="bg-white rounded-xl p-6 self-start">
             <h2 className="text-2xl font-bold mb-2">{selected.title}</h2>
-            <p>{selected.professorName || "Faculty not specified"}</p>
+            <p className="flex items-center gap-2">
+              {selected.professorName || "Faculty not specified"}
+              {selected.professorId != null && <ActiveDot active={Boolean(online[selected.professorId])} />}
+            </p>
             <p className="text-gray-600 mb-5">{selected.department}</p>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[

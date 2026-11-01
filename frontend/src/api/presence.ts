@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import apiClient from "./client";
 
-// Green "active now" dots for a list of people. Students can see faculty;
-// faculty and Research Associates can see students. Checks once a minute.
+// Green "active now" dots for a list of people. Everyone signed in can see who
+// is online (unless that person turned off "Show when I'm active"). Checks once a minute.
 export function usePresence(kind: "students" | "professors", ids: number[]): Record<number, boolean> {
   const [online, setOnline] = useState<Record<number, boolean>>({});
   const key = [...new Set(ids)].sort((a, b) => a - b).join(",");

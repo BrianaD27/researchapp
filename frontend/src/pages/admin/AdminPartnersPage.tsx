@@ -79,8 +79,8 @@ export default function AdminPartnersPage() {
       <main className="max-w-4xl mx-auto p-5 flex flex-col gap-4">
         <h1 className="text-2xl text-white">Partner Schools</h1>
         <p className="text-white text-sm">
-          People from a partner school sign up at /PartnerSignUp with their school email. They can view VSU
-          research only. They cannot apply, message, or see student information.
+          People from a partner school sign up on the Partner School Sign Up page with their school email.
+          They can view VSU research only. They cannot apply, message, or see student information.
         </p>
         {error && <p role="alert" className="bg-red-100 text-red-800 rounded-lg p-3">{error}</p>}
         {message && <p role="status" className="bg-green-100 text-green-800 rounded-lg p-3">{message}</p>}
@@ -89,12 +89,12 @@ export default function AdminPartnersPage() {
           <label className="flex flex-col gap-1 flex-1">
             School name
             <input required value={name} disabled={busy} onChange={(event) => setName(event.target.value)}
-              placeholder="Virginia Tech" className={input} />
+              className={input} />
           </label>
           <label className="flex flex-col gap-1 flex-1">
             Email domain
             <input required value={domain} disabled={busy} onChange={(event) => setDomain(event.target.value)}
-              placeholder="vt.edu" className={input} />
+              className={input} />
           </label>
           <button type="submit" disabled={busy}
             className="bg-blue-700 text-white font-semibold rounded-lg px-4 py-2 cursor-pointer disabled:opacity-50">

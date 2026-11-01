@@ -79,25 +79,15 @@ public class MessageController {
         }
     }
 
-    // Green dots for lists of people. Returns {} when you aren't allowed to see that side.
+    // Green dots for lists of people. Everyone in the VSU app can see who is online.
     @GetMapping("/presence/students")
-    public Map<Long, Boolean> studentPresence(@RequestParam(defaultValue = "") List<Long> ids,
-            @RequestHeader(value = ACTING, required = false) String actingFor) {
-        try {
-            return service.studentPresence(service.context(actingFor), ids);
-        } catch (org.springframework.web.server.ResponseStatusException e) {
-            return Map.of();
-        }
+    public Map<Long, Boolean> studentPresence(@RequestParam(defaultValue = "") List<Long> ids) {
+        return service.studentPresence(ids);
     }
 
     @GetMapping("/presence/professors")
-    public Map<Long, Boolean> professorPresence(@RequestParam(defaultValue = "") List<Long> ids,
-            @RequestHeader(value = ACTING, required = false) String actingFor) {
-        try {
-            return service.professorPresence(service.context(actingFor), ids);
-        } catch (org.springframework.web.server.ResponseStatusException e) {
-            return Map.of();
-        }
+    public Map<Long, Boolean> professorPresence(@RequestParam(defaultValue = "") List<Long> ids) {
+        return service.professorPresence(ids);
     }
 
     @PostMapping("/heartbeat")
