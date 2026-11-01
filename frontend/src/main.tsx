@@ -19,6 +19,8 @@ import StudentCompletedPage from "./pages/students/StudentCompletedPage.tsx";
 import StudentOngoingPage from "./pages/students/StudentOngoingPage.tsx";
 import ProfessorViewAllPage from "./pages/professors/ProfessorViewAllPage.tsx";
 import ProfessorProfilePage from "./pages/professors/ProfessorProfilePage.tsx";
+import ProfessorAssociatesPage from "./pages/professors/ProfessorAssociatesPage.tsx";
+import AdminUsersPage from "./pages/admin/AdminUsersPage.tsx";
 import FacultyInfoPage from "./pages/auth/FacultyInfoPage.tsx";
 import StudentInfoPage from "./pages/auth/StudentInfoPage.tsx";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.tsx";
@@ -74,6 +76,8 @@ createRoot(document.getElementById("root")!).render(
           element={<ProfessorApplicantsPage />}
         />
         <Route path="/faculty-settings" element={<ProfessorProfilePage />} />
+        <Route path="/faculty-associates" element={<ProfessorAssociatesPage />} />
+        <Route path="/admin-users" element={<AdminUsersPage />} />
         <Route path="/faculty-profile" element={<FacultyProfileViewPage />} />
         </Route>
       </Routes>

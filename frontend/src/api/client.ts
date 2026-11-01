@@ -12,6 +12,12 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Research Associates: which professor's dashboard to show ("Working for").
+  // Display only; the server checks team permissions on every action.
+  const actingFor = sessionStorage.getItem("researchapp.actingFor");
+  if (actingFor && /^\d+$/.test(actingFor)) {
+    config.headers["X-Acting-For"] = actingFor;
+  }
   return config;
 });
 

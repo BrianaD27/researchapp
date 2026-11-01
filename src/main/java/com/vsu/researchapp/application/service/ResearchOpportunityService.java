@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.infrastructure.security.CurrentUserService;
+import com.vsu.researchapp.infrastructure.security.StudentOpportunityAccess;
 
 import com.vsu.researchapp.application.dto.CreateResearchOpportunityDto;
 import com.vsu.researchapp.application.dto.ResearchOpportunityDto;
@@ -26,10 +27,17 @@ public class ResearchOpportunityService {
     private final ProfessorRepositoryInterface professorRepo;
     private final CurrentUserService currentUserService;
 
-    public ResearchOpportunityService(ResearchOpportunityRepositoryInterface repo, ProfessorRepositoryInterface professorRepo, CurrentUserService currentUserService) {
+    private final StudentOpportunityAccess access;
+    private final AssociateActivityService associateActivity;
+
+    public ResearchOpportunityService(ResearchOpportunityRepositoryInterface repo, ProfessorRepositoryInterface professorRepo,
+            CurrentUserService currentUserService, StudentOpportunityAccess access,
+            AssociateActivityService associateActivity) {
         this.repo = repo;
         this.professorRepo = professorRepo;
         this.currentUserService = currentUserService;
+        this.access = access;
+        this.associateActivity = associateActivity;
     }
 
     public List<ResearchOpportunityDto> getAllResearchOpportunities() {
@@ -64,13 +72,11 @@ public class ResearchOpportunityService {
         return repo.searchOpportunitiesByCriteria(criteria).stream().map(this::entityToDto).toList();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR', 'ASSOCIATE')")
     public ResearchOpportunityDto createResearchOpportunity(CreateResearchOpportunityDto dto, Long professorId) {
         Professor professor = professorRepo.getProfessorById(professorId);
-        UserAccount account = currentUserService.getCurrentUserAccount();
-        if (!currentUserService.isAdmin(account)
-                && (professor.getUserAccountId() == null
-                    || !professor.getUserAccountId().equals(account.getId()))) {
+        // The professor themself, an admin, or one of their associates who may publish.
+        if (!access.canPublishFor(professor)) {
             throw new AccessDeniedException(
                 "You can only create opportunities for your own faculty profile");
         }
@@ -110,7 +116,9 @@ public class ResearchOpportunityService {
         newOpportunity.setResearchMediaUrls(dto.researchMediaUrls());
         newOpportunity.setProfessor(professor);
 
-        return entityToDto(repo.createResearchOpportunity(newOpportunity));
+        ResearchOpportunityDto created = entityToDto(repo.createResearchOpportunity(newOpportunity));
+        associateActivity.record(professor.getId(), "POSTED_OPPORTUNITY", "\"" + dto.title() + "\"");
+        return created;
     }
 
     @PreAuthorize("@studentOpportunityAccess.opportunity(#p1)")
@@ -152,10 +160,16 @@ public class ResearchOpportunityService {
         Optional.ofNullable(updated.endDate()).ifPresent(opportunity::setEndDate);
         Optional.ofNullable(updated.researchMediaUrls()).ifPresent(opportunity::setResearchMediaUrls);
 
-        return entityToDto(repo.updateResearchOpportunity(opportunity, id));
+        ResearchOpportunityDto saved = entityToDto(repo.updateResearchOpportunity(opportunity, id));
+        if (opportunity.getProfessor() != null) {
+            associateActivity.record(opportunity.getProfessor().getId(), "EDITED_OPPORTUNITY",
+                "\"" + opportunity.getTitle() + "\"");
+        }
+        return saved;
     }
 
-    @PreAuthorize("@studentOpportunityAccess.opportunity(#p0)")
+    // Associates can't delete; they send a removal request for the professor to approve.
+    @PreAuthorize("@studentOpportunityAccess.deleteOpportunity(#p0)")
     public void deleteResearchOpportunity(Long id) {
         repo.deleteResearchOpportunity(id);
     }

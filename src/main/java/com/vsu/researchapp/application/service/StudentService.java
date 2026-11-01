@@ -13,16 +13,20 @@ import com.vsu.researchapp.domain.model.Student;
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepositoryInterface;
 import com.vsu.researchapp.infrastructure.security.CurrentUserService;
+import com.vsu.researchapp.infrastructure.security.StudentOpportunityAccess;
 
 @Service
 public class StudentService {
     private final StudentRepositoryInterface studentRepository;
     private final CurrentUserService currentUserService;
 
+    private final StudentOpportunityAccess access;
+
     public StudentService(StudentRepositoryInterface studentRepository,
-            CurrentUserService currentUserService) {
+            CurrentUserService currentUserService, StudentOpportunityAccess access) {
         this.studentRepository = studentRepository;
         this.currentUserService = currentUserService;
+        this.access = access;
     }
 
     public Optional<StudentDto> getMyStudentProfile() {
@@ -140,7 +144,8 @@ public class StudentService {
     // faculty, and admins - not to other students browsing profiles.
     private boolean canSeePrivateFields(Student student) {
         UserAccount viewer = currentUserService.getCurrentUserAccount();
-        if (currentUserService.isAdmin(viewer) || "PROFESSOR".equalsIgnoreCase(viewer.getRole())) {
+        if (currentUserService.isAdmin(viewer) || "PROFESSOR".equalsIgnoreCase(viewer.getRole())
+                || access.isReviewingAssociate(viewer)) {
             return true;
         }
         return student.getUserAccountId() != null

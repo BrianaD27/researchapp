@@ -62,7 +62,8 @@ public class SecurityConfig {
         config.setAllowedHeaders(List.of(
             "Authorization",
             "Content-Type",
-            "X-Requested-With"
+            "X-Requested-With",
+            "X-Acting-For"
         ));
         config.setAllowCredentials(true);
         config.setExposedHeaders(List.of("X-New-Token", "X-Token-Rotated"));
@@ -110,7 +111,7 @@ public class SecurityConfig {
                 // some student," not "you're THIS student."
                 .requestMatchers(HttpMethod.GET,
                     "/api/v1/professors/**",
-                    "/api/professors/**").hasAnyRole("ADMIN", "PROFESSOR", "STUDENT")
+                    "/api/professors/**").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE", "STUDENT")
                 .requestMatchers(HttpMethod.POST, "/api/v1/professors/**", "/api/professors/**")
                     .hasAnyRole("ADMIN", "PROFESSOR")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/professors/**", "/api/professors/**")
@@ -120,7 +121,7 @@ public class SecurityConfig {
 
                 .requestMatchers(HttpMethod.GET,
                     "/api/v1/students/**",
-                    "/api/students/**").hasAnyRole("ADMIN", "PROFESSOR", "STUDENT")
+                    "/api/students/**").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE", "STUDENT")
                 .requestMatchers(HttpMethod.POST, "/api/v1/students/**", "/api/students/**")
                     .hasAnyRole("ADMIN", "STUDENT")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/students/**", "/api/students/**")
@@ -133,13 +134,13 @@ public class SecurityConfig {
                 // authenticated role via anyRequest() below.
                 .requestMatchers(HttpMethod.POST,
                     "/api/v1/research-opportunities/*/media",
-                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR")
+                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE")
                 .requestMatchers(HttpMethod.PUT,
                     "/api/v1/research-opportunities/*/media",
-                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR")
+                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE")
                 .requestMatchers(HttpMethod.DELETE,
                     "/api/v1/research-opportunities/*/media",
-                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR")
+                    "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE")
                 .requestMatchers(
                     "/api/v1/research-events/**",
                     "/api/research-events/**").authenticated()

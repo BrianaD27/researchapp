@@ -19,11 +19,19 @@ public class AdminController {
         this.userAccountService = userAccountService;
     }
 
+    // Only safe fields: the full account record includes the password hash and
+    // 2FA code, which must never leave the server, even to admins.
+    public record AdminUserView(Long id, String username, String email, String role,
+                                boolean active, boolean accountLocked) {}
+
     // GET all users — admin only
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserAccount>> getAllUsers() {
-        return ResponseEntity.ok(userAccountService.findAll());
+    public ResponseEntity<List<AdminUserView>> getAllUsers() {
+        return ResponseEntity.ok(userAccountService.findAll().stream()
+            .map(u -> new AdminUserView(u.getId(), u.getUsername(), u.getEmail(), u.getRole(),
+                u.isActive(), u.isAccountLocked()))
+            .toList());
     }
 
     // PUT assign role to user — admin only
@@ -32,6 +40,13 @@ public class AdminController {
     public ResponseEntity<?> assignRole(
             @PathVariable String username,
             @RequestParam String role) {
+
+        // An admin can't change their own role, so the last admin can't lock everyone out.
+        String me = org.springframework.security.core.context.SecurityContextHolder
+            .getContext().getAuthentication().getName();
+        if (username.equalsIgnoreCase(me)) {
+            throw new IllegalArgumentException("You can't change your own role.");
+        }
 
         UserAccount user = userAccountService
             .assignRole(username, role);

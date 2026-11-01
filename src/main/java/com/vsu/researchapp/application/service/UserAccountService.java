@@ -415,8 +415,8 @@ public class UserAccountService {
         // adds the prefix. Storing "ROLE_X" here produced "ROLE_ROLE_X" authorities
         // that matched no role check, so promoted accounts lost access.
         String normalizedRole = role == null ? "" : role.trim().toUpperCase().replaceFirst("^ROLE_", "");
-        if (!java.util.Set.of("STUDENT", "PROFESSOR", "ADMIN").contains(normalizedRole)) {
-            throw new IllegalArgumentException("Role must be STUDENT, PROFESSOR, or ADMIN");
+        if (!java.util.Set.of("STUDENT", "PROFESSOR", "ASSOCIATE", "ADMIN").contains(normalizedRole)) {
+            throw new IllegalArgumentException("Role must be STUDENT, PROFESSOR, ASSOCIATE, or ADMIN");
         }
         user.setRole(normalizedRole);
         return userAccountRepository.save(user);

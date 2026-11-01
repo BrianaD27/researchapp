@@ -25,16 +25,28 @@ public class ApplicationService {
     private final StudentRepositoryInterface studentRepository;
     private final ResearchOpportunityRepositoryInterface opportunityRepository;
     private final NotificationService notificationService;
+    private final AssociateActivityService associateActivity;
 
     public ApplicationService(
             ApplicationRepositoryInterface applicationRepository,
             StudentRepositoryInterface studentRepository,
             ResearchOpportunityRepositoryInterface opportunityRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            AssociateActivityService associateActivity) {
         this.applicationRepository = applicationRepository;
         this.studentRepository = studentRepository;
         this.opportunityRepository = opportunityRepository;
         this.notificationService = notificationService;
+        this.associateActivity = associateActivity;
+    }
+
+    // Audit trail entry when a Research Associate acts on a professor's applicant.
+    private void recordAssociateAction(Application application, String action) {
+        ResearchOpportunity opportunity = application.getResearchOpportunity();
+        if (opportunity == null || opportunity.getProfessor() == null) return;
+        associateActivity.record(opportunity.getProfessor().getId(), action,
+            application.getStudent().getName() + " on \"" + opportunity.getTitle() + "\": "
+                + application.getApplicationStatus() + " / " + application.getOpportunityStatus());
     }
 
     @PreAuthorize("@studentOpportunityAccess.admin()")
@@ -52,12 +64,12 @@ public class ApplicationService {
         return applicationRepository.getApplicationsByStudentId(studentId).stream().map(this::entityToDto).toList();
     }
 
-    @PreAuthorize("@studentOpportunityAccess.opportunity(#p0)")
+    @PreAuthorize("@studentOpportunityAccess.opportunityApplicants(#p0)")
     public List<ApplicationDto> getApplicationsByOpportunityId(Long opportunityId) {
         return applicationRepository.getApplicationsByOpportunityId(opportunityId).stream().map(this::entityToDto).toList();
     }
 
-    @PreAuthorize("@studentOpportunityAccess.opportunity(#p0)")
+    @PreAuthorize("@studentOpportunityAccess.opportunityApplicants(#p0)")
     public List<ApplicationDto> getApplicationsByOpportunityIdAndStatus(Long opportunityId, ApplicationStatus status) {
         return applicationRepository.getApplicationsByOpportunityIdAndStatus(opportunityId, status).stream().map(this::entityToDto).toList();
     }
@@ -126,6 +138,7 @@ public class ApplicationService {
 
         ApplicationDto saved = entityToDto(applicationRepository.updateApplication(id, application));
         notifyStudentOfChange(application, previousDecision, previousStage);
+        recordAssociateAction(application, updated.mentorNote() != null ? "UPDATED_APPLICATION_NOTE" : "UPDATED_APPLICATION");
         return saved;
     }
 
@@ -138,6 +151,7 @@ public class ApplicationService {
         OpportunityStatus previousStage = application.getOpportunityStatus();
         Application saved = applicationRepository.updateApplicationStatus(id, status);
         notifyStudentOfChange(saved, previousDecision, previousStage);
+        recordAssociateAction(saved, "DECIDED_APPLICATION");
         return entityToDto(saved);
     }
 

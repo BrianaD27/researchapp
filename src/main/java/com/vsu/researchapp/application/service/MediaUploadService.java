@@ -20,6 +20,7 @@ import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterf
 import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityRepositoryInterface;
 import com.vsu.researchapp.domain.repositoryinterfaces.StudentRepositoryInterface;
 import com.vsu.researchapp.infrastructure.security.CurrentUserService;
+import com.vsu.researchapp.infrastructure.security.StudentOpportunityAccess;
 
 @Service
 public class MediaUploadService {
@@ -46,7 +47,10 @@ public class MediaUploadService {
     private final ResearchOpportunityRepositoryInterface researchOpportunityRepository;
     private final CurrentUserService currentUserService;
 
-    public MediaUploadService(FileStorageInterface fileStorage, ProfessorRepositoryInterface professorRepository, StudentRepositoryInterface studentRepository, ResearchOpportunityRepositoryInterface researchOpportunityRepository, CurrentUserService currentUserService) {
+    private final StudentOpportunityAccess access;
+
+    public MediaUploadService(FileStorageInterface fileStorage, ProfessorRepositoryInterface professorRepository, StudentRepositoryInterface studentRepository, ResearchOpportunityRepositoryInterface researchOpportunityRepository, CurrentUserService currentUserService, StudentOpportunityAccess access) {
+        this.access = access;
         this.fileStorage = fileStorage;
         this.professorRepository = professorRepository;
         this.researchOpportunityRepository = researchOpportunityRepository;
@@ -207,6 +211,10 @@ public class MediaUploadService {
             return;
         }
         Professor owningProfessor = researchOpportunity.getProfessor();
+        // Research Associates who may publish for this professor can manage media too.
+        if (owningProfessor != null && access.canPublishFor(owningProfessor)) {
+            return;
+        }
         if (owningProfessor == null || owningProfessor.getUserAccountId() == null
                 || !owningProfessor.getUserAccountId().equals(currentUser.getId())) {
             throw new AccessDeniedException("You can only modify media on your own research opportunity");
