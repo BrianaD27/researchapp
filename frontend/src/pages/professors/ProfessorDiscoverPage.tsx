@@ -1,159 +1,191 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { isAxiosError } from "axios";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
-import StudentCard from "../../components/cards/StudentCard";
-import SkillInput from "../../components/forms/SkillInput";
-import DiscoverStudentInfoCard from "../../components/cards/DiscoverStudentsInfoCard";
+import ActiveDot from "../../components/common/ActiveDot";
+import MessageButton from "../../components/common/MessageButton";
+import ProfilePhotoPreview from "../../components/common/ProfilePhotoPreview";
+import apiClient from "../../api/client";
+import { fit, isRecommended, type Fit } from "../../api/match";
+import { usePresence } from "../../api/presence";
 
-const ProfessorDiscoverPage = () => {
-  // const [isSortedByOpen, setIsSortedByOpen] = React.useState(false);
-  const [selectedApplicant, setSelectedApplicant] = React.useState(Number);
-  const [skills, setSkills] = React.useState<string[]>(["Python", "Machine Learning"]);
+interface Student {
+  id: number;
+  name: string;
+  email: string;
+  major: string | null;
+  classification: string | null;
+  graduationYear: number | null;
+  gpa: number | null;
+  availableHoursPerWeek: number | null;
+  description: string | null;
+  skills: string[] | null;
+  profilePictureUrl: string | null;
+}
 
-  const applicants = [
-    {
-      availability: "Closed",
-      student: "James",
-      major: "Computer Science",
-      graduateYear: "2023",
-      applied: "Not Applied",
-    },
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-  ];
+interface Project {
+  id: number;
+  title: string;
+  professorId: number | null;
+  requiredMajors: string[] | null;
+  requiredClassifications: string[] | null;
+  requiredSkills: string[] | null;
+  minimumGpa: number | null;
+}
+
+// Discover Students: browse student profiles, see who fits one of your projects
+// best ("Recommended"), who is online now, and message them.
+export default function ProfessorDiscoverPage() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectId, setProjectId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        const [context, all, opportunities] = await Promise.all([
+          apiClient.get<{ admin: boolean; professorId: number | null }>("/faculty-review/context"),
+          apiClient.get<Student[]>("/students"),
+          apiClient.get<Project[]>("/research-opportunities"),
+        ]);
+        if (!active) return;
+        const own = context.data.admin
+          ? opportunities.data
+          : opportunities.data.filter((item) => item.professorId === context.data.professorId);
+        setStudents(all.data);
+        setProjects(own);
+        setProjectId(own[0]?.id ?? null);
+        setSelectedId(all.data[0]?.id ?? null);
+      } catch (caught) {
+        if (!active) return;
+        setError(isAxiosError(caught) && !caught.response
+          ? "Cannot reach the backend. Check that Java is running."
+          : "Could not load students. Please try again.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    void load();
+    return () => { active = false; };
+  }, []);
+
+  const project = projects.find((item) => item.id === projectId) ?? null;
+  const q = query.trim().toLowerCase();
+  const rows: { student: Student; result: Fit | null }[] = students
+    .filter((s) => !q || [s.name, s.major, s.classification, ...(s.skills ?? [])].join(" ").toLowerCase().includes(q))
+    .map((student) => ({ student, result: project ? fit(student, project) : null }))
+    .sort((a, b) => (b.result?.score ?? 0) - (a.result?.score ?? 0) || a.student.name.localeCompare(b.student.name));
+  const online = usePresence("students", rows.map((row) => row.student.id));
+  const selected = rows.find((row) => row.student.id === selectedId) ?? rows[0] ?? null;
 
   return (
-    <div className="h-screen bg-[#1B51A4] flex flex-col overflow-scroll">
-      <div className="relative z-50">
-        <FacultyNavBar />
-      </div>
+    <div className="min-h-screen bg-[#1B51A4]">
+      <FacultyNavBar />
+      <main className="max-w-7xl mx-auto p-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section className="flex flex-col gap-3">
+          <h1 className="text-white text-2xl">Discover Students</h1>
+          <input aria-label="Search students" value={query} onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by name, major, classification, or skill..."
+            className="bg-white border rounded-lg p-3" />
+          {projects.length > 0 && (
+            <label className="text-white flex flex-col gap-1">
+              Recommend students for
+              <select value={projectId ?? ""} onChange={(event) => setProjectId(Number(event.target.value) || null)}
+                className="bg-white text-black border rounded-lg p-3">
+                {projects.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+                <option value="">No project (A to Z)</option>
+              </select>
+            </label>
+          )}
 
-      <div className="pt-5 flex-1 flex items-start justify-evenly">
-        {/* Search Box */}
-        <div className="flex flex-col align-items-center justify-start">
-          <p className="text-white/70 text-xl pb-2 uppercase">
-            Search
-          </p>
-          {/* Search Bar */}
-          <div className="flex flex-row items-center gap-3 pb-4">
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md bg-white"
-              type="text"
-              placeholder="Search for students..."
-            />
-            <button
-                className="px-4 hover:cursor-pointer py-2 bg-vsu-orange font-semibold text-white rounded-md flex flex-row items-center gap-1"
-              >
-                Search
-                <svg
-                  width="30"
-                  height="27"
-                  viewBox="0 0 50 47"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlnsXlink="http://www.w3.org/1999/xlink"
-                >
-                  <rect
-                    y="47"
-                    width="47"
-                    height="50"
-                    transform="rotate(-90 0 47)"
-                    fill="url(#pattern0_5_82)"
-                  />
-                  <defs>
-                    <pattern
-                      id="pattern0_5_82"
-                      patternContentUnits="objectBoundingBox"
-                      width="1"
-                      height="1"
-                    >
-                      <use
-                        xlinkHref="#image0_5_82"
-                        transform="matrix(0.01 0 0 0.0094 0 0.03)"
-                      />
-                    </pattern>
-                    <image
-                      id="image0_5_82"
-                      width="100"
-                      height="100"
-                      preserveAspectRatio="none"
-                      xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEmElEQVR4nO2dTY9URRSGSzECbojyFTSgK3UpcSsGE8AoAmrUnwDRmRFienPvL3ChRL4WQHThDyAhbkSNJATjDgXRjc4Ajk5MhBFc6UIec0J10jAM81lV59Q9TzKb7k7fW/1O1amPc94bguM4juM4juM4juM4zpwA1gAvAu8CR4CvgAvAKDAJ/Bv/JuNr8t6X8bMjwDZgdel2mAV4CNgFHIg/7k0WjnzHeeAjYCewvHQ7VQPcDzwHHAVukB65xqfADmBJ6farAVgGvAOMUQ4Z5t4GloaOD0s9YAI9TADvyb2FLhGHiUvoZRx4I9QO8ATwGXY4CWwINQK8Gqel1rgBvBVqQQJlnL5a56j5oA+sBL6lHs4CjwSLAI/GRV1t/ASsD5YAngZ+pV6uAE8FCwCPAZepn9+Ax4OBmCFduiv8qDamxNlUTQF8tnyjcvYFHKa7HAiakG0GdDIBfA78kPg6srX/elC0HXIdfbwPPDhwn9uBvxNe7y8VQV7p3lRvmnsdTnzdk/kVmLo/pY3mHve7NsP1d+RV4fbzjMsWekYfYF2GexgrcjwcD5fMiCHEhIcc7AsFjl0njImxMXFQv3MVn29tEs/A1ceMPsAzwNXM97UnZMwOKZmQMJ+ecY38/ALcl0OQF9BBo7RnDPJ8DkE+oTyNATGE46nFWK5gVd4YEaN/Hp9uChzTO0vSUxwzpmN7SkFKJis0hnrGIB+kFKTUGXljVAzhu5QlAYuRhd6FYWqQ/4BVKQSR+ozcNIZ7xiBbUggixTI5aSoRQxhKIYhUI+WiqUgM4WAKQaRELAc94zHjbpxKIUjqc+kae0af8ykEuaRAjI3GekafsRSCpPyv/HqmnVHsiiH8mUIQKTtOxXCFw9Qg/1gTZMQFmSOJf5DTPmTNEQ/q+oJ6jmlvO4v7sDh8JZn2+sJQ2cIw59ZJW1lPOVjD5mJbkShDtWy/t5WIkmT7fbUfUM37gGrlogtS+Ai3NdxTziURIzZazL9K0RoVJWmSgzixlaRncPh6ufZEudZQT7mevFYE+Lh0K7EjyrGkYsSGbkYHrQFRNuUqRxCPQg30FMeUn7OUI8RGimGkFlqlPWV3FjEGStp+Rw89ZSVt49ntNqJ7J8ZEGc50L3vzqDC1LFqbs2hPQVm0lLIty6fE7Q18CX20M7jc2a0HmQ3RStWKtcZI4uueyK/A1EZuiMYrGs1nlt5h3pwyqE+q8WIEXiu0NT8Tf0R7poukRdq+K2iiEm/e+bI/KLX4E7u7rnFm0JdLFcAK4Hu6w0W1JpgdtIkdN2PULybD0Wy4Vq4ATwZLxFWxPPOpRq/e9cEiMr5WFujPAA8HywAPxEWaxnXKbLkZp/U6Z1ML8Emx+kCXN0ONiK+t0r2v6ThhNl7MBeAVRa50d2O0+K5tbmJK0b5oGKlpbbG32HmGoi2XPfFgpxSSkLC7qqC9GADPxtnM1UxJbPLo1S3ZskOswq0kCjHP3y9+UzGDfKHId5wDPpT0zk4PSwsFWAVslcIX4BDwRdzEHI05V/3Hd1+Lr8l7p+Jnh2IvSFMS4DiO4ziO4ziO4zhOqJf/AZA9QlamcigfAAAAAElFTkSuQmCC"
-                    />
-                  </defs>
-                </svg>
-              </button>
+          {loading && <p role="status" className="text-white">Loading students...</p>}
+          {error && <p role="alert" className="bg-white text-red-700 rounded-lg p-4">{error}</p>}
+          {!loading && !error && <p className="text-white">{rows.length} students</p>}
+          {!loading && !error && rows.length === 0 && (
+            <p className="bg-white rounded-lg p-4">{students.length ? "No students match that search." : "No student profiles yet."}</p>
+          )}
+
+          <div className="flex flex-col gap-2">
+            {rows.map(({ student, result }) => {
+              const recommended = result ? isRecommended(result) : false;
+              return (
+                <button key={student.id} type="button" onClick={() => setSelectedId(student.id)}
+                  aria-pressed={selected?.student.id === student.id}
+                  className={`bg-white rounded-xl p-4 text-left border-4 cursor-pointer ${
+                    selected?.student.id === student.id ? "border-orange-500" : "border-transparent"}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="font-semibold text-lg flex items-center gap-2">
+                      {student.name} <ActiveDot active={Boolean(online[student.id])} label={false} />
+                    </h2>
+                    {recommended && (
+                      <span className="text-xs font-semibold rounded-full px-2 py-1 bg-green-100 text-green-900">Recommended</span>
+                    )}
+                  </div>
+                  <p className="text-gray-600">
+                    {[student.major, student.classification, student.graduationYear && `Class of ${student.graduationYear}`]
+                      .filter(Boolean).join(" | ") || "Profile details not added yet"}
+                  </p>
+                  {result && result.reasons.length > 0 && (
+                    <p className="text-xs text-green-800 mt-1">{result.reasons.join(" | ")}</p>
+                  )}
+                  {result && !result.eligible && (
+                    <p className="text-xs text-gray-500 mt-1">Below this project's minimum GPA</p>
+                  )}
+                </button>
+              );
+            })}
           </div>
+        </section>
 
-          {/* Specific filters for sorting search results (e.g. by date, by major, etc.) */}
-          <div className="grid grid-cols-2 gap-2">
-            <select title="major" className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full">
-              <option value="">All Majors</option>
-              <option value="computer science">Computer Science</option>
-              <option value="math">Mathematics</option>
-              <option value="business">Business</option>
-              <option value="biology">Biology</option>
-              <option value="history">History</option>
-              <option value="english">English</option>
-              <option value="art">Art</option>
-              <option value="psychology">Psychology</option>
-            </select>
-            <select title="classification" className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full">
-              <option value="">All Classifications</option>
-              <option value="freshman">Freshman</option>
-              <option value="sophomore">Sophomore</option>
-              <option value="junior">Junior</option>
-              <option value="senior">Senior</option>
-            </select>
-            <select title="gpa" className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full">
-              <option value="">Any GPA</option>
-              <option value="1.5-2.4">1.5-2.4</option>
-              <option value="2.5-3.4">2.5-3.4</option>
-              <option value="3.5-4.0">3.5-4.0</option>
-              <option value="4.0+">4.0+</option>
-            </select>
-            <select title="availability" className="border border-gray-300 rounded-lg px-4 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-vsu-orange w-full">
-              <option value="">Any Availability</option>
-              <option value="5">5+ hrs/week</option>
-              <option value="10">10+ hrs/week</option>
-              <option value="15">15+ hrs/week</option>
-            </select>
-          </div>
-
-          <div className="flex flex-col align-items-center justify-start w-full max-w-190 pt-3">
-            <SkillInput value={skills} onChange={setSkills} />
-          </div>
-
-          <div className="flex mt-5 flex-row justify-between items-center">
-            <p className="text-white pt-2 text-lg">Matching Students</p>
-            <p className="text-white pt-2 text-lg ">24 Results</p>
-          </div>
-
-          {/* Search Results Box */}
-          <div className="h-93 xl:w-190 lg:w-150 md:w-130 w-100 gap-2 shadow-lg flex flex-col justify-start overflow-scroll">
-            {applicants.map((applicant, index) => (
-              <StudentCard
-                key={index}
-                graduateYear={applicant.graduateYear}
-                student={applicant.student}
-                major={applicant.major}
-                applied={applicant.applied}
-                isSelected={selectedApplicant === index}
-                onSelect={() => setSelectedApplicant(index)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Student Info Box */}
-        <div>
-          <DiscoverStudentInfoCard/>
-        </div>
-      </div>
+        {selected && (
+          <section className="bg-white rounded-xl p-6 self-start flex flex-col gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-bold">{selected.student.name}</h2>
+                <ActiveDot active={Boolean(online[selected.student.id])} />
+              </div>
+              <MessageButton targetId={selected.student.id} />
+            </div>
+            {selected.student.profilePictureUrl && (
+              <ProfilePhotoPreview key={selected.student.id}
+                src={selected.student.profilePictureUrl} name={selected.student.name} />
+            )}
+            <p>{selected.student.email}</p>
+            <dl className="grid grid-cols-2 gap-3">
+              {[
+                ["Major", selected.student.major],
+                ["Classification", selected.student.classification],
+                ["Graduation year", selected.student.graduationYear],
+                ["GPA", selected.student.gpa],
+                ["Hours available per week", selected.student.availableHoursPerWeek],
+              ].map(([label, value]) => (
+                <div key={String(label)} className="bg-gray-100 rounded-lg p-3">
+                  <dt className="text-gray-600">{label}</dt>
+                  <dd className="font-semibold">{value ?? "Not specified"}</dd>
+                </div>
+              ))}
+            </dl>
+            {project && selected.result && (
+              <div className="bg-green-50 rounded-lg p-3">
+                <p className="font-semibold">Fit for {project.title}</p>
+                <p className="text-sm">
+                  {selected.result.reasons.length ? selected.result.reasons.join(" | ") : "No direct matches with this project's requirements."}
+                </p>
+              </div>
+            )}
+            <h3 className="font-semibold">Skills</h3>
+            <p>{selected.student.skills?.join(", ") || "Not specified"}</p>
+            {selected.student.description?.trim() && <>
+              <h3 className="font-semibold">About</h3>
+              <p className="whitespace-pre-wrap">{selected.student.description}</p>
+            </>}
+          </section>
+        )}
+      </main>
     </div>
   );
-};
-
-export default ProfessorDiscoverPage;
+}

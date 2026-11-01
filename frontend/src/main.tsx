@@ -33,6 +33,7 @@ import PartnerLogin from "./pages/auth/PartnerLogin.tsx";
 import PartnerSignUp from "./pages/auth/PartnerSignUp.tsx";
 import PartnerResearchPage from "./pages/partner/PartnerResearchPage.tsx";
 import AdminPartnersPage from "./pages/admin/AdminPartnersPage.tsx";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
 import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
 import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
@@ -98,6 +99,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/report-problem" element={<ReportProblemPage />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/admin-partners" element={<AdminPartnersPage />} />
+        <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
         <Route path="/faculty-profile" element={<FacultyProfileViewPage />} />
         </Route>
       </Routes>

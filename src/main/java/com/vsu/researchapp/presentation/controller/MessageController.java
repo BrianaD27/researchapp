@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vsu.researchapp.application.service.MessageService;
@@ -75,6 +76,27 @@ public class MessageController {
             return Map.of("count", service.unreadCount(service.context(actingFor)));
         } catch (org.springframework.web.server.ResponseStatusException e) {
             return Map.of("count", 0L);
+        }
+    }
+
+    // Green dots for lists of people. Returns {} when you aren't allowed to see that side.
+    @GetMapping("/presence/students")
+    public Map<Long, Boolean> studentPresence(@RequestParam(defaultValue = "") List<Long> ids,
+            @RequestHeader(value = ACTING, required = false) String actingFor) {
+        try {
+            return service.studentPresence(service.context(actingFor), ids);
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return Map.of();
+        }
+    }
+
+    @GetMapping("/presence/professors")
+    public Map<Long, Boolean> professorPresence(@RequestParam(defaultValue = "") List<Long> ids,
+            @RequestHeader(value = ACTING, required = false) String actingFor) {
+        try {
+            return service.professorPresence(service.context(actingFor), ids);
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return Map.of();
         }
     }
 

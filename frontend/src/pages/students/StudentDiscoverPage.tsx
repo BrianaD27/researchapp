@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import StudentNavBar from "../../components/common/StudentNavBar";
 import apiClient from "../../api/client";
+import { fit, isRecommended, type FitStudent } from "../../api/match";
 
 interface Opportunity {
   id: number;
@@ -46,6 +47,7 @@ export default function StudentDiscoverPage() {
   const [actionBusy, setActionBusy] = useState(false);
   const [actionError, setActionError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const [me, setMe] = useState<FitStudent | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -54,7 +56,8 @@ export default function StudentDiscoverPage() {
 
     async function loadStudentActions() {
       try {
-        const profile = await apiClient.get<{ id: number }>("/students/me");
+        const profile = await apiClient.get<{ id: number } & FitStudent>("/students/me");
+        if (active) setMe(profile.data);
         const id = profile.data.id;
         const [saved, applications] = await Promise.all([
           apiClient.get<{ opportunityId: number }[]>(`/saved-opportunities/student/${id}`),
@@ -163,6 +166,18 @@ export default function StudentDiscoverPage() {
   });
   const selected = filtered.find((item) => item.id === selectedId) ?? filtered[0];
 
+  // Recommended for you: open projects you haven't applied to that fit your
+  // major, classification, skills, and GPA.
+  const today = new Date().toISOString().slice(0, 10);
+  const recommended = me ? opportunities
+    .filter((item) => !appliedIds.includes(item.id)
+      && item.availability?.toLowerCase() !== "closed"
+      && (!item.applicationDeadline || item.applicationDeadline >= today))
+    .map((item) => ({ item, result: fit(me, item) }))
+    .filter(({ result }) => isRecommended(result))
+    .sort((a, b) => b.result.score - a.result.score)
+    .slice(0, 3) : [];
+
   return (
     <div className="min-h-screen bg-[#1B51A4]">
       <StudentNavBar />
@@ -217,6 +232,22 @@ export default function StudentDiscoverPage() {
             <p role="alert" className="bg-white text-red-700 rounded-lg p-4">{error}</p>
           ) : (
             <>
+              {recommended.length > 0 && (
+                <div className="bg-white/10 rounded-2xl p-4 mb-4">
+                  <h2 className="text-white text-lg font-semibold mb-2">Recommended for you</h2>
+                  <div className="flex flex-col gap-2">
+                    {recommended.map(({ item, result }) => (
+                      <button key={item.id} type="button"
+                        onClick={() => { setQuery(""); setSearch(""); setStatus(""); setSelectedId(item.id); }}
+                        className="bg-white rounded-xl p-3 text-left cursor-pointer border-2 border-green-500">
+                        <p className="font-semibold">{item.title}</p>
+                        <p className="text-sm text-gray-600">{item.professorName || "Faculty not specified"}</p>
+                        <p className="text-xs text-green-800 mt-1">Why: {result.reasons.join(" | ")}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <p role="status" className="text-white mb-3">{filtered.length} results</p>
               {!filtered.length && (
                 <p className="bg-white rounded-lg p-4">

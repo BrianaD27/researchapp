@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import ProfilePhotoPreview from "../../components/common/ProfilePhotoPreview";
+import ActiveDot from "../../components/common/ActiveDot";
+import MessageButton from "../../components/common/MessageButton";
+import { usePresence } from "../../api/presence";
 import apiClient from "../../api/client";
 
 interface Opportunity {
@@ -151,6 +154,7 @@ export default function ProfessorApplicantsPage() {
     && item.studentName.toLowerCase().includes(query.trim().toLowerCase())
   );
   const selected = visible.find((item) => item.id === applicationId) ?? visible[0];
+  const online = usePresence("students", applications.map((item) => item.studentId));
   const [note, setNote] = useState("");
   const [noteFor, setNoteFor] = useState<number | null>(null);
   if ((selected?.id ?? null) !== noteFor) {
@@ -318,7 +322,9 @@ export default function ProfessorApplicantsPage() {
                         onClick={() => { setApplicationId(item.id); setMessage(""); setActionError(""); }}
                         aria-pressed={selected?.id === item.id}
                         className={`bg-white rounded-xl p-4 text-left border-4 cursor-pointer ${selected?.id === item.id ? "border-orange-500" : "border-transparent"}`}>
-                        <h3 className="font-semibold text-lg">{item.studentName}</h3>
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          {item.studentName} <ActiveDot active={Boolean(online[item.studentId])} label={false} />
+                        </h3>
                         <p>{statusLabel(item)}</p>
                         <p className="text-sm text-gray-600">Applied: {item.appliedAt ? new Date(item.appliedAt).toLocaleDateString() : "Not recorded"}</p>
                       </button>
@@ -329,7 +335,13 @@ export default function ProfessorApplicantsPage() {
             </section>
             {selected && !loadingApplicants && (
               <section className="bg-white rounded-xl p-6">
-                <h2 className="text-2xl font-bold mb-3">{selected.studentName}</h2>
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                  <div>
+                    <h2 className="text-2xl font-bold">{selected.studentName}</h2>
+                    <ActiveDot active={Boolean(online[selected.studentId])} />
+                  </div>
+                  <MessageButton targetId={selected.studentId} />
+                </div>
                 <p className="font-semibold mb-4">Status: {statusLabel(selected)}</p>
                 {loadingStudent && <p role="status">Loading student profile...</p>}
                 {studentError && <p role="alert" className="text-red-700">{studentError}</p>}
