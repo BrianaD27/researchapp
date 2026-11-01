@@ -50,9 +50,17 @@ public class StudentService {
         if (studentRepository.existsByEmail(dto.email())) {
             throw new IllegalArgumentException("A student with this email already exists");
         }
+        validateRanges(dto.gpa(), dto.availableHoursPerWeek());
 
         UserAccount currentUser = currentUserService.getCurrentUserAccount();
         boolean isAdmin = currentUserService.isAdmin(currentUser);
+
+        // A student's own profile must use the email they signed up with, so nobody
+        // can claim a profile under someone else's address. Admins are exempt.
+        if (!isAdmin && (currentUser.getEmail() == null
+                || !currentUser.getEmail().trim().equalsIgnoreCase(dto.email().trim()))) {
+            throw new IllegalArgumentException("Use the same email address you signed up with.");
+        }
 
         // One student profile per login account. Without this check, a STUDENT
         // account could call this endpoint repeatedly and end up "owning" - and
@@ -89,6 +97,7 @@ public class StudentService {
     public StudentDto updateStudent(UpdateStudentDto updated, Long id) {
         Student existingStudent = studentRepository.getStudentById(id);
         assertCanModify(existingStudent);
+        validateRanges(updated.gpa(), updated.availableHoursPerWeek());
 
         Optional.ofNullable(updated.name()).ifPresent(existingStudent::setName);
         Optional.ofNullable(updated.major()).ifPresent(existingStudent::setMajor);
@@ -99,7 +108,8 @@ public class StudentService {
         Optional.ofNullable(updated.outsideInterests()).ifPresent(existingStudent::setOutsideInterests);
         Optional.ofNullable(updated.gpa()).ifPresent(existingStudent::setGpa);
         Optional.ofNullable(updated.availableHoursPerWeek()).ifPresent(existingStudent::setAvailableHoursPerWeek);
-        Optional.ofNullable(updated.resumeUrl()).ifPresent(existingStudent::setResumeUrl);
+        // resumeUrl is set only by the resume upload endpoint. A link sent by the
+        // browser is ignored, so a profile can't point professors at another site.
         Optional.ofNullable(updated.skills()).ifPresent(existingStudent::setSkills);
 
         return entityToDto(studentRepository.updateStudent(existingStudent, id));
@@ -157,5 +167,14 @@ public class StudentService {
             student.getCreatedAt(),
             student.getUpdatedAt()
         );
+    }
+
+    private void validateRanges(Float gpa, Integer hours) {
+        if (gpa != null && (gpa < 0f || gpa > 4.0f)) {
+            throw new IllegalArgumentException("GPA must be between 0.0 and 4.0.");
+        }
+        if (hours != null && (hours < 0 || hours > 80)) {
+            throw new IllegalArgumentException("Available hours per week must be between 0 and 80.");
+        }
     }
 }

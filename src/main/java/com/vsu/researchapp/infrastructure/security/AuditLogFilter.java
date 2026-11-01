@@ -27,9 +27,6 @@ public class AuditLogFilter extends OncePerRequestFilter {
         String ip = getClientIp(request);
         String method = request.getMethod();
         String uri = request.getRequestURI();
-        String user = request.getRemoteUser() != null ?
-            request.getRemoteUser() : "anonymous";
-
         long start = System.currentTimeMillis();
 
         try {
@@ -37,6 +34,9 @@ public class AuditLogFilter extends OncePerRequestFilter {
         } finally {
             long duration = System.currentTimeMillis() - start;
             int status = response.getStatus();
+            // Read the user after the request ran: the login check comes later in
+            // the chain, so before this point every request looked anonymous.
+            String user = currentUser();
 
             if (status == 401 || status == 403) {
                 logger.warn("[AUDIT] {} | IP: {} | User: {} | {} {} | Status: {} | {}ms",
@@ -46,6 +46,16 @@ public class AuditLogFilter extends OncePerRequestFilter {
                     LocalDateTime.now(), ip, user, method, uri, status, duration);
             }
         }
+    }
+
+    private String currentUser() {
+        var auth = org.springframework.security.core.context.SecurityContextHolder
+            .getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()
+                || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+            return "anonymous";
+        }
+        return auth.getName();
     }
 
     private String getClientIp(HttpServletRequest request) {

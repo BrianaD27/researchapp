@@ -58,16 +58,22 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
-            @Valid @RequestBody LogoutRequest request,
+            @RequestBody(required = false) LogoutRequest request,
             HttpServletRequest httpRequest) {
 
+        // Only a logged-in user can log out, and only themselves. The username in
+        // the request body is ignored; it used to let anyone end anyone's session.
+        var auth = org.springframework.security.core.context.SecurityContextHolder
+            .getContext().getAuthentication();
         String authHeader = httpRequest.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            tokenBlacklistService.blacklist(token, 86400000);
+        if (auth == null || !auth.isAuthenticated()
+                || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken
+                || authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not logged in"));
         }
 
-        userAccountService.logout(request.username());
+        tokenBlacklistService.blacklist(authHeader.substring(7), 86400000);
+        userAccountService.logout(auth.getName());
         return ResponseEntity.ok(Map.of(
             "message", "Logged out successfully"
         ));

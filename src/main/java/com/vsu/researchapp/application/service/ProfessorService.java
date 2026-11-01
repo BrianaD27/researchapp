@@ -58,6 +58,11 @@ public class ProfessorService {
         if (!isAdmin && professorRepository.getProfessorByUserAccountId(currentUser.getId()).isPresent()) {
             throw new IllegalStateException("This account already has a professor profile");
         }
+        // A professor's own profile must use the email they signed up with.
+        if (!isAdmin && (currentUser.getEmail() == null
+                || !currentUser.getEmail().trim().equalsIgnoreCase(dto.email().trim()))) {
+            throw new IllegalArgumentException("Use the same email address you signed up with.");
+        }
 
         Professor professor = new Professor();
         professor.setName(dto.name());
@@ -83,7 +88,8 @@ public class ProfessorService {
         Optional.ofNullable(updated.department()).ifPresent(professor::setDepartment);
         Optional.ofNullable(updated.officeLocation()).ifPresent(professor::setOfficeLocation);
         Optional.ofNullable(updated.description()).ifPresent(professor::setDescription);
-        Optional.ofNullable(updated.profilePictureUrl()).ifPresent(professor::setProfilePictureUrl);
+        // profilePictureUrl is set only by the photo upload endpoint; a link sent
+        // by the browser is ignored.
         Optional.ofNullable(updated.outsideInterests()).ifPresent(professor::setOutsideInterests);
         Optional.ofNullable(updated.education()).ifPresent(list -> {
             professor.getEducation().clear();
