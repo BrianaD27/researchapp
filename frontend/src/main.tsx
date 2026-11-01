@@ -25,6 +25,7 @@ import FacultyInfoPage from "./pages/auth/FacultyInfoPage.tsx";
 import StudentInfoPage from "./pages/auth/StudentInfoPage.tsx";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.tsx";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage.tsx";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage.tsx";
 import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
 import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
@@ -41,6 +42,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/faculty-info" element={<FacultyInfoPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
 
         {/* Student Routes */}

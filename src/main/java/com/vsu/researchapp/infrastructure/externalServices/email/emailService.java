@@ -41,6 +41,17 @@ public class emailService {
         );
     }
 
+    public void sendEmailVerification(String toEmail, String username, String token) {
+        sendEmail(toEmail,
+            "VSU Research App - Activate your account",
+            "Hi " + username + ",\n\n" +
+            "Click this link to confirm this is your VSU email and activate your account:\n\n" +
+            frontendUrl + "/verify-email?token=" + token + "\n\n" +
+            "The link expires in 24 hours and works once.\n\n" +
+            "If you did not sign up, you can ignore this email and the account will stay inactive."
+        );
+    }
+
     // Mirrors an in-app notification. The link is a relative app path.
     public void sendNotification(String toEmail, String subject, String message, String link) {
         String body = message + "\n\n"

@@ -35,6 +35,11 @@ public class UserAccount {
     // Remember me / session support marker
     private LocalDateTime lastLoginAt;
 
+    // FALSE until a self-registered account clicks its email verification link.
+    // NULL for accounts created before verification existed, or by an admin;
+    // those are treated as verified.
+    private Boolean emailVerified;
+
     // Password reuse prevention
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -165,6 +170,14 @@ public class UserAccount {
 
     public void setTwoFactorExpiry(LocalDateTime twoFactorExpiry) {
         this.twoFactorExpiry = twoFactorExpiry;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     public LocalDateTime getLastLoginAt() {

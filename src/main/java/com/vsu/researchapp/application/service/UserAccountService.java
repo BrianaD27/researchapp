@@ -8,6 +8,8 @@ import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 
 import com.vsu.researchapp.domain.repositoryinterfaces.LoginHistoryRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.PasswordResetTokenRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.EmailVerificationTokenRepository;
+import com.vsu.researchapp.domain.model.EmailVerificationToken;
 import com.vsu.researchapp.domain.repositoryinterfaces.RefreshTokenRepository;
 import com.vsu.researchapp.infrastructure.externalServices.email.emailService;
 import com.vsu.researchapp.infrastructure.security.JwtUtil;
@@ -37,6 +39,7 @@ public class UserAccountService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final emailService emailService;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
                               PasswordEncoder passwordEncoder,
@@ -44,7 +47,9 @@ public class UserAccountService {
                               LoginHistoryRepository loginHistoryRepository,
                               PasswordResetTokenRepository passwordResetTokenRepository,
                               RefreshTokenRepository refreshTokenRepository,
-                              emailService emailService) {
+                              emailService emailService,
+                              EmailVerificationTokenRepository emailVerificationTokenRepository) {
+        this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
@@ -149,6 +154,15 @@ public class UserAccountService {
             userAccountRepository.save(user);
             saveLoginHistory(username, ip, userAgent, "FAILED");
             throw new RuntimeException("Invalid credentials");
+        }
+
+        // Checked only after the right password, so this can't be used to find
+        // out which accounts exist.
+        if (Boolean.FALSE.equals(user.getEmailVerified())) {
+            user.setFailedAttempts(0);
+            userAccountRepository.save(user);
+            saveLoginHistory(username, ip, userAgent, "UNVERIFIED");
+            throw new RuntimeException("Email not verified");
         }
 
         user.setFailedAttempts(0);
@@ -302,6 +316,76 @@ public class UserAccountService {
     public List<LoginHistory> getLoginHistory(String username) {
         return loginHistoryRepository
             .findTop10ByUsernameOrderByLoginTimeDesc(username);
+    }
+
+    // Public sign-up: the account can't log in until the emailed link is clicked,
+    // which proves the person owns that VSU address.
+    public void startEmailVerification(UserAccount user) {
+        user.setEmailVerified(false);
+        userAccountRepository.save(user);
+        issueVerificationLink(user);
+    }
+
+    public void verifyEmail(String token) {
+        EmailVerificationToken stored = emailVerificationTokenRepository
+            .findByTokenHash(hashResetToken(token == null ? "" : token.trim()))
+            .orElseThrow(() -> new RuntimeException("Invalid activation link"));
+        if (stored.isUsed()) {
+            throw new RuntimeException("This activation link was already used");
+        }
+        if (stored.getExpiresAt() == null || LocalDateTime.now().isAfter(stored.getExpiresAt())) {
+            throw new RuntimeException("This activation link expired");
+        }
+        UserAccount user = userAccountRepository.findByUsername(stored.getUsername())
+            .orElseThrow(() -> new RuntimeException("Invalid activation link"));
+        user.setEmailVerified(true);
+        userAccountRepository.save(user);
+        stored.setUsed(true);
+        emailVerificationTokenRepository.save(stored);
+        logger.info("[VERIFY] Email verified for {}", user.getUsername());
+    }
+
+    // Same response whether or not the account exists or needs it; at most one
+    // new link every 2 minutes per account.
+    public void resendEmailVerification(String usernameOrEmail) {
+        String identifier = usernameOrEmail == null ? "" : usernameOrEmail.trim();
+        Optional<UserAccount> found = userAccountRepository.findByUsername(identifier);
+        if (found.isEmpty() && identifier.contains("@")) {
+            List<UserAccount> matches = userAccountRepository.findAllByEmailIgnoreCase(identifier);
+            if (matches.size() == 1) {
+                found = Optional.of(matches.get(0));
+            }
+        }
+        if (found.isEmpty() || !Boolean.FALSE.equals(found.get().getEmailVerified())) {
+            return;
+        }
+        UserAccount user = found.get();
+        Optional<EmailVerificationToken> recent =
+            emailVerificationTokenRepository.findFirstByUsernameOrderByIdDesc(user.getUsername());
+        if (recent.isPresent() && recent.get().getCreatedAt() != null
+                && recent.get().getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(2))) {
+            logger.info("[VERIFY] Ignoring repeat activation request within two minutes");
+            return;
+        }
+        issueVerificationLink(user);
+    }
+
+    private void issueVerificationLink(UserAccount user) {
+        emailVerificationTokenRepository.deleteByUsername(user.getUsername());
+        String token = UUID.randomUUID().toString() + UUID.randomUUID().toString();
+        EmailVerificationToken stored = new EmailVerificationToken();
+        stored.setTokenHash(hashResetToken(token));
+        stored.setUsername(user.getUsername());
+        emailVerificationTokenRepository.save(stored);
+        String email = user.getEmail();
+        String username = user.getUsername();
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                emailService.sendEmailVerification(email, username, token);
+            } catch (Exception e) {
+                logger.warn("[EMAIL] Could not send activation email: {}", e.getMessage());
+            }
+        });
     }
 
     // Accepts a username or the account's email. Unknown accounts return silently

@@ -96,10 +96,28 @@ public class AuthController {
         // request is ignored; faculty accounts are created or promoted by an admin.
         var user = userAccountService.createUser(
             request.username(), request.email(), request.password(), "STUDENT");
+        // The account stays inactive until the emailed link is clicked.
+        userAccountService.startEmailVerification(user);
         return ResponseEntity.ok(Map.of(
-            "message", "User created successfully",
+            "message", "Account created. Check your VSU email for a link to activate it.",
             "username", user.getUsername()
         ));
+    }
+
+    public record VerifyEmailRequest(String token) {}
+    public record ResendVerificationRequest(String usernameOrEmail) {}
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestBody VerifyEmailRequest request) {
+        userAccountService.verifyEmail(request.token());
+        return ResponseEntity.ok(Map.of("message", "Email verified. You can log in now."));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody ResendVerificationRequest request) {
+        userAccountService.resendEmailVerification(request.usernameOrEmail());
+        return ResponseEntity.ok(Map.of("message",
+            "If that account is waiting for activation, a new link is on its way."));
     }
 
     @PostMapping("/forgot-password")

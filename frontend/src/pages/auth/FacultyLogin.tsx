@@ -153,6 +153,11 @@ const FacultyLogin = () => {
                 Forgot password?
               </Link>
             )}
+            {!needsCode && (
+              <Link to="/verify-email" className="text-blue-700 underline text-center">
+                Need a new activation link?
+              </Link>
+            )}
           </form>
         </section>
       </main>

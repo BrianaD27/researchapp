@@ -102,7 +102,13 @@ export default function StudentAccountPage({ register = false }: { register?: bo
 
           {created ? (
             <div role="status" className="flex flex-col gap-4">
-              <p>Account created for {username}. Log in with your username and password.</p>
+              <p>
+                Account created for {username}. We sent an activation link to {email}.
+                Open it to activate your account, then log in.
+              </p>
+              <Link className="text-blue-700 underline" to="/verify-email">
+                Didn't get the email? Send a new link
+              </Link>
               <Link className="bg-blue-700 text-white rounded-lg p-3 text-center" to="/StudentLogin">
                 Go to Student Login
               </Link>
@@ -217,6 +223,12 @@ export default function StudentAccountPage({ register = false }: { register?: bo
               {!register && !needsCode && (
                 <Link className="text-blue-700 underline" to="/forgot-password">
                   Forgot password?
+                </Link>
+              )}
+
+              {!register && !needsCode && (
+                <Link className="text-blue-700 underline" to="/verify-email">
+                  Need a new activation link?
                 </Link>
               )}
 
