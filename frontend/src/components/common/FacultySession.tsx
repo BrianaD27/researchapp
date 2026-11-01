@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../../api/client";
 import NotificationBell from "./NotificationBell";
 import TopBarLinks from "./TopBarLinks";
@@ -47,6 +47,7 @@ function clearSession() {
 
 export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginPath?: string }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [valid, setValid] = useState(() => readSession() !== null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -143,6 +144,10 @@ export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginP
       <div className="bg-white border-b px-6 py-2 flex flex-wrap items-center justify-end gap-3">
         {error && <p role="alert" className="text-red-700 text-sm">{error}</p>}
         <TopBarLinks />
+        <Link to="/report-problem" state={{ from: location.pathname }}
+          className="text-sm text-blue-700 font-semibold hover:underline">
+          Report a Problem
+        </Link>
         <NotificationBell />
         <button
           type="button"
