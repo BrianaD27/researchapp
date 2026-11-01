@@ -19,7 +19,7 @@ services:
     image: redis:7-alpine
     container_name: vsu-research-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     restart: unless-stopped
 
   # Local-only email inbox for development. The app sends to port 1025;
