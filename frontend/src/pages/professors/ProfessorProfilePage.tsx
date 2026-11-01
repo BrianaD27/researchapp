@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import { Link } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import apiClient from "../../api/client";
+import { API_ORIGIN } from "../../api/config";
 
 interface Professor {
   id: number;
@@ -391,7 +392,7 @@ const ProfessorProfilePage = () => {
                   <img
                     src={new URL(
                       selected.profilePictureUrl,
-                      "http://localhost:8080"
+                      API_ORIGIN
                     ).href}
                     alt="Faculty profile"
                     className="w-32 h-32 rounded-full object-cover"

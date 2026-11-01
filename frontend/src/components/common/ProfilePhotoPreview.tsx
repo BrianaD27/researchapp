@@ -1,11 +1,12 @@
 import { useRef } from "react";
+import { API_ORIGIN } from "../../api/config";
 
 export default function ProfilePhotoPreview({ src, name }: {
   src: string;
   name: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const url = new URL(src, "http://localhost:8080").href;
+  const url = new URL(src, API_ORIGIN).href;
 
   return (
     <>

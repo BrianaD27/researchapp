@@ -1,7 +1,8 @@
 // Helpers shared by the student and faculty profile pages.
+import { API_ORIGIN } from "../../api/config";
 
 export function mediaUrl(path: string) {
-  return new URL(path, "http://localhost:8080").href;
+  return new URL(path, API_ORIGIN).href;
 }
 
 export function initialsOf(name: string) {
