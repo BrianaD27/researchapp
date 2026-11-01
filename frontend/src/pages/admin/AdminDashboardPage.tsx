@@ -23,6 +23,7 @@ const ROLE_LABELS: Record<string, string> = {
   ASSOCIATE: "Research Associates",
   ADMIN: "Admins",
   PARTNER: "Partner school",
+  PENDING_FACULTY: "Waiting for faculty approval",
 };
 
 function Tile({ label, value, tone = "default", to }: {

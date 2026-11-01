@@ -62,18 +62,25 @@ public class UserAccountService {
     public UserAccount createUser(String username, String email,
             String password, String role) {
         validateVsuEmail(email);
-        return createAccount(username, email, password, role, false);
+        return createAccount(username, email, password, role, null);
     }
 
     // Partner-school sign-up. The caller has already matched the email to an
     // active partner school's domain; these accounts only get the view-only
     // PARTNER role.
     public UserAccount createPartnerUser(String username, String email, String password) {
-        return createAccount(username, email, password, "PARTNER", true);
+        return createAccount(username, email, password, "PARTNER", "PARTNER");
+    }
+
+    // Faculty sign-up. The account waits as PENDING_FACULTY (no access) until an
+    // admin approves it in FacultyRequestService.
+    public UserAccount createFacultyRequestUser(String username, String email, String password) {
+        validateVsuEmail(email);
+        return createAccount(username, email, password, "PENDING_FACULTY", "PENDING_FACULTY");
     }
 
     private UserAccount createAccount(String username, String email,
-            String password, String role, boolean partner) {
+            String password, String role, String specialRole) {
         validatePasswordStrength(password);
 
         UserAccount existing = userAccountRepository
@@ -108,8 +115,8 @@ public class UserAccountService {
         // this check, any logged-in user - even a STUDENT - could register a brand
         // new ADMIN account for themselves. Public self-registration is limited to
         // the two roles a signup form is actually meant to hand out.
-        boolean allowed = partner
-            ? normalizedRole.equals("PARTNER")
+        boolean allowed = specialRole != null
+            ? normalizedRole.equals(specialRole)
             : normalizedRole.equals("STUDENT") || normalizedRole.equals("PROFESSOR");
         if (!allowed) {
             throw new IllegalArgumentException(

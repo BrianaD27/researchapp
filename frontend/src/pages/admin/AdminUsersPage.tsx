@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import apiClient from "../../api/client";
 import ActiveDot from "../../components/common/ActiveDot";
+import FacultyRequestsPanel from "../../components/admin/FacultyRequestsPanel";
 import { usePresence } from "../../api/presence";
 
 interface AdminUser {
@@ -20,6 +21,7 @@ const roles = [
   { value: "ASSOCIATE", label: "Research Associate" },
   { value: "ADMIN", label: "Admin" },
   { value: "PARTNER", label: "Partner school (view only)" },
+  { value: "PENDING_FACULTY", label: "Waiting for faculty approval" },
 ];
 
 function problem(caught: unknown, fallback: string) {
@@ -82,6 +84,7 @@ export default function AdminUsersPage() {
       <FacultyNavBar />
       <main className="max-w-6xl mx-auto p-5 flex flex-col gap-4">
         <h1 className="text-2xl text-white">Users</h1>
+        <FacultyRequestsPanel onChanged={() => void refresh().catch(() => undefined)} />
         {loading && <p role="status" className="text-white">Loading...</p>}
         {error && <p role="alert" className="bg-white text-red-700 rounded-lg p-4">{error}</p>}
         {message && <p role="status" className="bg-white text-green-800 rounded-lg p-4">{message}</p>}

@@ -9,6 +9,7 @@ import com.vsu.researchapp.domain.repositoryinterfaces.ProfessorRepositoryInterf
 import com.vsu.researchapp.domain.repositoryinterfaces.ResearchOpportunityRepositoryInterface;
 import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,29 +21,39 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initData(UserAccountRepository userRepo,
                                ResearchOpportunityRepositoryInterface oppRepo, ProfessorRepositoryInterface proRepo,
-                               PasswordEncoder encoder) {
+                               PasswordEncoder encoder,
+                               @Value("${bootstrap.admin.username:}") String adminUsername,
+                               @Value("${bootstrap.admin.email:}") String adminEmail,
+                               @Value("${bootstrap.admin.password:}") String adminPassword,
+                               @Value("${app.seed-demo-data:false}") boolean seedDemoData) {
         return args -> {
 
-            // ---- ADMIN USER SEED ----
-            if (userRepo.findByUsername("admin123").isEmpty()) {
+            // ---- FIRST ADMIN ----
+            // There is no built-in admin password. On a brand-new database with no
+            // admin, set BOOTSTRAP_ADMIN_USERNAME, BOOTSTRAP_ADMIN_EMAIL, and
+            // BOOTSTRAP_ADMIN_PASSWORD once to create the first admin, then remove them.
+            boolean anyAdmin = userRepo.findAll().stream()
+                .anyMatch(u -> "ADMIN".equalsIgnoreCase(u.getRole()));
+            if (!anyAdmin && !adminUsername.isBlank() && !adminEmail.isBlank() && adminPassword.length() >= 12
+                    && userRepo.findByUsername(adminUsername.trim()).isEmpty()) {
                 UserAccount admin = new UserAccount();
-                admin.setUsername("admin123");
-                admin.setEmail("admin@example.com");
-                admin.setPasswordHash(encoder.encode("admin123"));
-                // if your UserAccount has a role field, keep this. If not, you can comment it out.
-                try {
-                    admin.setRole("ADMIN");
-                } catch (NoSuchMethodError | RuntimeException e) {
-                    System.out.println("Role field not present on UserAccount (that's okay for now).");
-                }
+                admin.setUsername(adminUsername.trim());
+                admin.setEmail(adminEmail.trim());
+                admin.setPasswordHash(encoder.encode(adminPassword));
+                admin.setRole("ADMIN");
                 userRepo.save(admin);
-                System.out.println("Admin user created: admin123 / admin123");
+                System.out.println("First admin account created: " + admin.getUsername());
+            } else if (!anyAdmin) {
+                System.out.println("No admin account yet. Set BOOTSTRAP_ADMIN_USERNAME, BOOTSTRAP_ADMIN_EMAIL, "
+                    + "and BOOTSTRAP_ADMIN_PASSWORD (12+ characters) once to create one.");
             }
             // ---- PROFESSOR OPPORTUNITIES SEED ----
             Professor drDaniels = null;
             Professor drWaller = null;
 
-            if (proRepo.getAllProfessors().isEmpty()) {
+            // Sample professors and projects only when app.seed-demo-data=true, so a
+            // real database never gets placeholder data.
+            if (seedDemoData && proRepo.getAllProfessors().isEmpty()) {
                 drDaniels = new Professor();
                 drDaniels.setName("Dr. Daniels");
                 drDaniels.setEmail("daniels@vsu.edu");

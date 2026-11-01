@@ -18,6 +18,7 @@ export function currentRole(): string {
 // Where each kind of account lands after logging in.
 export function homeFor(role: string): string {
   if (role === "PARTNER") return "/partner-research";
+  if (role === "PENDING_FACULTY") return "/pending-approval";
   if (role === "STUDENT") return "/my-profile";
   return "/faculty-profile";
 }

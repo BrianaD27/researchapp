@@ -159,6 +159,11 @@ const FacultyLogin = () => {
                 Need a new activation link?
               </Link>
             )}
+            {!needsCode && (
+              <Link to="/FacultySignUp" className="text-blue-700 underline text-center">
+                New faculty? Request an account
+              </Link>
+            )}
           </form>
         </section>
       </main>

@@ -7,7 +7,8 @@ import { currentRole } from "../../api/session";
 // "I'm here" ping that powers the green active-now dot.
 export default function MessagesLink() {
   const [count, setCount] = useState(0);
-  const partner = currentRole() === "PARTNER";
+  // Partner-school and not-yet-approved faculty accounts don't have messaging.
+  const partner = ["PARTNER", "PENDING_FACULTY"].includes(currentRole());
 
   const refresh = useCallback(async () => {
     try {
