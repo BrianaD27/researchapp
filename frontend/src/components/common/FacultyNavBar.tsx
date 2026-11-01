@@ -19,7 +19,9 @@ const FacultyNavBar = () => {
 
   return (
     <div className=" flex items-center justify-between p-3 px-7 bg-white text-black drop-shadow-lg">
-      <div className="flex items-center space-x-3">
+      {/* Logo and title go back to your own profile, like a home button. */}
+      <Link to="/faculty-profile" title="Go to my profile" aria-label="Go to my profile"
+        className="flex items-center space-x-3 cursor-pointer">
         <img
           src="/src/assets/vsuLogo.png"
           alt="VSU Logo"
@@ -34,7 +36,7 @@ const FacultyNavBar = () => {
             Research Network
           </h4>
         </div>
-      </div>
+      </Link>
 
       {/* PC Menu */}
       <ul className="space-x-4 hidden md:flex">
