@@ -1,9 +1,10 @@
 import { useRef } from "react";
 import { API_ORIGIN } from "../../api/config";
 
-export default function ProfilePhotoPreview({ src, name }: {
+export default function ProfilePhotoPreview({ src, name, active = false }: {
   src: string;
   name: string;
+  active?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const url = new URL(src, API_ORIGIN).href;
@@ -17,8 +18,16 @@ export default function ProfilePhotoPreview({ src, name }: {
         onClick={() => dialog.current?.showModal()}
         className="block text-left mb-4 cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-blue-700"
       >
-        <img src={url} alt={`Profile of ${name}`}
-          className="w-28 h-28 rounded-full object-cover" />
+        <span className="relative inline-block">
+          <img src={url} alt={`Profile of ${name}`}
+            className="w-28 h-28 rounded-full object-cover" />
+          {/* Green "active now" dot on the photo, like Teams. */}
+          {active && (
+            <span title="Active now" className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-green-500 border-4 border-white">
+              <span className="sr-only">Active now</span>
+            </span>
+          )}
+        </span>
         <span className="block text-sm text-blue-700 underline mt-2">
           View larger photo
         </span>

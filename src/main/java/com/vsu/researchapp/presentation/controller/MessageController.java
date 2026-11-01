@@ -85,6 +85,11 @@ public class MessageController {
         return service.studentPresence(ids);
     }
 
+    @GetMapping("/presence/accounts")
+    public Map<Long, Boolean> accountPresence(@RequestParam(defaultValue = "") List<Long> ids) {
+        return service.accountPresence(ids);
+    }
+
     @GetMapping("/presence/professors")
     public Map<Long, Boolean> professorPresence(@RequestParam(defaultValue = "") List<Long> ids) {
         return service.professorPresence(ids);

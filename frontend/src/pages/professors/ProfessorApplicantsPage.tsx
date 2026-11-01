@@ -338,7 +338,7 @@ export default function ProfessorApplicantsPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                   <div>
                     <h2 className="text-2xl font-bold">{selected.studentName}</h2>
-                    <ActiveDot active={Boolean(online[selected.studentId])} />
+                    {!profile?.profilePictureUrl && <ActiveDot active={Boolean(online[selected.studentId])} />}
                   </div>
                   <MessageButton targetId={selected.studentId} />
                 </div>
@@ -347,7 +347,7 @@ export default function ProfessorApplicantsPage() {
                 {studentError && <p role="alert" className="text-red-700">{studentError}</p>}
                 {profile && <>
                   {profile.profilePictureUrl && (
-                    <ProfilePhotoPreview key={profile.id}
+                    <ProfilePhotoPreview key={profile.id} active={Boolean(online[selected.studentId])}
                       src={profile.profilePictureUrl} name={profile.name} />
                   )}
                   <p className="mb-3">{profile.email}</p>

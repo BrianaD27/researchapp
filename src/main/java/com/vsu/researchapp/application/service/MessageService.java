@@ -202,6 +202,16 @@ public class MessageService {
         return out;
     }
 
+    // By login account id (used on the admin Users page).
+    public Map<Long, Boolean> accountPresence(List<Long> accountIds) {
+        Map<Long, Boolean> out = new LinkedHashMap<>();
+        if (accountIds == null) return out;
+        for (Long id : accountIds.stream().limit(500).toList()) {
+            out.put(id, presence.isActive(id));
+        }
+        return out;
+    }
+
     @Transactional(readOnly = true)
     public Map<Long, Boolean> professorPresence(List<Long> professorIds) {
         Map<Long, Boolean> out = new LinkedHashMap<>();

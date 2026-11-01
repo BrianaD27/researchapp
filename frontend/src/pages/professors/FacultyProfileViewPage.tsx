@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import apiClient from "../../api/client";
+import { usePresence } from "../../api/presence";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, formatDate, hasText } from "../../components/profile/profileUtils";
 
@@ -41,6 +42,7 @@ export default function FacultyProfileViewPage() {
   const navigate = useNavigate();
   const fromLogin = Boolean((useLocation().state as { fromLogin?: boolean } | null)?.fromLogin);
   const [professor, setProfessor] = useState<Professor | null>(null);
+  const online = usePresence("professors", professor ? [professor.id] : []);
   const [projects, setProjects] = useState<Opportunity[]>([]);
   const [past, setPast] = useState<PastProject[]>([]);
   const [notice, setNotice] = useState("");
@@ -109,6 +111,7 @@ export default function FacultyProfileViewPage() {
           <ProfileHero
             name={professor.name}
             photoUrl={professor.profilePictureUrl}
+            active={Boolean(online[professor.id])}
             lines={[
               professor.department,
               [professor.email, hasText(professor.officeLocation) ? `Office: ${professor.officeLocation}` : null]

@@ -3,15 +3,17 @@ import { hasText, initialsOf, mediaUrl } from "./profileUtils";
 
 // Shared building blocks for the student and faculty profile pages.
 
-export function ProfileHero({ name, photoUrl, lines, actions }: {
+export function ProfileHero({ name, photoUrl, lines, actions, active = false }: {
   name: string;
   photoUrl: string | null | undefined;
   lines: (string | null | undefined)[];
   actions?: ReactNode;
+  active?: boolean;
 }) {
   return (
     <section className="bg-[#1B51A4] text-white">
       <div className="max-w-6xl mx-auto px-6 py-10 flex flex-wrap items-center gap-7">
+        <div className="relative shrink-0">
         {photoUrl ? (
           <img
             src={mediaUrl(photoUrl)}
@@ -27,6 +29,12 @@ export function ProfileHero({ name, photoUrl, lines, actions }: {
             {initialsOf(name)}
           </div>
         )}
+        {active && (
+          <span title="Active now" className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-green-500 border-4 border-white">
+            <span className="sr-only">Active now</span>
+          </span>
+        )}
+        </div>
         <div className="flex-[999_1_320px] min-w-0 flex flex-col gap-1.5">
           <h1 className="text-4xl font-bold leading-tight">{name}</h1>
           {lines.filter(hasText).map((line, index) => (

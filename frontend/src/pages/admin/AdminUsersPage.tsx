@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import apiClient from "../../api/client";
+import ActiveDot from "../../components/common/ActiveDot";
+import { usePresence } from "../../api/presence";
 
 interface AdminUser {
   id: number;
@@ -70,6 +72,7 @@ export default function AdminUsersPage() {
     }
   }
 
+  const online = usePresence("accounts", users.map((user) => user.id));
   const visible = users.filter((user) =>
     `${user.username} ${user.email} ${user.role}`.toLowerCase().includes(query.trim().toLowerCase()));
   const button = "rounded-lg px-3 py-1.5 text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
@@ -103,7 +106,11 @@ export default function AdminUsersPage() {
                   const draft = roleDraft[user.username] ?? user.role;
                   return (
                     <tr key={user.id} className="border-b align-middle">
-                      <td className="py-2 pr-3 font-semibold">{user.username}</td>
+                      <td className="py-2 pr-3 font-semibold">
+                        <span className="flex items-center gap-2">
+                          {user.username} <ActiveDot active={Boolean(online[user.id])} label={false} />
+                        </span>
+                      </td>
                       <td className="py-2 pr-3">{user.email}</td>
                       <td className="py-2 pr-3">
                         <div className="flex items-center gap-2">

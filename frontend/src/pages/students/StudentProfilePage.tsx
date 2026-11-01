@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import { Link } from "react-router-dom";
 import StudentNavBar from "../../components/common/StudentNavBar";
 import apiClient from "../../api/client";
+import { usePresence } from "../../api/presence";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, formatDate, hasText } from "../../components/profile/profileUtils";
 
@@ -53,6 +54,7 @@ interface Completed {
 
 export default function StudentProfilePage() {
   const [student, setStudent] = useState<Student | null>(null);
+  const online = usePresence("students", student ? [student.id] : []);
   const [completed, setCompleted] = useState<Completed[]>([]);
   const [missing, setMissing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -125,6 +127,7 @@ export default function StudentProfilePage() {
           <ProfileHero
             name={student.name}
             photoUrl={student.profilePictureUrl}
+            active={Boolean(online[student.id])}
             lines={[
               [student.major, student.classification, student.graduationYear ? `Class of ${student.graduationYear}` : null]
                 .filter(Boolean).join(" \u00B7 "),
