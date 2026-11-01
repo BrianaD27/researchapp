@@ -1,0 +1,50 @@
+import { isAxiosError } from "axios";
+
+// Shared by the Messages page and the top bar Messages link.
+export interface Conversation {
+  id: number;
+  otherName: string;
+  otherDetail: string | null;
+  otherActive: boolean;
+  lastMessagePreview: string | null;
+  lastMessageAt: string | null;
+  unread: number;
+}
+
+export interface ChatMessage {
+  id: number;
+  senderName: string;
+  mine: boolean;
+  body: string;
+  createdAt: string;
+}
+
+export interface Contact {
+  id: number;
+  name: string;
+  detail: string | null;
+  active: boolean;
+  conversationId: number | null;
+}
+
+export const MESSAGE_MAX = 2000;
+
+export function messageProblem(caught: unknown, fallback: string) {
+  if (isAxiosError(caught)) {
+    if (!caught.response) return "Cannot reach the backend. Check that Java is running.";
+    if (caught.response.status === 401) return "Your login expired. Log in again.";
+    if (caught.response.status === 429) return "Too many requests. Wait a minute and try again.";
+    const data = caught.response.data as { error?: string } | undefined;
+    if (data?.error) return String(data.error);
+  }
+  return fallback;
+}
+
+export function shortTime(value: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  const sameDay = date.toDateString() === new Date().toDateString();
+  return sameDay
+    ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : date.toLocaleDateString([], { month: "short", day: "numeric" });
+}

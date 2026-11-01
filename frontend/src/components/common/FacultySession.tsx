@@ -4,6 +4,7 @@ import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-d
 import apiClient from "../../api/client";
 import NotificationBell from "./NotificationBell";
 import TopBarLinks from "./TopBarLinks";
+import MessagesLink from "./MessagesLink";
 
 function readSession(): { username: string; expires: number } | null {
   try {
@@ -144,6 +145,7 @@ export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginP
       <div className="bg-white border-b px-6 py-2 flex flex-wrap items-center justify-end gap-3">
         {error && <p role="alert" className="text-red-700 text-sm">{error}</p>}
         <TopBarLinks />
+        <MessagesLink />
         <Link to="/report-problem" state={{ from: location.pathname }}
           className="text-sm text-blue-700 font-semibold hover:underline">
           Report a Problem

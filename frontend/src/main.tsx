@@ -28,6 +28,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage.tsx";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage.tsx";
 import ReportProblemPage from "./pages/common/ReportProblemPage.tsx";
 import AdminReportsPage from "./pages/admin/AdminReportsPage.tsx";
+import MessagesPage from "./pages/messages/MessagesPage.tsx";
 import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
 import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
@@ -84,6 +85,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/admin-users" element={<AdminUsersPage />} />
         <Route path="/admin-reports" element={<AdminReportsPage />} />
         <Route path="/report-problem" element={<ReportProblemPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
         <Route path="/faculty-profile" element={<FacultyProfileViewPage />} />
         </Route>
       </Routes>
