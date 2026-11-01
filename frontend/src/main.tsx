@@ -29,6 +29,10 @@ import VerifyEmailPage from "./pages/auth/VerifyEmailPage.tsx";
 import ReportProblemPage from "./pages/common/ReportProblemPage.tsx";
 import AdminReportsPage from "./pages/admin/AdminReportsPage.tsx";
 import MessagesPage from "./pages/messages/MessagesPage.tsx";
+import PartnerLogin from "./pages/auth/PartnerLogin.tsx";
+import PartnerSignUp from "./pages/auth/PartnerSignUp.tsx";
+import PartnerResearchPage from "./pages/partner/PartnerResearchPage.tsx";
+import AdminPartnersPage from "./pages/admin/AdminPartnersPage.tsx";
 import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
 import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
@@ -46,6 +50,13 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/PartnerLogin" element={<PartnerLogin />} />
+        <Route path="/PartnerSignUp" element={<PartnerSignUp />} />
+
+        {/* Partner school routes (view only) */}
+        <Route element={<FacultySession loginPath="/PartnerLogin" />}>
+          <Route path="/partner-research" element={<PartnerResearchPage />} />
+        </Route>
 
 
         {/* Student Routes */}
@@ -86,6 +97,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/admin-reports" element={<AdminReportsPage />} />
         <Route path="/report-problem" element={<ReportProblemPage />} />
         <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/admin-partners" element={<AdminPartnersPage />} />
         <Route path="/faculty-profile" element={<FacultyProfileViewPage />} />
         </Route>
       </Routes>

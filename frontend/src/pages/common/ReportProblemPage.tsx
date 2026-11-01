@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import StudentNavBar from "../../components/common/StudentNavBar";
+import PartnerNavBar from "../../components/common/PartnerNavBar";
+import { currentRole } from "../../api/session";
 import apiClient from "../../api/client";
 import {
   REPORT_CATEGORIES, STATUS_LABEL, STATUS_STYLE, reportProblem, type ProblemReport,
@@ -12,7 +14,7 @@ import {
 export default function ReportProblemPage() {
   const location = useLocation();
   const fromPage = (location.state as { from?: string } | null)?.from ?? "";
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(currentRole);
   const [category, setCategory] = useState(REPORT_CATEGORIES[0]);
   const [description, setDescription] = useState("");
   const [busy, setBusy] = useState(false);
@@ -56,7 +58,7 @@ export default function ReportProblemPage() {
 
   return (
     <div className="min-h-screen bg-[#1B51A4]">
-      {role === "STUDENT" ? <StudentNavBar /> : <FacultyNavBar />}
+      {role === "PARTNER" ? <PartnerNavBar /> : role === "STUDENT" ? <StudentNavBar /> : <FacultyNavBar />}
       <main className="max-w-3xl mx-auto p-5 flex flex-col gap-5">
         <section className="bg-white rounded-xl shadow-lg p-6 flex flex-col gap-4">
           <h1 className="text-2xl font-bold text-vsu-orange">Report a Problem</h1>

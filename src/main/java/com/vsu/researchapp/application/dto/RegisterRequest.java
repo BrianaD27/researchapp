@@ -11,9 +11,9 @@ public record RegisterRequest(
     @NotBlank(message = "An email is required")
     @Email(message = "Must be a valid email address")
     @Pattern(
-        regexp = "^[A-Za-z0-9._%+-]+@(students\\.)?vsu\\.edu$",
+        regexp = "^[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\\.)+edu$",
         flags = Pattern.Flag.CASE_INSENSITIVE,
-        message = "Email must be a valid VSU address ending in @vsu.edu or @students.vsu.edu")
+        message = "Use a VSU email, or an email from one of VSU's partner schools")
     String email,
 
     @NotBlank(message = "A password is required")

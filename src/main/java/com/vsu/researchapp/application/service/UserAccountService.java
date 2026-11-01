@@ -61,8 +61,20 @@ public class UserAccountService {
 
     public UserAccount createUser(String username, String email,
             String password, String role) {
-        validatePasswordStrength(password);
         validateVsuEmail(email);
+        return createAccount(username, email, password, role, false);
+    }
+
+    // Partner-school sign-up. The caller has already matched the email to an
+    // active partner school's domain; these accounts only get the view-only
+    // PARTNER role.
+    public UserAccount createPartnerUser(String username, String email, String password) {
+        return createAccount(username, email, password, "PARTNER", true);
+    }
+
+    private UserAccount createAccount(String username, String email,
+            String password, String role, boolean partner) {
+        validatePasswordStrength(password);
 
         UserAccount existing = userAccountRepository
             .findByUsername(username).orElse(null);
@@ -96,7 +108,10 @@ public class UserAccountService {
         // this check, any logged-in user - even a STUDENT - could register a brand
         // new ADMIN account for themselves. Public self-registration is limited to
         // the two roles a signup form is actually meant to hand out.
-        if (!normalizedRole.equals("STUDENT") && !normalizedRole.equals("PROFESSOR")) {
+        boolean allowed = partner
+            ? normalizedRole.equals("PARTNER")
+            : normalizedRole.equals("STUDENT") || normalizedRole.equals("PROFESSOR");
+        if (!allowed) {
             throw new IllegalArgumentException(
                 "Self-registration only supports the STUDENT or PROFESSOR role");
         }

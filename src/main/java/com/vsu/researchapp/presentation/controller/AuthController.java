@@ -7,6 +7,7 @@ import com.vsu.researchapp.application.dto.RefreshTokenRequest;
 import com.vsu.researchapp.application.dto.RegisterRequest;
 import com.vsu.researchapp.application.dto.ResetPasswordRequest;
 import com.vsu.researchapp.application.dto.Verify2FARequest;
+import com.vsu.researchapp.application.service.PartnerSchoolService;
 import com.vsu.researchapp.application.service.UserAccountService;
 import com.vsu.researchapp.infrastructure.security.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,9 +23,12 @@ public class AuthController {
 
     private final UserAccountService userAccountService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final PartnerSchoolService partnerSchoolService;
 
     public AuthController(UserAccountService userAccountService,
-            TokenBlacklistService tokenBlacklistService) {
+            TokenBlacklistService tokenBlacklistService,
+            PartnerSchoolService partnerSchoolService) {
+        this.partnerSchoolService = partnerSchoolService;
         this.userAccountService = userAccountService;
         this.tokenBlacklistService = tokenBlacklistService;
     }
@@ -94,12 +98,19 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request) {
         // Public sign-up always creates a student account. Any role sent in the
         // request is ignored; faculty accounts are created or promoted by an admin.
-        var user = userAccountService.createUser(
-            request.username(), request.email(), request.password(), "STUDENT");
+        // VSU emails get a student account. Emails from an active partner school
+        // get a view-only PARTNER account. Everything else is refused.
+        boolean vsu = PartnerSchoolService.isVsuEmail(request.email());
+        if (!vsu) partnerSchoolService.requireSchoolFor(request.email());
+        var user = vsu
+            ? userAccountService.createUser(
+                request.username(), request.email(), request.password(), "STUDENT")
+            : userAccountService.createPartnerUser(
+                request.username(), request.email(), request.password());
         // The account stays inactive until the emailed link is clicked.
         userAccountService.startEmailVerification(user);
         return ResponseEntity.ok(Map.of(
-            "message", "Account created. Check your VSU email for a link to activate it.",
+            "message", "Account created. Check your email for a link to activate it.",
             "username", user.getUsername()
         ));
     }

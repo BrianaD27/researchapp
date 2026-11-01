@@ -17,6 +17,7 @@ const roles = [
   { value: "PROFESSOR", label: "Faculty" },
   { value: "ASSOCIATE", label: "Research Associate" },
   { value: "ADMIN", label: "Admin" },
+  { value: "PARTNER", label: "Partner school (view only)" },
 ];
 
 function problem(caught: unknown, fallback: string) {

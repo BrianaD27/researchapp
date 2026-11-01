@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
 import IdleSignOutNotice from "../../components/common/IdleSignOutNotice";
 import apiClient from "../../api/client";
+import { currentRole, homeFor } from "../../api/session";
 import { authErrorMessage } from "../../api/authErrors";
 import background from "../../assets/studentsBg.png";
 import logo from "../../assets/vsuCircleLogo.png";
@@ -61,7 +62,7 @@ const FacultyLogin = () => {
 
       setPassword("");
       setCode("");
-      navigate("/faculty-profile", { replace: true, state: { fromLogin: true } });
+      navigate(homeFor(currentRole()), { replace: true, state: { fromLogin: true } });
     } catch (caught) {
       if (isAxiosError(caught)) {
         setError(authErrorMessage(caught, needsCode ? "verify" : "login"));

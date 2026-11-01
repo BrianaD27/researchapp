@@ -143,13 +143,18 @@ public class SecurityConfig {
                     "/api/research-opportunities/*/media").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE")
                 .requestMatchers(
                     "/api/v1/research-events/**",
-                    "/api/research-events/**").authenticated()
+                    "/api/research-events/**").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE", "STUDENT")
                 .requestMatchers(
                     "/api/v1/encrypted-files/**",
-                    "/api/encrypted-files/**").authenticated()
+                    "/api/encrypted-files/**").hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE", "STUDENT")
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").denyAll()
-                .anyRequest().authenticated()
+                // Partner-school accounts (Level 1) are view-only: their research
+                // list, the bell, and Report a Problem. Everything else below is
+                // for VSU roles only.
+                .requestMatchers("/api/partner/**").hasAnyRole("PARTNER", "ADMIN")
+                .requestMatchers("/api/notifications/**", "/api/reports/**").authenticated()
+                .anyRequest().hasAnyRole("ADMIN", "PROFESSOR", "ASSOCIATE", "STUDENT")
             )
 
             // Without this, Spring Security's default reaction to a failed/missing

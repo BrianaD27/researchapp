@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import apiClient from "../../api/client";
+import { currentRole } from "../../api/session";
 
 // Top bar "Messages" link with an unread count. It also sends the once-a-minute
 // "I'm here" ping that powers the green active-now dot.
 export default function MessagesLink() {
   const [count, setCount] = useState(0);
+  const partner = currentRole() === "PARTNER";
 
   const refresh = useCallback(async () => {
     try {
@@ -17,6 +19,7 @@ export default function MessagesLink() {
   }, []);
 
   useEffect(() => {
+    if (partner) return;
     function ping() {
       if (document.visibilityState === "visible") {
         apiClient.post("/messages/heartbeat").catch(() => undefined);
@@ -30,8 +33,10 @@ export default function MessagesLink() {
       window.clearInterval(timer);
       window.removeEventListener("focus", refresh);
     };
-  }, [refresh]);
+  }, [refresh, partner]);
 
+  // Partner-school accounts don't have messaging.
+  if (partner) return null;
   return (
     <Link to="/messages" className="relative text-sm text-blue-700 font-semibold hover:underline">
       Messages

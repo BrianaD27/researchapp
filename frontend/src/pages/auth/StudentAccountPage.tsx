@@ -1,14 +1,29 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import AuthNavBar from "../../components/common/AuthNavBar";
 import IdleSignOutNotice from "../../components/common/IdleSignOutNotice";
 import apiClient from "../../api/client";
 import { authErrorMessage } from "../../api/authErrors";
+import { currentRole, homeFor } from "../../api/session";
 import studentsBg from "../../assets/studentsBg.png";
 
-export default function StudentAccountPage({ register = false }: { register?: boolean }) {
+// partner: the same login and sign-up, for people from VSU's partner schools
+// (view-only accounts that use their own school's .edu email).
+export default function StudentAccountPage({ register = false, partner = false }: { register?: boolean; partner?: boolean }) {
   const navigate = useNavigate();
+  const [partnerSchools, setPartnerSchools] = useState<{ name: string; emailDomain: string }[]>([]);
+
+  useEffect(() => {
+    if (!partner || !register) return;
+    let active = true;
+    apiClient.get<{ name: string; emailDomain: string }[]>("/v1/auth/partner-schools")
+      .then(({ data }) => { if (active) setPartnerSchools(data); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [partner, register]);
+  const loginPath = partner ? "/PartnerLogin" : "/StudentLogin";
+  const signUpPath = partner ? "/PartnerSignUp" : "/StudentSignUp";
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,7 +90,7 @@ export default function StudentAccountPage({ register = false }: { register?: bo
       }
       setPassword("");
       setCode("");
-      navigate("/my-profile", { replace: true });
+      navigate(homeFor(currentRole()), { replace: true });
     } catch (caught) {
       if (isAxiosError(caught)) {
         setError(authErrorMessage(caught, register ? "register" : needsCode ? "verify" : "login"));
@@ -97,7 +112,9 @@ export default function StudentAccountPage({ register = false }: { register?: bo
       >
         <section className="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
           <h1 className="text-3xl font-bold text-vsu-orange mb-6">
-            {register ? "Student Sign Up" : "Student Login"}
+            {partner
+              ? (register ? "Partner School Sign Up" : "Partner School Login")
+              : (register ? "Student Sign Up" : "Student Login")}
           </h1>
 
           {created ? (
@@ -109,8 +126,8 @@ export default function StudentAccountPage({ register = false }: { register?: bo
               <Link className="text-blue-700 underline" to="/verify-email">
                 Didn't get the email? Send a new link
               </Link>
-              <Link className="bg-blue-700 text-white rounded-lg p-3 text-center" to="/StudentLogin">
-                Go to Student Login
+              <Link className="bg-blue-700 text-white rounded-lg p-3 text-center" to={loginPath}>
+                Go to Login
               </Link>
             </div>
           ) : (
@@ -130,7 +147,33 @@ export default function StudentAccountPage({ register = false }: { register?: bo
                 />
               </label>
 
-              {register && (
+              {register && partner && (
+                <p className="text-sm text-gray-600">
+                  For people from VSU's partner schools. You can view VSU research.
+                  {partnerSchools.length > 0 && (
+                    <> Partner schools: {partnerSchools.map((s) => `${s.name} (@${s.emailDomain})`).join(", ")}.</>
+                  )}
+                </p>
+              )}
+
+              {register && partner && (
+                <label className="flex flex-col gap-1">
+                  School email
+                  <input
+                    required
+                    type="email"
+                    autoComplete="email"
+                    pattern="[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[eE][dD][uU]"
+                    title="Use your partner school's .edu email address."
+                    value={email}
+                    disabled={busy}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className={inputClass}
+                  />
+                </label>
+              )}
+
+              {register && !partner && (
                 <label className="flex flex-col gap-1">
                   VSU email
                   <input
@@ -234,10 +277,16 @@ export default function StudentAccountPage({ register = false }: { register?: bo
 
               <Link
                 className="text-blue-700 underline"
-                to={register ? "/StudentLogin" : "/StudentSignUp"}
+                to={register ? loginPath : signUpPath}
               >
                 {register ? "Already have an account? Log in" : "Need an account? Sign up"}
               </Link>
+
+              {!partner && !needsCode && (
+                <Link className="text-sm text-gray-600 underline" to="/PartnerLogin">
+                  From a VSU partner school? Log in here
+                </Link>
+              )}
             </form>
           )}
         </section>
