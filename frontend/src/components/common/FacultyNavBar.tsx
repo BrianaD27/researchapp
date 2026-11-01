@@ -94,7 +94,7 @@ const FacultyNavBar = () => {
         <li className="nav-item items-center flex text-sm lg:text-base ">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <Link className={navLinkClass("/faculty-settings")} to="/faculty-settings">
+              <Link className={navLinkClass("/faculty-profile")} to="/faculty-profile">
                 Profile
               </Link>
             </div>
@@ -171,8 +171,8 @@ const FacultyNavBar = () => {
 
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link
-                className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-settings" ? "text-vsu-orange font-bold" : ""}`}
-                to="/faculty-settings"
+                className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-profile" ? "text-vsu-orange font-bold" : ""}`}
+                to="/faculty-profile"
               >
                 Profile
               </Link>

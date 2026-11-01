@@ -37,6 +37,9 @@ public record CreateStudentDto(
     @Size(max = 1000, message = "Previous experience must be under 1000 characters")
     String previousExperience,
 
+    @Size(max = 1000, message = "Outside interests must be under 1000 characters")
+    String outsideInterests,
+
     @DecimalMin(value = "0.0", message = "GPA must be 0.0 or higher")
     @DecimalMax(value = "4.0", message = "GPA must be 4.0 or lower")
     Float gpa,

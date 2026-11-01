@@ -69,6 +69,7 @@ public class StudentService {
         newStudent.setClassification(dto.classification());
         newStudent.setDescription(dto.description());
         newStudent.setPreviousExperience(dto.previousExperience());
+        newStudent.setOutsideInterests(dto.outsideInterests());
         newStudent.setGpa(dto.gpa());
         newStudent.setAvailableHoursPerWeek(dto.availableHoursPerWeek());
         newStudent.setSkills(dto.skills());

@@ -4,7 +4,7 @@ import { isAxiosError } from "axios";
 import StudentNavBar from "../../components/common/StudentNavBar";
 import apiClient from "../../api/client";
 
-type Mode = "saved" | "applied" | "completed";
+type Mode = "saved" | "applied" | "ongoing" | "completed";
 interface Application {
   id: number;
   researchOpportunityId: number;
@@ -46,6 +46,7 @@ interface Row {
 const titles = {
   saved: "Saved Opportunities",
   applied: "Applied Opportunities",
+  ongoing: "Ongoing Research",
   completed: "Completed Research",
 };
 const decisions = {
@@ -110,11 +111,15 @@ export default function StudentRecordsPage({ mode }: { mode: Mode }) {
           records = data.filter((item) => {
             const completed = item.opportunityStatus === "COMPLETED"
               && item.applicationStatus === "ACCEPTED";
-            return mode === "completed" ? completed : !completed;
+            const ongoing = item.applicationStatus === "ACCEPTED" && !completed;
+            if (mode === "completed") return completed;
+            if (mode === "ongoing") return ongoing;
+            return !completed;
           }).map((item) => ({
             id: item.id, opportunityId: item.researchOpportunityId,
             title: item.researchOpportunityTitle, date: item.appliedAt,
-            status: mode === "completed" ? "Completed" : decisions[item.applicationStatus],
+            status: mode === "completed" ? "Completed"
+              : mode === "ongoing" ? "Ongoing" : decisions[item.applicationStatus],
           }));
         }
 
@@ -206,6 +211,7 @@ export default function StudentRecordsPage({ mode }: { mode: Mode }) {
                 {rows.length ? "No records match your search." : mode === "saved"
                   ? "You have not saved any opportunities yet."
                   : mode === "completed" ? "No research has been marked completed yet."
+                  : mode === "ongoing" ? "You have no ongoing research right now."
                   : "You have not applied to any opportunities yet."}
               </p>}
               <div className="flex flex-col gap-3">

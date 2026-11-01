@@ -74,7 +74,7 @@ export default function StudentAccountPage({ register = false }: { register?: bo
       }
       setPassword("");
       setCode("");
-      navigate("/student-info", { replace: true });
+      navigate("/my-profile", { replace: true });
     } catch (caught) {
       if (isAxiosError(caught)) {
         setError(authErrorMessage(caught, register ? "register" : needsCode ? "verify" : "login"));

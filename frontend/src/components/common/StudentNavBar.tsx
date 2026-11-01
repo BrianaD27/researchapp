@@ -13,7 +13,7 @@ const StudentNavBar = () => {
     `nav-link ${currentPath === path ? "text-vsu-orange font-bold border-b-2 border-vsu-orange" : ""}`;
 
   // Active if on /my-opportunities OR any of its children
-  const opportunitiesPaths = ["/my-opportunities", "/saved-opportunities", "/applied-opportunities", "/completed-opportunities"];
+  const opportunitiesPaths = ["/my-opportunities", "/saved-opportunities", "/applied-opportunities", "/ongoing-opportunities", "/completed-opportunities"];
   const isOpportunitiesActive = opportunitiesPaths.includes(currentPath);
 
   return (
@@ -75,6 +75,12 @@ const StudentNavBar = () => {
                 Applied
               </Link>
               <Link
+                to="/ongoing-opportunities"
+                className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/ongoing-opportunities" ? "text-vsu-orange font-bold" : ""}`}
+              >
+                Ongoing
+              </Link>
+              <Link
                 to="/completed-opportunities"
                 className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/completed-opportunities" ? "text-vsu-orange font-bold" : ""}`}
               >
@@ -87,7 +93,7 @@ const StudentNavBar = () => {
         <li className="nav-item items-center flex text-sm lg:text-base ">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <Link className={navLinkClass("/student-settings")} to="/student-settings">
+              <Link className={navLinkClass("/my-profile")} to="/my-profile">
                 Profile
               </Link>
             </div>
@@ -138,21 +144,28 @@ const StudentNavBar = () => {
             {isOpportunitiesDropdownOpen && (
               <div className="flex flex-col items-center w-full">
                 <Link
-                  to="/faculty-view-all"
-                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/applied-opportunities" ? "text-vsu-orange font-bold" : ""}`}
-                >
-                  Applied
-                </Link>
-
-                <Link
-                  to="/faculty-view-all"
+                  to="/saved-opportunities"
                   className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/saved-opportunities" ? "text-vsu-orange font-bold" : ""}`}
                 >
                   Saved
                 </Link>
 
                 <Link
-                  to="/faculty-applicants"
+                  to="/applied-opportunities"
+                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/applied-opportunities" ? "text-vsu-orange font-bold" : ""}`}
+                >
+                  Applied
+                </Link>
+
+                <Link
+                  to="/ongoing-opportunities"
+                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/ongoing-opportunities" ? "text-vsu-orange font-bold" : ""}`}
+                >
+                  Ongoing
+                </Link>
+
+                <Link
+                  to="/completed-opportunities"
                   className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/completed-opportunities" ? "text-vsu-orange font-bold" : ""}`}
                 >
                   Completed
@@ -162,8 +175,8 @@ const StudentNavBar = () => {
 
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link
-                to="/student-settings"
-                className={`px-4 py-2 w-full text-center ${currentPath === "/student-settings" ? "text-vsu-orange font-bold" : ""}`}
+                to="/my-profile"
+                className={`px-4 py-2 w-full text-center ${currentPath === "/my-profile" ? "text-vsu-orange font-bold" : ""}`}
               >
                 Profile
               </Link>

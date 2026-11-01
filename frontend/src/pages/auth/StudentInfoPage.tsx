@@ -16,6 +16,7 @@ interface Student {
   graduationYear: number;
   description: string;
   previousExperience: string | null;
+  outsideInterests?: string | null;
   gpa: number | null;
   availableHoursPerWeek: number | null;
   skills: string[];
@@ -24,7 +25,7 @@ interface Student {
 const initial = {
   name: "", email: "", major: "", classification: "Freshman",
   graduationYear: String(new Date().getFullYear()),
-  description: "", previousExperience: "", gpa: "",
+  description: "", previousExperience: "", outsideInterests: "", gpa: "",
   availableHoursPerWeek: "5", skills: "",
 };
 
@@ -37,6 +38,7 @@ function fieldsFrom(student: Student) {
     graduationYear: String(student.graduationYear),
     description: student.description ?? "",
     previousExperience: student.previousExperience ?? "",
+    outsideInterests: student.outsideInterests ?? "",
     gpa: student.gpa == null ? "" : String(student.gpa),
     availableHoursPerWeek: String(student.availableHoursPerWeek ?? 5),
     skills: (student.skills ?? []).join(", "),
@@ -120,6 +122,7 @@ export default function StudentInfoPage() {
         graduationYear: Number(fields.graduationYear),
         description: fields.description.trim(),
         previousExperience: fields.previousExperience.trim(),
+        outsideInterests: fields.outsideInterests.trim(),
         gpa: fields.gpa === "" ? null : Number(fields.gpa),
         availableHoursPerWeek: Number(fields.availableHoursPerWeek),
         skills,
@@ -221,7 +224,7 @@ export default function StudentInfoPage() {
       <StudentNavBar />
       <main className="max-w-2xl mx-auto p-6">
         <section className="bg-white rounded-xl p-6">
-          <h1 className="text-2xl font-bold mb-4">My Student Profile</h1>
+          <h1 className="text-2xl font-bold mb-4">Edit My Profile</h1>
           {loading && <p>Loading your profile...</p>}
           {error && <p role="alert" className="text-red-700 mb-4">{error}</p>}
           {message && <p role="status" className="text-green-800 mb-4">{message}</p>}
@@ -338,6 +341,20 @@ export default function StudentInfoPage() {
                     className="border rounded-lg p-3"
                   />
                 </label>
+                <label className="flex flex-col gap-1">
+                  Outside the classroom (optional)
+                  <span className="text-sm text-gray-600">
+                    Interests and achievements outside school, like sports, music, clubs, or service.
+                  </span>
+                  <textarea
+                    maxLength={1000} rows={3}
+                    value={fields.outsideInterests}
+                    onChange={(event) => setFields((current) => ({
+                      ...current, outsideInterests: event.target.value,
+                    }))}
+                    className="border rounded-lg p-3"
+                  />
+                </label>
                 <button
                   type="submit"
                   className="bg-blue-700 text-white rounded-lg p-3 cursor-pointer"
@@ -345,9 +362,16 @@ export default function StudentInfoPage() {
                   {saving ? "Saving..." : "Save Student Profile"}
                 </button>
               </fieldset>
-              <Link to="/discover-opportunities" className="text-blue-700 underline">
-                Back to opportunities
-              </Link>
+              <div className="flex flex-wrap gap-4">
+                {id !== null && (
+                  <Link to="/my-profile" className="text-blue-700 underline">
+                    View my profile
+                  </Link>
+                )}
+                <Link to="/discover-opportunities" className="text-blue-700 underline">
+                  Back to opportunities
+                </Link>
+              </div>
             </form>
           )}
         </section>

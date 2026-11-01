@@ -60,7 +60,7 @@ const FacultyLogin = () => {
 
       setPassword("");
       setCode("");
-      navigate("/discover-students", { replace: true });
+      navigate("/faculty-profile", { replace: true, state: { fromLogin: true } });
     } catch (caught) {
       if (isAxiosError(caught)) {
         setError(authErrorMessage(caught, needsCode ? "verify" : "login"));

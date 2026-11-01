@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
+import { Link } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import apiClient from "../../api/client";
 
@@ -11,6 +12,14 @@ interface Professor {
   officeLocation: string | null;
   description: string | null;
   profilePictureUrl: string | null;
+  outsideInterests?: string | null;
+  education?: Education[] | null;
+}
+
+interface Education {
+  degree: string;
+  school: string;
+  graduationYear: string | null;
 }
 
 interface ProfileFields {
@@ -18,6 +27,7 @@ interface ProfileFields {
   department: string;
   officeLocation: string;
   description: string;
+  outsideInterests: string;
 }
 
 const emptyFields: ProfileFields = {
@@ -25,6 +35,7 @@ const emptyFields: ProfileFields = {
   department: "",
   officeLocation: "",
   description: "",
+  outsideInterests: "",
 };
 
 function fieldsFrom(profile: Professor): ProfileFields {
@@ -33,7 +44,16 @@ function fieldsFrom(profile: Professor): ProfileFields {
     department: profile.department ?? "",
     officeLocation: profile.officeLocation ?? "",
     description: profile.description ?? "",
+    outsideInterests: profile.outsideInterests ?? "",
   };
+}
+
+function educationFrom(profile: Professor | null): Education[] {
+  return (profile?.education ?? []).map((item) => ({
+    degree: item.degree ?? "",
+    school: item.school ?? "",
+    graduationYear: item.graduationYear ?? "",
+  }));
 }
 
 function errorMessage(error: unknown): string {
@@ -50,6 +70,7 @@ const ProfessorProfilePage = () => {
   const [profiles, setProfiles] = useState<Professor[]>([]);
   const [selected, setSelected] = useState<Professor | null>(null);
   const [fields, setFields] = useState<ProfileFields>(emptyFields);
+  const [education, setEducation] = useState<Education[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -78,6 +99,7 @@ const ProfessorProfilePage = () => {
         setProfiles([own]);
         setSelected(own);
         setFields(fieldsFrom(own));
+        setEducation(educationFrom(own));
       } catch (caught) {
         if (active) setError(errorMessage(caught));
       } finally {
@@ -92,6 +114,7 @@ const ProfessorProfilePage = () => {
     const profile = profiles.find((item) => String(item.id) === id) ?? null;
     setSelected(profile);
     setFields(profile ? fieldsFrom(profile) : emptyFields);
+    setEducation(educationFrom(profile));
     setMessage("");
     setError("");
   }
@@ -99,9 +122,20 @@ const ProfessorProfilePage = () => {
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected || saving) return;
-    setSaving(true);
     setError("");
     setMessage("");
+    const degrees = education
+      .map((item) => ({
+        degree: item.degree.trim(),
+        school: item.school.trim(),
+        graduationYear: (item.graduationYear ?? "").trim() || null,
+      }))
+      .filter((item) => item.degree || item.school || item.graduationYear);
+    if (degrees.some((item) => !item.degree || !item.school)) {
+      setError("Each degree needs both a degree name and a school.");
+      return;
+    }
+    setSaving(true);
 
     try {
       await apiClient.put(`/professors/${selected.id}`, {
@@ -109,12 +143,15 @@ const ProfessorProfilePage = () => {
         department: fields.department.trim(),
         officeLocation: fields.officeLocation.trim(),
         description: fields.description.trim(),
+        outsideInterests: fields.outsideInterests.trim(),
+        education: degrees,
       });
 
       // Read the record back from the backend after saving.
       const { data } = await apiClient.get<Professor>(`/professors/${selected.id}`);
       setSelected(data);
       setFields(fieldsFrom(data));
+      setEducation(educationFrom(data));
       setProfiles((current) => current.map((item) => item.id === data.id ? data : item));
       setMessage("Profile saved and loaded back from the database.");
     } catch (caught) {
@@ -173,7 +210,12 @@ const ProfessorProfilePage = () => {
     <div className="min-h-screen bg-[#1B51A4]">
       <FacultyNavBar />
       <main className="max-w-3xl mx-auto p-6">
-        <h1 className="text-2xl text-white mb-4">Faculty Profile Settings</h1>
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+          <h1 className="text-2xl text-white">Faculty Profile Settings</h1>
+          {!isAdmin && selected && (
+            <Link to="/faculty-profile" className="text-white underline">View my profile</Link>
+          )}
+        </div>
         <section className="bg-white rounded-xl p-6">
           {loading && <p role="status" className="mb-4">Loading profile...</p>}
           {isAdmin && <>
@@ -251,6 +293,83 @@ const ProfessorProfilePage = () => {
                   className="border rounded p-2"
                 />
               </label>
+
+              <label className="flex flex-col gap-1">
+                Outside the classroom (optional)
+                <span className="text-sm text-gray-600">
+                  Interests and achievements outside work, like athletics, records, hobbies, or community service.
+                </span>
+                <textarea
+                  maxLength={1000}
+                  rows={3}
+                  value={fields.outsideInterests}
+                  disabled={saving}
+                  onChange={(event) => setFields((current) => ({
+                    ...current, outsideInterests: event.target.value,
+                  }))}
+                  className="border rounded p-2"
+                />
+              </label>
+
+              <fieldset disabled={saving} className="min-w-0 border rounded p-4 flex flex-col gap-3">
+                <legend className="font-semibold px-1">Education</legend>
+                {education.length === 0 && (
+                  <p className="text-sm text-gray-600">No degrees added yet.</p>
+                )}
+                {education.map((item, index) => (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1fr_auto] gap-2 items-end">
+                    <label className="min-w-0 flex flex-col gap-1 text-sm">
+                      Degree
+                      <input
+                        value={item.degree}
+                        maxLength={150}
+                        placeholder="Ph.D., Computer Engineering"
+                        onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                          i === index ? { ...entry, degree: event.target.value } : entry))}
+                        className="w-full min-w-0 border rounded p-2 text-base"
+                      />
+                    </label>
+                    <label className="min-w-0 flex flex-col gap-1 text-sm">
+                      School
+                      <input
+                        value={item.school}
+                        maxLength={150}
+                        placeholder="Virginia State University"
+                        onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                          i === index ? { ...entry, school: event.target.value } : entry))}
+                        className="w-full min-w-0 border rounded p-2 text-base"
+                      />
+                    </label>
+                    <label className="min-w-0 flex flex-col gap-1 text-sm">
+                      Year
+                      <input
+                        value={item.graduationYear ?? ""}
+                        maxLength={20}
+                        inputMode="numeric"
+                        onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                          i === index ? { ...entry, graduationYear: event.target.value } : entry))}
+                        className="w-full min-w-0 border rounded p-2 text-base"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setEducation((current) => current.filter((_, i) => i !== index))}
+                      className="border rounded px-3 py-2 cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                {education.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={() => setEducation((current) => [...current, { degree: "", school: "", graduationYear: "" }])}
+                    className="self-start border rounded px-3 py-2 cursor-pointer"
+                  >
+                    Add degree
+                  </button>
+                )}
+              </fieldset>
 
               <section className="border rounded p-4 flex flex-col gap-3">
                 <h2 className="font-semibold">Profile photo</h2>

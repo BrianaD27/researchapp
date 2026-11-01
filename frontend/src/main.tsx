@@ -16,12 +16,15 @@ import StudentDiscoverPage from "./pages/students/StudentDiscoverPage.tsx";
 import StudentBookmarksPage from "./pages/students/StudentBookmarksPage.tsx";
 import StudentAppliedPage from "./pages/students/StudentAppliedPage.tsx";
 import StudentCompletedPage from "./pages/students/StudentCompletedPage.tsx";
+import StudentOngoingPage from "./pages/students/StudentOngoingPage.tsx";
 import ProfessorViewAllPage from "./pages/professors/ProfessorViewAllPage.tsx";
 import ProfessorProfilePage from "./pages/professors/ProfessorProfilePage.tsx";
 import FacultyInfoPage from "./pages/auth/FacultyInfoPage.tsx";
 import StudentInfoPage from "./pages/auth/StudentInfoPage.tsx";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.tsx";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage.tsx";
+import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
+import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -44,8 +47,10 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/discover-opportunities" element={<StudentDiscoverPage/>} />
         <Route path="/saved-opportunities" element={<StudentBookmarksPage />} />
         <Route path="/applied-opportunities" element={<StudentAppliedPage/>} />
+        <Route path="/ongoing-opportunities" element={<StudentOngoingPage />} />
         <Route path="/completed-opportunities" element={<StudentCompletedPage/>} />
         <Route path="/student-settings" element={<StudentInfoPage />} />
+        <Route path="/my-profile" element={<StudentProfilePage />} />
         
         
         </Route>
@@ -69,6 +74,7 @@ createRoot(document.getElementById("root")!).render(
           element={<ProfessorApplicantsPage />}
         />
         <Route path="/faculty-settings" element={<ProfessorProfilePage />} />
+        <Route path="/faculty-profile" element={<FacultyProfileViewPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
