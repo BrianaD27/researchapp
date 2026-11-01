@@ -13,5 +13,7 @@ public record EducationDto(
     String school,
 
     @Size(max = 20, message = "Year must be under 20 characters")
-    String graduationYear
+    String graduationYear,
+
+    Boolean inProgress
 ) {}

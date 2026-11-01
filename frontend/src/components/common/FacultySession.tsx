@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import apiClient from "../../api/client";
+import NotificationBell from "./NotificationBell";
 
 function readSession(): { username: string; expires: number } | null {
   try {
@@ -86,6 +87,7 @@ export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginP
     <>
       <div className="bg-white border-b px-6 py-2 flex flex-wrap items-center justify-end gap-3">
         {error && <p role="alert" className="text-red-700 text-sm">{error}</p>}
+        <NotificationBell />
         <button
           type="button"
           disabled={busy}

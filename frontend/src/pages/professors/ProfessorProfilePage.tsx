@@ -20,6 +20,7 @@ interface Education {
   degree: string;
   school: string;
   graduationYear: string | null;
+  inProgress?: boolean | null;
 }
 
 interface ProfileFields {
@@ -53,6 +54,7 @@ function educationFrom(profile: Professor | null): Education[] {
     degree: item.degree ?? "",
     school: item.school ?? "",
     graduationYear: item.graduationYear ?? "",
+    inProgress: Boolean(item.inProgress),
   }));
 }
 
@@ -129,6 +131,7 @@ const ProfessorProfilePage = () => {
         degree: item.degree.trim(),
         school: item.school.trim(),
         graduationYear: (item.graduationYear ?? "").trim() || null,
+        inProgress: Boolean(item.inProgress),
       }))
       .filter((item) => item.degree || item.school || item.graduationYear);
     if (degrees.some((item) => !item.degree || !item.school)) {
@@ -341,7 +344,7 @@ const ProfessorProfilePage = () => {
                       />
                     </label>
                     <label className="min-w-0 flex flex-col gap-1 text-sm">
-                      Year
+                      {item.inProgress ? "Expected year" : "Year"}
                       <input
                         value={item.graduationYear ?? ""}
                         maxLength={20}
@@ -358,12 +361,22 @@ const ProfessorProfilePage = () => {
                     >
                       Remove
                     </button>
+                    <label className="sm:col-span-4 flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(item.inProgress)}
+                        onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                          i === index ? { ...entry, inProgress: event.target.checked } : entry))}
+                        className="w-4 h-4"
+                      />
+                      Still in progress
+                    </label>
                   </div>
                 ))}
                 {education.length < 10 && (
                   <button
                     type="button"
-                    onClick={() => setEducation((current) => [...current, { degree: "", school: "", graduationYear: "" }])}
+                    onClick={() => setEducation((current) => [...current, { degree: "", school: "", graduationYear: "", inProgress: false }])}
                     className="self-start border rounded px-3 py-2 cursor-pointer"
                   >
                     Add degree

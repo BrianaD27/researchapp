@@ -89,7 +89,8 @@ public class ProfessorService {
             professor.getEducation().clear();
             list.forEach(entry -> professor.getEducation().add(new com.vsu.researchapp.domain.model.EducationEntry(
                 entry.degree().trim(), entry.school().trim(),
-                entry.graduationYear() == null ? null : entry.graduationYear().trim())));
+                entry.graduationYear() == null ? null : entry.graduationYear().trim(),
+                Boolean.TRUE.equals(entry.inProgress()))));
         });
 
         return entityToDto(professorRepository.updateProfessor(professor, id));
@@ -128,7 +129,8 @@ public class ProfessorService {
             professor.getEducation() == null ? java.util.List.of()
                 : professor.getEducation().stream()
                     .map(e -> new com.vsu.researchapp.application.dto.EducationDto(
-                        e.getDegree(), e.getSchool(), e.getGraduationYear()))
+                        e.getDegree(), e.getSchool(), e.getGraduationYear(),
+                        Boolean.TRUE.equals(e.getInProgress())))
                     .toList(),
             professor.getCreatedAt(),
             professor.getUpdatedAt()

@@ -24,14 +24,17 @@ public class ApplicationService {
     private final ApplicationRepositoryInterface applicationRepository;
     private final StudentRepositoryInterface studentRepository;
     private final ResearchOpportunityRepositoryInterface opportunityRepository;
+    private final NotificationService notificationService;
 
     public ApplicationService(
             ApplicationRepositoryInterface applicationRepository,
             StudentRepositoryInterface studentRepository,
-            ResearchOpportunityRepositoryInterface opportunityRepository) {
+            ResearchOpportunityRepositoryInterface opportunityRepository,
+            NotificationService notificationService) {
         this.applicationRepository = applicationRepository;
         this.studentRepository = studentRepository;
         this.opportunityRepository = opportunityRepository;
+        this.notificationService = notificationService;
     }
 
     @PreAuthorize("@studentOpportunityAccess.admin()")
@@ -84,7 +87,18 @@ public class ApplicationService {
         application.setOpportunityStatus(OpportunityStatus.APPLIED);
         application.setApplicationStatus(ApplicationStatus.PENDING);
 
-        return entityToDto(applicationRepository.createApplication(application));
+        ApplicationDto created = entityToDto(applicationRepository.createApplication(application));
+        notificationService.notify(student.getUserAccountId(), "APPLICATION_RECEIVED",
+            "Application received",
+            "Your application to \"" + opportunity.getTitle() + "\" was received and is pending review.",
+            "/applied-opportunities");
+        if (opportunity.getProfessor() != null) {
+            notificationService.notify(opportunity.getProfessor().getUserAccountId(), "NEW_APPLICANT",
+                "New applicant",
+                student.getName() + " applied to \"" + opportunity.getTitle() + "\".",
+                "/faculty-applicants");
+        }
+        return created;
     }
 
     @PreAuthorize("@studentOpportunityAccess.decideApplication(#p1)")
@@ -97,10 +111,14 @@ public class ApplicationService {
             ? updated.applicationStatus() : application.getApplicationStatus();
         requireAcceptedForCompletion(nextOpportunityStatus, nextApplicationStatus);
 
+        ApplicationStatus previousDecision = application.getApplicationStatus();
+        OpportunityStatus previousStage = application.getOpportunityStatus();
         Optional.ofNullable(updated.opportunityStatus()).ifPresent(application::setOpportunityStatus);
         Optional.ofNullable(updated.applicationStatus()).ifPresent(application::setApplicationStatus);
 
-        return entityToDto(applicationRepository.updateApplication(id, application));
+        ApplicationDto saved = entityToDto(applicationRepository.updateApplication(id, application));
+        notifyStudentOfChange(application, previousDecision, previousStage);
+        return saved;
     }
 
     // Faculty accepts/rejects/resets an applicant's status
@@ -108,7 +126,35 @@ public class ApplicationService {
     public ApplicationDto updateApplicationStatus(Long id, ApplicationStatus status) {
         Application application = applicationRepository.getApplicationById(id);
         requireAcceptedForCompletion(application.getOpportunityStatus(), status);
-        return entityToDto(applicationRepository.updateApplicationStatus(id, status));
+        ApplicationStatus previousDecision = application.getApplicationStatus();
+        OpportunityStatus previousStage = application.getOpportunityStatus();
+        Application saved = applicationRepository.updateApplicationStatus(id, status);
+        notifyStudentOfChange(saved, previousDecision, previousStage);
+        return entityToDto(saved);
+    }
+
+    // Tells the student when a faculty decision or completion changes their application.
+    private void notifyStudentOfChange(Application application,
+            ApplicationStatus previousDecision, OpportunityStatus previousStage) {
+        Long studentAccount = application.getStudent().getUserAccountId();
+        String title = application.getResearchOpportunity().getTitle();
+        if (application.getOpportunityStatus() == OpportunityStatus.COMPLETED
+                && previousStage != OpportunityStatus.COMPLETED) {
+            notificationService.notify(studentAccount, "RESEARCH_COMPLETED", "Research completed",
+                "\"" + title + "\" was marked completed. It now appears in your research history.",
+                "/completed-opportunities");
+            return;
+        }
+        if (application.getApplicationStatus() == previousDecision) return;
+        if (application.getApplicationStatus() == ApplicationStatus.ACCEPTED) {
+            notificationService.notify(studentAccount, "APPLICATION_ACCEPTED", "You were accepted",
+                "Congratulations! You were accepted to \"" + title + "\".",
+                "/ongoing-opportunities");
+        } else if (application.getApplicationStatus() == ApplicationStatus.REJECTED) {
+            notificationService.notify(studentAccount, "APPLICATION_NOT_SELECTED", "Application update",
+                "You were not selected for \"" + title + "\". Keep exploring other opportunities.",
+                "/applied-opportunities");
+        }
     }
 
     @PreAuthorize("@studentOpportunityAccess.deleteApplication(#p0)")
@@ -121,8 +167,11 @@ public class ApplicationService {
     public List<ApplicationDto> completeExpiredAcceptedApplications() {
         return applicationRepository.getAcceptedApplicationsPassEndDate().stream()
             .map(app -> {
+                OpportunityStatus previousStage = app.getOpportunityStatus();
                 app.setOpportunityStatus(OpportunityStatus.COMPLETED);
-                return entityToDto(applicationRepository.updateApplication(app.getId(), app));
+                ApplicationDto saved = entityToDto(applicationRepository.updateApplication(app.getId(), app));
+                notifyStudentOfChange(app, app.getApplicationStatus(), previousStage);
+                return saved;
             })
             .toList();
     }

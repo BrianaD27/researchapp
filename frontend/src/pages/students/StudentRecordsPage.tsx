@@ -42,6 +42,38 @@ interface Row {
   status: string;
   date: string | null;
   opportunity: Opportunity | null;
+  // Tracker step: 1 Submitted, 2 Decision, 3 Ongoing, 4 Completed. Absent for saved items.
+  stage?: number;
+  notSelected?: boolean;
+}
+
+const trackerSteps = ["Submitted", "Decision", "Ongoing", "Completed"];
+
+function ApplicationTracker({ stage, notSelected }: { stage: number; notSelected: boolean }) {
+  return (
+    <ol className="flex items-start mb-6" aria-label="Application progress">
+      {trackerSteps.map((label, index) => {
+        const step = index + 1;
+        const done = step <= stage;
+        const stopped = notSelected && step === 2;
+        const name = stopped ? "Not selected" : step === 2 && stage >= 2 ? "Accepted" : label;
+        const dot = stopped ? "bg-red-600 border-red-600 text-white"
+          : done ? "bg-orange-500 border-orange-500 text-white" : "bg-white border-gray-300 text-gray-400";
+        return (
+          <li key={label} className="flex-1 flex flex-col items-center text-center relative"
+            aria-current={step === stage ? "step" : undefined}>
+            {index > 0 && (
+              <span className={`absolute top-4 right-1/2 w-full h-0.5 -z-0 ${done ? (stopped ? "bg-red-600" : "bg-orange-500") : "bg-gray-300"}`} />
+            )}
+            <span className={`relative z-10 h-8 w-8 rounded-full border-2 flex items-center justify-center text-sm font-bold ${dot}`}>
+              {stopped ? "x" : step}
+            </span>
+            <span className={`mt-2 text-xs sm:text-sm ${done || stopped ? "font-semibold" : "text-gray-500"}`}>{name}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
 }
 const titles = {
   saved: "Saved Opportunities",
@@ -120,6 +152,10 @@ export default function StudentRecordsPage({ mode }: { mode: Mode }) {
             title: item.researchOpportunityTitle, date: item.appliedAt,
             status: mode === "completed" ? "Completed"
               : mode === "ongoing" ? "Ongoing" : decisions[item.applicationStatus],
+            stage: item.applicationStatus === "ACCEPTED"
+              ? (item.opportunityStatus === "COMPLETED" ? 4 : 3)
+              : item.applicationStatus === "REJECTED" ? 2 : 1,
+            notSelected: item.applicationStatus === "REJECTED",
           }));
         }
 
@@ -239,6 +275,9 @@ export default function StudentRecordsPage({ mode }: { mode: Mode }) {
             {selected && <section className="bg-white rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-2">{selected.title}</h2>
               <p className="font-semibold mb-4">{selected.status}</p>
+              {selected.stage !== undefined && (
+                <ApplicationTracker stage={selected.stage} notSelected={selected.notSelected === true} />
+              )}
               {!opportunity ? <p>Project details are no longer available.</p> : <>
                 <p>{opportunity.professorName || "Faculty not specified"}</p>
                 <p className="text-gray-600 mb-4">{opportunity.department}</p>

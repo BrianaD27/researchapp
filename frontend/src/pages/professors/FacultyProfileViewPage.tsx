@@ -14,7 +14,7 @@ interface Professor {
   description: string | null;
   profilePictureUrl: string | null;
   outsideInterests: string | null;
-  education: { degree: string; school: string; graduationYear: string | null }[] | null;
+  education: { degree: string; school: string; graduationYear: string | null; inProgress?: boolean | null }[] | null;
 }
 
 interface Opportunity {
@@ -134,10 +134,17 @@ export default function FacultyProfileViewPage() {
                     {education.map((item, index) => (
                       <li key={index} className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-b border-[#DDE3EC] pb-3 last:border-b-0 last:pb-0">
                         <span className="flex flex-col">
-                          <span className="font-semibold">{item.degree}</span>
+                          <span className="font-semibold">
+                            {item.degree}
+                            {item.inProgress && <span className="ml-2 align-middle"><Chip>In progress</Chip></span>}
+                          </span>
                           <span className="text-gray-700">{item.school}</span>
                         </span>
-                        {hasText(item.graduationYear) && <span className="text-gray-600">{item.graduationYear}</span>}
+                        {hasText(item.graduationYear) && (
+                          <span className="text-gray-600">
+                            {item.inProgress ? `Expected ${item.graduationYear}` : item.graduationYear}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>

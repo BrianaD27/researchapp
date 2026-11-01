@@ -41,6 +41,14 @@ public class emailService {
         );
     }
 
+    // Mirrors an in-app notification. The link is a relative app path.
+    public void sendNotification(String toEmail, String subject, String message, String link) {
+        String body = message + "\n\n"
+            + (link != null && link.startsWith("/") ? "Open it here: " + frontendUrl + link + "\n\n" : "")
+            + "You are receiving this because you have an account on the VSU Research App.";
+        sendEmail(toEmail, "VSU Research App - " + subject, body);
+    }
+
     public void sendLoginAlert(String toEmail, String ip,
             String userAgent) {
         sendEmail(toEmail,

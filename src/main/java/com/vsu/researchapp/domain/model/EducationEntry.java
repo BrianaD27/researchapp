@@ -23,4 +23,7 @@ public class EducationEntry {
 
     @Column(length = 20)
     private String graduationYear;
+
+    // True while the degree is still being earned; graduationYear is then the expected year.
+    private Boolean inProgress;
 }
