@@ -22,9 +22,22 @@ public class JwtUtil {
     // Access tokens last 30 minutes
     private static final long ACCESS_TOKEN_MS = 30 * 60 * 1000;
 
+    // The fallback in application.properties is public on GitHub. Anyone who knows
+    // it can sign their own admin tokens, so it must never protect a real server.
+    static final String PUBLIC_DEFAULT_SECRET =
+        "vsu-research-app-super-secret-key-change-this-in-production-min-32-chars";
+
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long expirationMs) {
+            @Value("${jwt.expiration}") long expirationMs,
+            @Value("${spring.profiles.active:}") String activeProfiles) {
+        if (PUBLIC_DEFAULT_SECRET.equals(secret)) {
+            if (activeProfiles.contains("prod")) {
+                throw new IllegalStateException(
+                    "JWT_SECRET is not set. Refusing to start in production with the public default secret.");
+            }
+            logger.warn("[JWT] Using the PUBLIC default secret. Set JWT_SECRET; anyone with the repo can forge logins.");
+        }
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
     }

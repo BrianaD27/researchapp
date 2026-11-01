@@ -208,6 +208,11 @@ public class UserAccountService {
         UserAccount user = userAccountRepository
             .findByUsername(stored.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
+        if (!user.isActive()) {
+            refreshTokenRepository.delete(stored);
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.UNAUTHORIZED, "Account is no longer active");
+        }
 
         String newAccessToken = jwtUtil.generateToken(
             user.getUsername(), user.getRole());

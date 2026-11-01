@@ -9,6 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.vsu.researchapp.domain.model.UserAccount;
+import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,11 +20,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserAccountRepository userAccountRepository;
 
     public JwtFilter(JwtUtil jwtUtil,
-            TokenBlacklistService tokenBlacklistService) {
+            TokenBlacklistService tokenBlacklistService,
+            UserAccountRepository userAccountRepository) {
         this.jwtUtil = jwtUtil;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.userAccountRepository = userAccountRepository;
     }
 
     @Override
@@ -58,7 +63,19 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String username = jwtUtil.extractUsername(token);
-        String role = jwtUtil.extractRole(token);
+
+        // The token only proves who the caller is. Whether the account is still
+        // active, and which role it has right now, come from the database, so a
+        // deactivation or role change takes effect on the very next request.
+        UserAccount account = userAccountRepository.findByUsername(username).orElse(null);
+        if (account == null || !account.isActive() || account.getRole() == null) {
+            response.setStatus(401);
+            response.setHeader("Content-Type", "application/json");
+            response.getWriter().write(
+                "{\"error\": \"Account is no longer active\"}");
+            return;
+        }
+        String role = account.getRole();
 
         // Auto-rotate token if expiring within 5 minutes
         if (jwtUtil.isTokenExpiringSoon(token)) {
