@@ -148,7 +148,7 @@ export default function ProfessorDiscoverPage() {
                 <h2 className="text-2xl font-bold">{selected.student.name}</h2>
                 {!selected.student.profilePictureUrl && <ActiveDot active={Boolean(online[selected.student.id])} />}
               </div>
-              <MessageButton targetId={selected.student.id} />
+              <MessageButton kind="student" targetId={selected.student.id} />
             </div>
             {selected.student.profilePictureUrl && (
               <ProfilePhotoPreview key={selected.student.id} active={Boolean(online[selected.student.id])}

@@ -8,6 +8,7 @@ import { currentRole } from "../../api/session";
 import { usePresence } from "../../api/presence";
 import UpcomingCard from "../../components/calendar/UpcomingCard";
 import ActiveToggle from "../../components/common/ActiveToggle";
+import MessageButton from "../../components/common/MessageButton";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, hasText } from "../../components/profile/profileUtils";
 
@@ -158,6 +159,8 @@ export default function AssociateProfilePage() {
                 <input ref={photoInput} type="file" accept="image/png,image/jpeg" className="hidden"
                   onChange={(event) => void uploadPhoto(event.target.files?.[0])} />
               </>
+            ) : !profile.mine ? (
+              <MessageButton kind="account" targetId={profile.userAccountId} />
             ) : undefined}
           />
           <ProfileLayout

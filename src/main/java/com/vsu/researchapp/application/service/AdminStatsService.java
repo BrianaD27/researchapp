@@ -14,8 +14,8 @@ import com.vsu.researchapp.domain.model.Application;
 import com.vsu.researchapp.domain.model.ProblemReport;
 import com.vsu.researchapp.domain.model.ResearchOpportunity;
 import com.vsu.researchapp.domain.model.UserAccount;
-import com.vsu.researchapp.domain.repositoryinterfaces.ConversationRepository;
-import com.vsu.researchapp.domain.repositoryinterfaces.MessageRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.DirectConversationRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.DirectMessageRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.ProblemReportRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
 import com.vsu.researchapp.infrastructure.Repository.ApplicationJpaRepository;
@@ -43,14 +43,14 @@ public class AdminStatsService {
     private final ProfessorJpaRepository professors;
     private final ResearchOpportunityJpaRepository opportunities;
     private final ApplicationJpaRepository applications;
-    private final ConversationRepository conversations;
-    private final MessageRepository messages;
+    private final DirectConversationRepository conversations;
+    private final DirectMessageRepository messages;
     private final ProblemReportRepository reports;
 
     public AdminStatsService(UserAccountRepository accounts, StudentJpaRepository students,
             ProfessorJpaRepository professors, ResearchOpportunityJpaRepository opportunities,
-            ApplicationJpaRepository applications, ConversationRepository conversations,
-            MessageRepository messages, ProblemReportRepository reports) {
+            ApplicationJpaRepository applications, DirectConversationRepository conversations,
+            DirectMessageRepository messages, ProblemReportRepository reports) {
         this.accounts = accounts;
         this.students = students;
         this.professors = professors;

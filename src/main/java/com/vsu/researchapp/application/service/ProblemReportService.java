@@ -22,7 +22,8 @@ import com.vsu.researchapp.infrastructure.security.CurrentUserService;
 public class ProblemReportService {
 
     public static final Set<String> CATEGORIES =
-        Set.of("Something is broken", "Can't find something", "Account or login", "Suggestion", "Other");
+        Set.of("Something is broken", "Can't find something", "Account or login", "Suggestion", "Other",
+            "Inappropriate message");
     private static final Set<String> STATUSES = Set.of("NEW", "IN_PROGRESS", "FIXED");
     private static final int MAX_PER_HOUR = 5;
 

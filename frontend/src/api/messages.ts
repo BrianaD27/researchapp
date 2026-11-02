@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 // Shared by the Messages page and the top bar Messages link.
 export interface Conversation {
   id: number;
+  otherAccountId: number;
   otherName: string;
   otherDetail: string | null;
   otherActive: boolean;
@@ -19,13 +20,17 @@ export interface ChatMessage {
   createdAt: string;
 }
 
-export interface Contact {
-  id: number;
+// Someone found with the "New message" search.
+export interface Person {
+  accountId: number;
   name: string;
   detail: string | null;
   active: boolean;
   conversationId: number | null;
 }
+
+// What a Message button points at: a login account, a student profile, or a professor profile.
+export type MessageTargetKind = "account" | "student" | "professor";
 
 export const MESSAGE_MAX = 2000;
 

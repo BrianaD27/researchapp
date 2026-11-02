@@ -340,7 +340,7 @@ export default function ProfessorApplicantsPage() {
                     <h2 className="text-2xl font-bold">{selected.studentName}</h2>
                     {!profile?.profilePictureUrl && <ActiveDot active={Boolean(online[selected.studentId])} />}
                   </div>
-                  <MessageButton targetId={selected.studentId} />
+                  <MessageButton kind="student" targetId={selected.studentId} />
                 </div>
                 <p className="font-semibold mb-4">Status: {statusLabel(selected)}</p>
                 {loadingStudent && <p role="status">Loading student profile...</p>}

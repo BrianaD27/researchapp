@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/client";
-import { messageProblem } from "../../api/messages";
+import { messageProblem, type MessageTargetKind } from "../../api/messages";
 
 // Opens (or starts) the conversation with this person on the Messages page.
-// Students pass a professor id; faculty pass a student profile id.
-export default function MessageButton({ targetId, label = "Message" }: { targetId: number; label?: string }) {
+// kind says what targetId is: a login account, a student profile, or a professor profile.
+export default function MessageButton({ kind, targetId, label = "Message" }: {
+  kind: MessageTargetKind;
+  targetId: number;
+  label?: string;
+}) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -15,7 +19,7 @@ export default function MessageButton({ targetId, label = "Message" }: { targetI
     setBusy(true);
     setError("");
     try {
-      const { data } = await apiClient.post<{ id: number }>("/messages/start", { targetId });
+      const { data } = await apiClient.post<{ id: number }>("/messages/start", { kind, id: targetId });
       navigate(`/messages?c=${data.id}`);
     } catch (caught) {
       setError(messageProblem(caught, "Could not open messages."));

@@ -4,16 +4,17 @@ import FacultyNavBar from "../../components/common/FacultyNavBar";
 import StudentNavBar from "../../components/common/StudentNavBar";
 import ActiveDot from "../../components/common/ActiveDot";
 import apiClient from "../../api/client";
+import { currentRole } from "../../api/session";
 import {
   MESSAGE_MAX, messageProblem, shortTime,
-  type ChatMessage, type Contact, type Conversation,
+  type ChatMessage, type Conversation, type Person,
 } from "../../api/messages";
 
-// 1:1 messages between students and faculty. Only the two sides can read a thread.
+// 1:1 messages between anyone in the VSU app. Only the two people in a
+// conversation can read it. Messages you receive can be reported to the admins.
 export default function MessagesPage() {
   const [params, setParams] = useSearchParams();
   const openId = Number(params.get("c")) || null;
-  const [role, setRole] = useState("");
   const [list, setList] = useState<Conversation[]>([]);
   const [listError, setListError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -22,9 +23,14 @@ export default function MessagesPage() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [picking, setPicking] = useState(false);
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [query, setQuery] = useState("");
+  const [people, setPeople] = useState<Person[]>([]);
+  const [searching, setSearching] = useState(false);
   const [contactsError, setContactsError] = useState("");
   const [showActive, setShowActive] = useState(true);
+  const [reporting, setReporting] = useState<number | null>(null);
+  const [reason, setReason] = useState("");
+  const [reportNote, setReportNote] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
   const lastCount = useRef(0);
 
@@ -54,7 +60,6 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    apiClient.get<{ role: string }>("/associates/session").then(({ data }) => setRole(data.role)).catch(() => undefined);
     apiClient.get<{ showActive: boolean }>("/messages/settings")
       .then(({ data }) => setShowActive(data.showActive)).catch(() => undefined);
     const first = window.setTimeout(() => void loadList(), 0);
@@ -86,24 +91,40 @@ export default function MessagesPage() {
     setParams({ c: String(id) });
   }
 
-  async function openPicker() {
+  function openPicker() {
     setPicking(true);
+    setQuery("");
+    setPeople([]);
     setContactsError("");
-    try {
-      const { data } = await apiClient.get<Contact[]>("/messages/contacts");
-      setContacts(data);
-    } catch (caught) {
-      setContactsError(messageProblem(caught, "Could not load contacts."));
-    }
   }
 
-  async function startWith(contact: Contact) {
-    if (contact.conversationId) {
-      open(contact.conversationId);
+  // Search as you type (after a short pause).
+  useEffect(() => {
+    if (!picking) return;
+    const q = query.trim();
+    if (q.length < 2) { setPeople([]); setSearching(false); return; }
+    setSearching(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const { data } = await apiClient.get<Person[]>("/messages/people", { params: { q } });
+        setPeople(data);
+        setContactsError("");
+      } catch (caught) {
+        setContactsError(messageProblem(caught, "Could not search."));
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [query, picking]);
+
+  async function startWith(person: Person) {
+    if (person.conversationId) {
+      open(person.conversationId);
       return;
     }
     try {
-      const { data } = await apiClient.post<Conversation>("/messages/start", { targetId: contact.id });
+      const { data } = await apiClient.post<Conversation>("/messages/start", { kind: "account", id: person.accountId });
       setList((current) => (current.some((c) => c.id === data.id) ? current : [data, ...current]));
       open(data.id);
     } catch (caught) {
@@ -137,6 +158,17 @@ export default function MessagesPage() {
     }
   }
 
+  async function sendReport(messageId: number) {
+    try {
+      await apiClient.post(`/messages/messages/${messageId}/report`, { reason });
+      setReporting(null);
+      setReason("");
+      setReportNote("Thanks. The admins have been sent this message to review.");
+    } catch (caught) {
+      setReportNote(messageProblem(caught, "The report was not sent."));
+    }
+  }
+
   async function toggleActive(show: boolean) {
     setShowActive(show);
     try {
@@ -147,7 +179,7 @@ export default function MessagesPage() {
     }
   }
 
-  const isStudent = role === "STUDENT";
+  const isStudent = currentRole() === "STUDENT";
   const card = "bg-white rounded-xl shadow-lg";
 
   return (
@@ -174,9 +206,7 @@ export default function MessagesPage() {
               {loading && <p className="text-gray-600 p-2">Loading...</p>}
               {!loading && list.length === 0 && (
                 <p className="text-gray-600 p-2 text-sm">
-                  No conversations yet. {isStudent
-                    ? "After you apply to a project, you can message its professor."
-                    : "You can message students who applied to your projects."}
+                  No conversations yet. Click New message to find anyone by name.
                 </p>
               )}
               {list.map((c) => (
@@ -209,24 +239,29 @@ export default function MessagesPage() {
                       Cancel
                     </button>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {isStudent
-                      ? "You can message professors of projects you applied to."
-                      : "Students who applied to your projects."}
-                  </p>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm text-gray-600">Find anyone: students, faculty, or Research Associates.</span>
+                    <input autoFocus value={query} maxLength={100} onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Type a name or username"
+                      className="border border-gray-400 rounded-lg p-2" />
+                  </label>
                   {contactsError && <p role="alert" className="text-red-700">{contactsError}</p>}
-                  {!contactsError && contacts.length === 0 && <p className="text-gray-600">No one to message yet.</p>}
-                  {contacts.map((contact) => (
-                    <div key={contact.id} className="flex items-center justify-between gap-3 border rounded-lg p-3">
-                      <div>
+                  {query.trim().length < 2 && <p className="text-gray-600">Type at least 2 letters.</p>}
+                  {searching && <p className="text-gray-600">Searching...</p>}
+                  {!searching && query.trim().length >= 2 && people.length === 0 && !contactsError && (
+                    <p className="text-gray-600">No one found with that name.</p>
+                  )}
+                  {people.map((person) => (
+                    <div key={person.accountId} className="flex items-center justify-between gap-3 border rounded-lg p-3">
+                      <div className="min-w-0">
                         <p className="font-semibold flex items-center gap-2">
-                          {contact.name} <ActiveDot active={contact.active} label={false} />
+                          <span className="truncate">{person.name}</span> <ActiveDot active={person.active} label={false} />
                         </p>
-                        {contact.detail && <p className="text-sm text-gray-600">{contact.detail}</p>}
+                        {person.detail && <p className="text-sm text-gray-600">{person.detail}</p>}
                       </div>
-                      <button type="button" onClick={() => void startWith(contact)}
-                        className="bg-blue-700 text-white rounded-lg px-3 py-1.5 text-sm font-semibold cursor-pointer">
-                        {contact.conversationId ? "Open" : "Message"}
+                      <button type="button" onClick={() => void startWith(person)}
+                        className="bg-blue-700 text-white rounded-lg px-3 py-1.5 text-sm font-semibold cursor-pointer shrink-0">
+                        {person.conversationId ? "Open" : "Message"}
                       </button>
                     </div>
                   ))}
@@ -253,11 +288,32 @@ export default function MessagesPage() {
                           m.mine ? "bg-blue-700 text-white" : "bg-white border"}`}>
                           {m.body}
                         </p>
+                        {!m.mine && reporting !== m.id && (
+                          <button type="button" onClick={() => { setReporting(m.id); setReason(""); setReportNote(""); }}
+                            className="text-xs text-gray-500 underline mt-0.5 cursor-pointer">
+                            Report
+                          </button>
+                        )}
+                        {reporting === m.id && (
+                          <div className="mt-1 bg-white border border-red-300 rounded-lg p-2 flex flex-col gap-2 w-72 max-w-full">
+                            <span className="text-sm font-semibold">Report this message to the admins?</span>
+                            <textarea rows={2} maxLength={400} value={reason} onChange={(event) => setReason(event.target.value)}
+                              placeholder="What's wrong with it? (optional)"
+                              className="border border-gray-400 rounded p-1 text-sm resize-none" />
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => void sendReport(m.id)}
+                                className="bg-red-700 text-white rounded px-3 py-1 text-sm cursor-pointer">Send report</button>
+                              <button type="button" onClick={() => setReporting(null)}
+                                className="border rounded px-3 py-1 text-sm cursor-pointer">Cancel</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                     <div ref={bottom} />
                   </div>
                   <form onSubmit={(event) => void send(event)} className="border-t p-3 flex flex-col gap-2">
+                    {reportNote && <p role="status" className="text-sm text-green-800 bg-green-50 rounded p-2">{reportNote}</p>}
                     {threadError && <p role="alert" className="text-red-700 text-sm">{threadError}</p>}
                     <div className="flex gap-2 items-end">
                       <textarea rows={2} maxLength={MESSAGE_MAX} value={draft} disabled={sending || !thread}

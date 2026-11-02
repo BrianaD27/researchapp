@@ -290,7 +290,7 @@ export default function StudentRecordsPage({ mode }: { mode: Mode }) {
                   <p>{opportunity.professorName || "Faculty not specified"}</p>
                   {opportunity.professorId != null && <ActiveDot active={Boolean(online[opportunity.professorId])} />}
                   {opportunity.professorId != null && mode !== "saved" && (
-                    <MessageButton targetId={opportunity.professorId} label="Message professor" />
+                    <MessageButton kind="professor" targetId={opportunity.professorId} label="Message professor" />
                   )}
                 </div>
                 <p className="text-gray-600 mb-4">{opportunity.department}</p>

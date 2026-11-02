@@ -7,6 +7,7 @@ import { usePresence } from "../../api/presence";
 import ActiveDot from "../../components/common/ActiveDot";
 import ResearchTeam from "../../components/common/ResearchTeam";
 import UpcomingCard from "../../components/calendar/UpcomingCard";
+import MessageButton from "../../components/common/MessageButton";
 
 interface Opportunity {
   id: number;
@@ -293,6 +294,7 @@ export default function StudentDiscoverPage() {
             <p className="flex items-center gap-2">
               {selected.professorName || "Faculty not specified"}
               {selected.professorId != null && <ActiveDot active={Boolean(online[selected.professorId])} />}
+              {selected.professorId != null && <MessageButton kind="professor" targetId={selected.professorId} />}
             </p>
             <p className="text-gray-600 mb-5">{selected.department}</p>
             <div className="-mt-3 mb-5"><ResearchTeam professorId={selected.professorId} /></div>
