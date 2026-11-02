@@ -19,6 +19,7 @@ export interface CalendarEntry {
   color: CalendarColor;
   visibility: Visibility;
   notified: boolean;
+  away: boolean;
 }
 
 export interface Occurrence {
@@ -35,6 +36,7 @@ export interface Occurrence {
   visibility: Visibility;
   repeatWeekly: boolean;
   opportunityId: number | null;
+  away: boolean;
 }
 
 export interface MyCalendar {
@@ -61,6 +63,7 @@ export interface EntryInput {
   color: CalendarColor;
   visibility: Visibility;
   notifyStudents: boolean;
+  away: boolean;
 }
 
 export const calendarApi = {
@@ -114,6 +117,22 @@ export function formatTime(value: string | null): string {
 export function timeRange(item: { startTime: string | null; endTime: string | null }): string {
   if (!item.startTime) return "All day";
   return item.endTime ? `${formatTime(item.startTime)} - ${formatTime(item.endTime)}` : formatTime(item.startTime);
+}
+
+// Striped gray background for days blocked out as Away.
+export const AWAY_STYLE = {
+  backgroundImage: "repeating-linear-gradient(135deg, #E5E7EB 0 6px, #F3F4F6 6px 12px)",
+};
+
+// "Nov 20" or "Nov 20 to Nov 27"
+export function awayRange(item: { date: string; endDate: string | null }): string {
+  const short = { month: "short", day: "numeric" } as const;
+  return item.endDate ? `${dayLabel(item.date, short)} to ${dayLabel(item.endDate, short)}` : dayLabel(item.date, short);
+}
+
+// The Away block covering today, if any.
+export function awayNow<T extends { away: boolean; date: string; endDate: string | null }>(items: T[], today: string): T | undefined {
+  return items.find((item) => item.away && item.date <= today && today <= (item.endDate ?? item.date));
 }
 
 export function dayLabel(value: string, options: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" }) {

@@ -64,6 +64,11 @@ public class CalendarEntry {
     @Column(nullable = false, length = 10)
     private String visibility;
 
+    // True for "Away" blocks: whole days marked unavailable (a research trip,
+    // a conference). Boolean (not boolean) so the column can be added to an
+    // existing table.
+    private Boolean away;
+
     // True when students were sent a bell alert about this entry.
     private boolean notified;
 

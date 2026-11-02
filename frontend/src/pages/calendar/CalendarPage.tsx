@@ -3,7 +3,7 @@ import { isAxiosError } from "axios";
 import { useSearchParams } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import {
-  COLOR_STYLES, calendarApi, colorStyle, dayLabel, isoDay, parseDay, timeRange,
+  AWAY_STYLE, COLOR_STYLES, calendarApi, colorStyle, dayLabel, isoDay, parseDay, timeRange,
   type CalendarColor, type CalendarEntry, type EntryInput, type MyCalendar, type Occurrence,
 } from "../../api/calendar";
 
@@ -23,13 +23,14 @@ interface FormState {
   color: CalendarColor;
   visibility: "PUBLIC" | "PRIVATE";
   notifyStudents: boolean;
+  away: boolean;
 }
 
-function blankForm(day: string): FormState {
+function blankForm(day: string, away = false): FormState {
   return {
     title: "", startDate: day, endDate: "", allDay: false, startTime: "09:00", endTime: "10:00",
-    repeatWeekly: false, repeatUntil: "", location: "", notes: "", color: "blue",
-    visibility: "PUBLIC", notifyStudents: false,
+    repeatWeekly: false, repeatUntil: "", location: "", notes: "", color: away ? "gray" : "blue",
+    visibility: "PUBLIC", notifyStudents: false, away,
   };
 }
 
@@ -39,7 +40,7 @@ function formFrom(entry: CalendarEntry): FormState {
     allDay: !entry.startTime, startTime: entry.startTime?.slice(0, 5) ?? "09:00",
     endTime: entry.endTime?.slice(0, 5) ?? "", repeatWeekly: entry.repeatWeekly,
     repeatUntil: entry.repeatUntil ?? "", location: entry.location ?? "", notes: entry.notes ?? "",
-    color: entry.color ?? "blue", visibility: entry.visibility, notifyStudents: false,
+    color: entry.color ?? "blue", visibility: entry.visibility, notifyStudents: false, away: entry.away,
   };
 }
 
@@ -110,8 +111,8 @@ export default function CalendarPage() {
     setMonth((current) => new Date(current.getFullYear(), current.getMonth() + step, 1));
   }
 
-  function startAdd(day: string) {
-    setForm(blankForm(day));
+  function startAdd(day: string, away = false) {
+    setForm(blankForm(day, away));
     setEditingId(null);
     setMessage("");
     setError("");
@@ -137,14 +138,15 @@ export default function CalendarPage() {
       title: form.title,
       startDate: form.startDate,
       endDate: form.endDate || null,
-      startTime: form.allDay ? null : form.startTime || null,
-      endTime: form.allDay ? null : form.endTime || null,
-      repeatWeekly: form.repeatWeekly,
-      repeatUntil: form.repeatWeekly && form.repeatUntil ? form.repeatUntil : null,
+      startTime: form.allDay || form.away ? null : form.startTime || null,
+      endTime: form.allDay || form.away ? null : form.endTime || null,
+      repeatWeekly: !form.away && form.repeatWeekly,
+      repeatUntil: !form.away && form.repeatWeekly && form.repeatUntil ? form.repeatUntil : null,
       location: form.location,
       notes: form.notes,
-      color: form.color,
+      color: form.away ? "gray" : form.color,
       visibility: form.visibility,
+      away: form.away,
       notifyStudents: editingId === null && form.visibility === "PUBLIC" && form.notifyStudents,
     };
     try {
@@ -192,11 +194,14 @@ export default function CalendarPage() {
       <>
         <span className={`w-3 h-3 rounded-full mt-1.5 shrink-0 ${style.dot}`} aria-hidden="true" />
         <span className="flex flex-col min-w-0 text-left">
-          <span className="font-semibold break-words">{item.title}</span>
+          <span className="font-semibold break-words">
+            {item.away && <span className="bg-gray-700 text-white text-xs font-bold rounded px-1.5 py-0.5 mr-2 align-middle">AWAY</span>}
+            {item.title}
+          </span>
           <span className="text-sm text-gray-600 break-words">
             {[
               showDay ? dayLabel(item.date) : null,
-              item.endDate ? `through ${dayLabel(item.endDate)}` : timeRange(item),
+              item.endDate ? `through ${dayLabel(item.endDate)}` : item.away ? "All day" : timeRange(item),
               item.location,
               item.repeatWeekly ? "Weekly" : null,
               item.kind === "DEADLINE" ? "From your opportunities" : item.visibility === "PRIVATE" ? "Just me" : "Everyone",
@@ -228,10 +233,16 @@ export default function CalendarPage() {
             <h1 className="text-3xl font-bold">Your calendar</h1>
             <p className="text-gray-600">Post office hours, announcements, time away, or anything else. "Everyone" entries show on your profile.</p>
           </div>
-          <button type="button" onClick={() => startAdd(selected)}
-            className="bg-[#1B51A4] text-white font-semibold rounded-lg px-5 py-3 cursor-pointer">
-            + Add entry
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={() => startAdd(selected, true)}
+              className="border-2 border-gray-700 text-gray-800 font-semibold rounded-lg px-5 py-3 cursor-pointer bg-white">
+              Block out days
+            </button>
+            <button type="button" onClick={() => startAdd(selected)}
+              className="bg-[#1B51A4] text-white font-semibold rounded-lg px-5 py-3 cursor-pointer">
+              + Add entry
+            </button>
+          </div>
         </div>
 
         {message && <p role="status" className="bg-green-100 text-green-800 rounded-lg p-3">{message}</p>}
@@ -239,29 +250,44 @@ export default function CalendarPage() {
 
         {form && (
           <section className="bg-white rounded-xl p-6 flex flex-col gap-4 border-l-4 border-[#1B51A4]">
-            <h2 className="text-xl font-semibold">{editingId === null ? "Add an entry" : "Edit entry"}</h2>
+            <h2 className="text-xl font-semibold">
+              {form.away ? (editingId === null ? "Block out days" : "Edit blocked-out days")
+                : editingId === null ? "Add an entry" : "Edit entry"}
+            </h2>
             <form onSubmit={save} className="flex flex-col gap-4">
-              <label className="flex flex-col gap-1">Title
+              <label className="flex items-start gap-2 bg-gray-100 rounded-lg p-3">
+                <input type="checkbox" className="mt-1" checked={form.away} disabled={busy}
+                  onChange={(e) => setForm({ ...form, away: e.target.checked, color: e.target.checked ? "gray" : "blue" })} />
+                <span>
+                  <span className="font-semibold">Block out these days (I'm away)</span>
+                  <span className="block text-sm text-gray-600">
+                    The whole day or days show as unavailable on your calendar and profile, with the reason below.
+                  </span>
+                </span>
+              </label>
+              <label className="flex flex-col gap-1">{form.away ? "Reason students will see" : "Title"}
                 <input maxLength={150} value={form.title} disabled={busy} className={input}
-                  placeholder="Office hours"
+                  placeholder={form.away ? "Out of town for field research" : "Office hours"}
                   onChange={(e) => setForm({ ...form, title: e.target.value })} />
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label className="flex flex-col gap-1">Date
+                <label className="flex flex-col gap-1">{form.away ? "First day away" : "Date"}
                   <input type="date" required value={form.startDate} disabled={busy} className={input}
                     onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
                 </label>
-                <label className="flex flex-col gap-1">Last day (only if it spans several days)
+                <label className="flex flex-col gap-1">{form.away ? "Last day away" : "Last day (only if it spans several days)"}
                   <input type="date" value={form.endDate} min={form.startDate} disabled={busy} className={input}
                     onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
                 </label>
               </div>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={form.allDay} disabled={busy}
-                  onChange={(e) => setForm({ ...form, allDay: e.target.checked })} />
-                All day
-              </label>
-              {!form.allDay && (
+              {!form.away && (
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={form.allDay} disabled={busy}
+                    onChange={(e) => setForm({ ...form, allDay: e.target.checked })} />
+                  All day
+                </label>
+              )}
+              {!form.allDay && !form.away && (
                 <div className="grid grid-cols-2 gap-4">
                   <label className="flex flex-col gap-1">Starts
                     <input type="time" required value={form.startTime} disabled={busy} className={input}
@@ -273,7 +299,7 @@ export default function CalendarPage() {
                   </label>
                 </div>
               )}
-              <div className="flex flex-wrap items-center gap-4">
+              {!form.away && <div className="flex flex-wrap items-center gap-4">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={form.repeatWeekly} disabled={busy}
                     onChange={(e) => setForm({ ...form, repeatWeekly: e.target.checked })} />
@@ -286,7 +312,7 @@ export default function CalendarPage() {
                       onChange={(e) => setForm({ ...form, repeatUntil: e.target.value })} />
                   </label>
                 )}
-              </div>
+              </div>}
               <label className="flex flex-col gap-1">Place or link (optional)
                 <input maxLength={300} value={form.location} disabled={busy} className={input}
                   placeholder="Room 210, Hunter McDaniel Hall"
@@ -296,7 +322,7 @@ export default function CalendarPage() {
                 <textarea rows={3} maxLength={2000} value={form.notes} disabled={busy} className={input}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </label>
-              <fieldset className="flex flex-col gap-2">
+              {!form.away && <fieldset className="flex flex-col gap-2">
                 <legend className="mb-1">Color</legend>
                 <div className="flex flex-wrap gap-2">
                   {(Object.keys(COLOR_STYLES) as CalendarColor[]).map((color) => (
@@ -309,7 +335,7 @@ export default function CalendarPage() {
                     </label>
                   ))}
                 </div>
-              </fieldset>
+              </fieldset>}
               <fieldset className="flex flex-col gap-2">
                 <legend className="mb-1">Who can see this</legend>
                 <div className="flex flex-wrap gap-4">
@@ -374,20 +400,26 @@ export default function CalendarPage() {
                 const items = occurrences.filter((item) => covers(item, key));
                 const inMonth = d.getMonth() === month.getMonth();
                 const isSelected = key === selected;
+                const blocked = items.find((item) => item.away);
                 return (
                   <button key={key} type="button" onClick={() => setSelected(key)}
                     aria-label={`${d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}, ${items.length} item${items.length === 1 ? "" : "s"}`}
                     className={`min-h-14 sm:min-h-24 rounded-lg p-1 flex flex-col items-stretch text-left cursor-pointer border
                       ${isSelected ? "border-[#1B51A4] bg-blue-50" : "border-transparent hover:bg-gray-50"}
-                      ${inMonth ? "" : "opacity-40"}`}>
+                      ${inMonth ? "" : "opacity-40"}`}
+                    style={blocked ? AWAY_STYLE : undefined}
+                    title={blocked ? `Away: ${blocked.title}` : undefined}>
                     <span className={`text-sm self-center sm:self-start w-7 h-7 flex items-center justify-center rounded-full
                       ${key === today ? "bg-[#F29D38] text-white font-bold" : ""}`}>{d.getDate()}</span>
                     <span className="hidden sm:flex flex-col gap-0.5">
                       {items.slice(0, 3).map((item, i) => (
-                        <span key={i} className={`${colorStyle(item.color).pill} text-xs rounded px-1 truncate`}>{item.title}</span>
+                        <span key={i} className={`${item.away ? "bg-gray-700 text-white" : colorStyle(item.color).pill} text-xs rounded px-1 truncate`}>
+                          {item.away ? `Away: ${item.title}` : item.title}
+                        </span>
                       ))}
                       {items.length > 3 && <span className="text-xs text-gray-600">+{items.length - 3} more</span>}
                     </span>
+                    {blocked && <span className="sm:hidden text-[10px] font-bold text-gray-700 text-center">AWAY</span>}
                     <span className="flex sm:hidden justify-center gap-0.5 mt-0.5">
                       {items.slice(0, 3).map((item, i) => (
                         <span key={i} className={`w-1.5 h-1.5 rounded-full ${colorStyle(item.color).dot}`} />

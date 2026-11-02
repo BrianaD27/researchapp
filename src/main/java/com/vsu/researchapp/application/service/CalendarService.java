@@ -56,16 +56,17 @@ public class CalendarService {
 
     public record EntryInput(String title, LocalDate startDate, LocalDate endDate, LocalTime startTime,
                              LocalTime endTime, boolean repeatWeekly, LocalDate repeatUntil, String location,
-                             String notes, String color, String visibility, boolean notifyStudents) {}
+                             String notes, String color, String visibility, boolean notifyStudents,
+                             boolean away) {}
 
     public record EntryView(Long id, String title, LocalDate startDate, LocalDate endDate, LocalTime startTime,
                             LocalTime endTime, boolean repeatWeekly, LocalDate repeatUntil, String location,
-                            String notes, String color, String visibility, boolean notified) {}
+                            String notes, String color, String visibility, boolean notified, boolean away) {}
 
     // One thing on one day: a single entry, one week of a repeating entry, or a deadline.
     public record Occurrence(Long entryId, String kind, String title, LocalDate date, LocalDate endDate,
                              LocalTime startTime, LocalTime endTime, String location, String notes, String color,
-                             String visibility, boolean repeatWeekly, Long opportunityId) {}
+                             String visibility, boolean repeatWeekly, Long opportunityId, boolean away) {}
 
     public record MyCalendar(List<EntryView> entries, List<Occurrence> occurrences, int notifiedStudents) {}
 
@@ -225,7 +226,7 @@ public class CalendarService {
         return new Occurrence(e.getId(), "ENTRY", e.getTitle(), day, span == 0 ? null : day.plusDays(span),
             e.getStartTime(), e.getEndTime(), e.getLocation(), e.getNotes(),
             e.getColor() == null ? "blue" : e.getColor(), mine ? e.getVisibility() : "PUBLIC",
-            e.isRepeatWeekly(), null);
+            e.isRepeatWeekly(), null, Boolean.TRUE.equals(e.getAway()));
     }
 
     private void addDeadlines(Long professorId, LocalDate from, LocalDate to, List<Occurrence> out) {
@@ -233,12 +234,13 @@ public class CalendarService {
             LocalDate d = o.getApplicationDeadline();
             if (d == null || d.isBefore(from) || d.isAfter(to)) continue;
             out.add(new Occurrence(null, "DEADLINE", "Applications close: " + o.getTitle(), d, null, null, null,
-                null, null, "coral", "PUBLIC", false, o.getId()));
+                null, null, "coral", "PUBLIC", false, o.getId(), false));
         }
     }
 
     private static void sort(List<Occurrence> out) {
         out.sort(Comparator.comparing(Occurrence::date)
+            .thenComparing(o -> o.away() ? 0 : 1)
             .thenComparing(o -> o.startTime() == null ? LocalTime.MIN : o.startTime()));
     }
 
@@ -301,21 +303,26 @@ public class CalendarService {
         if (in.startDate().isBefore(today.minusYears(1)) || in.startDate().isAfter(today.plusYears(2))) {
             throw bad("Choose a date within the next two years");
         }
+        boolean away = in.away();
         LocalDate end = in.endDate();
         if (end != null && end.equals(in.startDate())) end = null;
         if (end != null && end.isBefore(in.startDate())) throw bad("The end date is before the start date");
         if (end != null && ChronoUnit.DAYS.between(in.startDate(), end) > 60) throw bad("An entry can span up to 60 days");
-        if (in.endTime() != null && in.startTime() == null) throw bad("Add a start time");
-        if (in.startTime() != null && in.endTime() != null && end == null && !in.endTime().isAfter(in.startTime())) {
+        LocalTime startTime = away ? null : in.startTime();
+        LocalTime endTime = away ? null : in.endTime();
+        boolean repeat = !away && in.repeatWeekly();
+        if (endTime != null && startTime == null) throw bad("Add a start time");
+        if (startTime != null && endTime != null && end == null && !endTime.isAfter(startTime)) {
             throw bad("The end time is before the start time");
         }
-        if (in.repeatWeekly() && end != null && ChronoUnit.DAYS.between(in.startDate(), end) >= 7) {
+        if (repeat && end != null && ChronoUnit.DAYS.between(in.startDate(), end) >= 7) {
             throw bad("A weekly entry can't be longer than a week");
         }
-        LocalDate until = in.repeatWeekly() ? in.repeatUntil() : null;
+        LocalDate until = repeat ? in.repeatUntil() : null;
         if (until != null && until.isBefore(in.startDate())) throw bad("Repeat until is before the start date");
         if (until != null && until.isAfter(in.startDate().plusYears(1))) throw bad("Repeat for up to a year");
-        String color = in.color() == null || in.color().isBlank() ? "blue" : in.color().trim().toLowerCase(Locale.ROOT);
+        String color = away ? "gray"
+            : in.color() == null || in.color().isBlank() ? "blue" : in.color().trim().toLowerCase(Locale.ROOT);
         if (!COLORS.contains(color)) throw bad("Pick one of the listed colors");
         String visibility = upper(in.visibility());
         if (!"PUBLIC".equals(visibility) && !"PRIVATE".equals(visibility)) throw bad("Choose who can see this");
@@ -323,9 +330,10 @@ public class CalendarService {
         e.setTitle(title);
         e.setStartDate(in.startDate());
         e.setEndDate(end);
-        e.setStartTime(in.startTime());
-        e.setEndTime(in.endTime());
-        e.setRepeatWeekly(in.repeatWeekly());
+        e.setStartTime(startTime);
+        e.setEndTime(endTime);
+        e.setRepeatWeekly(repeat);
+        e.setAway(away);
         e.setRepeatUntil(until);
         e.setLocation(clean(in.location(), 300, "Place or link"));
         e.setNotes(clean(in.notes(), 2000, "Notes"));
@@ -357,7 +365,7 @@ public class CalendarService {
     private static EntryView view(CalendarEntry e) {
         return new EntryView(e.getId(), e.getTitle(), e.getStartDate(), e.getEndDate(), e.getStartTime(),
             e.getEndTime(), e.isRepeatWeekly(), e.getRepeatUntil(), e.getLocation(), e.getNotes(),
-            e.getColor(), e.getVisibility(), e.isNotified());
+            e.getColor(), e.getVisibility(), e.isNotified(), Boolean.TRUE.equals(e.getAway()));
     }
 
     private static String upper(String s) {
