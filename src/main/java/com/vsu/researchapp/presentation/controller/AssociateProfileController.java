@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vsu.researchapp.application.dto.EducationDto;
 import com.vsu.researchapp.application.service.AssociateProfileService;
 import com.vsu.researchapp.application.service.AssociateProfileService.ProfileView;
 import com.vsu.researchapp.application.service.AssociateProfileService.TeamMember;
@@ -22,7 +23,8 @@ import com.vsu.researchapp.application.service.AssociateProfileService.TeamMembe
 @RestController
 public class AssociateProfileController {
 
-    public record UpdateRequest(String name, String title, String department, String about) {}
+    public record UpdateRequest(String name, String title, String department, String about,
+                                String outsideInterests, List<EducationDto> education) {}
 
     private final AssociateProfileService service;
 
@@ -37,7 +39,8 @@ public class AssociateProfileController {
 
     @PutMapping("/api/associates/profile/me")
     public ProfileView update(@RequestBody UpdateRequest request) {
-        return service.update(request.name(), request.title(), request.department(), request.about());
+        return service.update(request.name(), request.title(), request.department(), request.about(),
+            request.outsideInterests(), request.education());
     }
 
     @PostMapping(value = "/api/associates/profile/me/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

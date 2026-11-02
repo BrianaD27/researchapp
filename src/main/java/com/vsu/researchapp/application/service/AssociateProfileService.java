@@ -2,6 +2,7 @@ package com.vsu.researchapp.application.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -11,8 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.vsu.researchapp.application.dto.EducationDto;
 import com.vsu.researchapp.domain.model.AssociateLink;
 import com.vsu.researchapp.domain.model.AssociateProfile;
+import com.vsu.researchapp.domain.model.EducationEntry;
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.repositoryinterfaces.AssociateLinkRepository;
@@ -34,7 +37,8 @@ public class AssociateProfileService {
     public record WorksWith(Long professorId, String professorName, String department) {}
 
     public record ProfileView(Long userAccountId, String username, String name, String title, String department,
-                              String about, String profilePictureUrl, List<WorksWith> worksWith, boolean onTeam,
+                              String about, String profilePictureUrl, String outsideInterests,
+                              List<EducationDto> education, List<WorksWith> worksWith, boolean onTeam,
                               boolean mine) {}
 
     public record TeamMember(Long userAccountId, String name, String title, String profilePictureUrl) {}
@@ -72,13 +76,30 @@ public class AssociateProfileService {
     }
 
     @Transactional
-    public ProfileView update(String name, String title, String department, String about) {
+    public ProfileView update(String name, String title, String department, String about,
+            String outsideInterests, List<EducationDto> education) {
         UserAccount me = requireAssociate();
         AssociateProfile p = profileFor(me);
         p.setName(clean(name, 150, "Name"));
         p.setTitle(clean(title, 150, "Title"));
         p.setDepartment(clean(department, 150, "Department"));
         p.setAbout(clean(about, 2000, "About"));
+        p.setOutsideInterests(clean(outsideInterests, 1000, "Outside the classroom"));
+        if (education != null) {
+            if (education.size() > 10) throw bad("Add up to 10 degrees");
+            List<EducationEntry> degrees = new ArrayList<>();
+            for (EducationDto e : education) {
+                if (e == null) continue;
+                String degree = clean(e.degree(), 150, "Degree");
+                String school = clean(e.school(), 150, "School");
+                String year = clean(e.graduationYear(), 20, "Year");
+                if (degree == null && school == null && year == null) continue;
+                if (degree == null || school == null) throw bad("Each degree needs both a degree name and a school");
+                degrees.add(new EducationEntry(degree, school, year, Boolean.TRUE.equals(e.inProgress())));
+            }
+            p.getEducation().clear();
+            p.getEducation().addAll(degrees);
+        }
         profiles.save(p);
         return view(me, true);
     }
@@ -137,7 +158,12 @@ public class AssociateProfileService {
             .toList();
         return new ProfileView(account.getId(), account.getUsername(), displayName(account, p),
             p == null ? null : p.getTitle(), p == null ? null : p.getDepartment(), p == null ? null : p.getAbout(),
-            p == null ? null : p.getProfilePictureUrl(), worksWith, !worksWith.isEmpty(), mine);
+            p == null ? null : p.getProfilePictureUrl(), p == null ? null : p.getOutsideInterests(),
+            p == null || p.getEducation() == null ? List.of()
+                : p.getEducation().stream()
+                    .map(e -> new EducationDto(e.getDegree(), e.getSchool(), e.getGraduationYear(), e.getInProgress()))
+                    .toList(),
+            worksWith, !worksWith.isEmpty(), mine);
     }
 
     private AssociateProfile profileFor(UserAccount me) {

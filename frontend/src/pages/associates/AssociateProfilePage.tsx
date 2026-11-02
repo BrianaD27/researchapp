@@ -18,6 +18,13 @@ interface WorksWith {
   department: string | null;
 }
 
+interface Education {
+  degree: string;
+  school: string;
+  graduationYear: string | null;
+  inProgress: boolean | null;
+}
+
 interface AssociateProfile {
   userAccountId: number;
   username: string;
@@ -26,6 +33,8 @@ interface AssociateProfile {
   department: string | null;
   about: string | null;
   profilePictureUrl: string | null;
+  outsideInterests: string | null;
+  education: Education[];
   worksWith: WorksWith[];
   onTeam: boolean;
   mine: boolean;
@@ -48,7 +57,8 @@ export default function AssociateProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: "", title: "", department: "", about: "" });
+  const [form, setForm] = useState({ name: "", title: "", department: "", about: "", outsideInterests: "" });
+  const [education, setEducation] = useState<Education[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const photoInput = useRef<HTMLInputElement>(null);
@@ -69,7 +79,11 @@ export default function AssociateProfilePage() {
     setForm({
       name: profile.name ?? "", title: profile.title ?? "",
       department: profile.department ?? "", about: profile.about ?? "",
+      outsideInterests: profile.outsideInterests ?? "",
     });
+    setEducation((profile.education ?? []).map((e) => ({
+      degree: e.degree, school: e.school, graduationYear: e.graduationYear ?? "", inProgress: Boolean(e.inProgress),
+    })));
     setMessage("");
     setError("");
     setEditing(true);
@@ -78,10 +92,20 @@ export default function AssociateProfilePage() {
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
+    const degrees = education
+      .map((e) => ({
+        degree: e.degree.trim(), school: e.school.trim(),
+        graduationYear: (e.graduationYear ?? "").trim() || null, inProgress: Boolean(e.inProgress),
+      }))
+      .filter((e) => e.degree || e.school || e.graduationYear);
+    if (degrees.some((e) => !e.degree || !e.school)) {
+      setError("Each degree needs both a degree name and a school.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
-      const { data } = await apiClient.put<AssociateProfile>("/associates/profile/me", form);
+      const { data } = await apiClient.put<AssociateProfile>("/associates/profile/me", { ...form, education: degrees });
       setProfile(data);
       setEditing(false);
       setMessage("Profile saved.");
@@ -195,6 +219,52 @@ export default function AssociateProfilePage() {
                         placeholder="Your research interests and what you help with"
                         onChange={(event) => setForm({ ...form, about: event.target.value })} className={input} />
                     </label>
+                    <label className="flex flex-col gap-1">Outside the classroom (optional)
+                      <span className="text-sm text-gray-600">
+                        Interests and achievements outside work, like athletics, hobbies, or community service.
+                      </span>
+                      <textarea rows={3} maxLength={1000} value={form.outsideInterests} disabled={busy}
+                        onChange={(event) => setForm({ ...form, outsideInterests: event.target.value })} className={input} />
+                    </label>
+                    <fieldset disabled={busy} className="min-w-0 border rounded-lg p-4 flex flex-col gap-3">
+                      <legend className="font-semibold px-1">Education</legend>
+                      {education.length === 0 && <p className="text-sm text-gray-600">No degrees added yet.</p>}
+                      {education.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1fr_auto] gap-2 items-end">
+                          <label className="min-w-0 flex flex-col gap-1 text-sm">Degree
+                            <input value={item.degree} maxLength={150} placeholder="Ph.D., Biology"
+                              onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                                i === index ? { ...entry, degree: event.target.value } : entry))}
+                              className="w-full min-w-0 border border-gray-400 rounded-lg p-2 text-base" />
+                          </label>
+                          <label className="min-w-0 flex flex-col gap-1 text-sm">School
+                            <input value={item.school} maxLength={150} placeholder="Virginia State University"
+                              onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                                i === index ? { ...entry, school: event.target.value } : entry))}
+                              className="w-full min-w-0 border border-gray-400 rounded-lg p-2 text-base" />
+                          </label>
+                          <label className="min-w-0 flex flex-col gap-1 text-sm">{item.inProgress ? "Expected year" : "Year"}
+                            <input value={item.graduationYear ?? ""} maxLength={20} inputMode="numeric"
+                              onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                                i === index ? { ...entry, graduationYear: event.target.value } : entry))}
+                              className="w-full min-w-0 border border-gray-400 rounded-lg p-2 text-base" />
+                          </label>
+                          <button type="button" onClick={() => setEducation((current) => current.filter((_, i) => i !== index))}
+                            className="border rounded-lg px-3 py-2 cursor-pointer">Remove</button>
+                          <label className="sm:col-span-4 flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={Boolean(item.inProgress)} className="w-4 h-4"
+                              onChange={(event) => setEducation((current) => current.map((entry, i) =>
+                                i === index ? { ...entry, inProgress: event.target.checked } : entry))} />
+                            Still in progress
+                          </label>
+                        </div>
+                      ))}
+                      {education.length < 10 && (
+                        <button type="button"
+                          onClick={() => setEducation((current) => [...current, { degree: "", school: "", graduationYear: "", inProgress: true }])}
+                          className="self-start border rounded-lg px-3 py-2 cursor-pointer">Add degree</button>
+                      )}
+                    </fieldset>
                     <div className="flex gap-3">
                       <button type="submit" disabled={busy}
                         className="bg-blue-700 text-white font-semibold rounded-lg px-5 py-2 cursor-pointer disabled:opacity-50">
@@ -210,6 +280,33 @@ export default function AssociateProfilePage() {
                   {hasText(profile.about)
                     ? <p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{profile.about}</p>
                     : <p className="text-gray-600">{profile.mine ? "Add a few lines about your research with Edit Profile." : "No details yet."}</p>}
+                </ProfileCard>
+              )}
+              {!editing && hasText(profile.outsideInterests) && (
+                <ProfileCard title="Outside the Classroom">
+                  <p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{profile.outsideInterests}</p>
+                </ProfileCard>
+              )}
+              {!editing && profile.education.length > 0 && (
+                <ProfileCard title="Education">
+                  <ul className="flex flex-col gap-3">
+                    {profile.education.map((item, index) => (
+                      <li key={index} className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-b border-[#DDE3EC] pb-3 last:border-b-0 last:pb-0">
+                        <span className="flex flex-col">
+                          <span className="font-semibold">
+                            {item.degree}
+                            {item.inProgress && <span className="ml-2 align-middle"><Chip>In progress</Chip></span>}
+                          </span>
+                          <span className="text-gray-700">{item.school}</span>
+                        </span>
+                        {hasText(item.graduationYear) && (
+                          <span className="text-gray-600">
+                            {item.inProgress ? `Expected ${item.graduationYear}` : item.graduationYear}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 </ProfileCard>
               )}
             </>}
