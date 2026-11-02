@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import apiClient from "../../api/client";
 import { usePresence } from "../../api/presence";
+import UpcomingCard from "../../components/calendar/UpcomingCard";
+import ActiveToggle from "../../components/common/ActiveToggle";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, formatDate, hasText } from "../../components/profile/profileUtils";
 
@@ -117,7 +119,7 @@ export default function FacultyProfileViewPage() {
               [professor.email, hasText(professor.officeLocation) ? `Office: ${professor.officeLocation}` : null]
                 .filter(Boolean).join(" \u00B7 "),
             ]}
-            actions={<Link to="/faculty-settings" className={actionClass}>Edit Profile</Link>}
+            actions={<><Link to="/faculty-settings" className={actionClass}>Edit Profile</Link><ActiveToggle /></>}
           />
           <ProfileLayout
             main={<>
@@ -183,7 +185,8 @@ export default function FacultyProfileViewPage() {
                 </ProfileCard>
               )}
             </>}
-            side={
+            side={<>
+              <UpcomingCard professorId={professor.id} mine />
               <ProfileCard title="Contact">
                 <dl className="flex flex-col gap-3">
                   {[
@@ -197,7 +200,7 @@ export default function FacultyProfileViewPage() {
                   ))}
                 </dl>
               </ProfileCard>
-            }
+            </>}
           />
         </>
       )}

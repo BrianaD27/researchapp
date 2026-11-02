@@ -110,6 +110,14 @@ const FacultyNavBar = () => {
         </li>}
 
         <li className="nav-item items-center flex text-sm lg:text-base ">
+          <div className="Dropdown flex items-center cursor-pointer">
+            <Link className={navLinkClass("/calendar")} to="/calendar">
+              Calendar
+            </Link>
+          </div>
+        </li>
+
+        <li className="nav-item items-center flex text-sm lg:text-base ">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
               <Link className={navLinkClass(profilePath)} to={profilePath}>
@@ -186,6 +194,15 @@ const FacultyNavBar = () => {
                 </Link>
               </div>
             )}
+
+            <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
+              <Link
+                to="/calendar"
+                className={`px-4 py-2 w-full text-center ${currentPath === "/calendar" ? "text-vsu-orange font-bold" : ""}`}
+              >
+                Calendar
+              </Link>
+            </div>
 
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link

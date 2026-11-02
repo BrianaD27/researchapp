@@ -6,6 +6,7 @@ import { fit, isRecommended, type FitStudent } from "../../api/match";
 import { usePresence } from "../../api/presence";
 import ActiveDot from "../../components/common/ActiveDot";
 import ResearchTeam from "../../components/common/ResearchTeam";
+import UpcomingCard from "../../components/calendar/UpcomingCard";
 
 interface Opportunity {
   id: number;
@@ -295,6 +296,9 @@ export default function StudentDiscoverPage() {
             </p>
             <p className="text-gray-600 mb-5">{selected.department}</p>
             <div className="-mt-3 mb-5"><ResearchTeam professorId={selected.professorId} /></div>
+            {selected.professorId != null && (
+              <div className="mb-5 bg-[#F4F6FA] rounded-lg p-4"><UpcomingCard professorId={selected.professorId} compact /></div>
+            )}
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 ["Status", selected.availability || "Not specified"],

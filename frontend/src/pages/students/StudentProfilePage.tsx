@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import StudentNavBar from "../../components/common/StudentNavBar";
 import apiClient from "../../api/client";
 import { usePresence } from "../../api/presence";
+import ActiveToggle from "../../components/common/ActiveToggle";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, formatDate, hasText } from "../../components/profile/profileUtils";
 
@@ -133,7 +134,7 @@ export default function StudentProfilePage() {
                 .filter(Boolean).join(" \u00B7 "),
               student.email,
             ]}
-            actions={<Link to="/student-settings" className={actionClass}>Edit Profile</Link>}
+            actions={<><Link to="/student-settings" className={actionClass}>Edit Profile</Link><ActiveToggle /></>}
           />
           <ProfileLayout
             main={<>

@@ -6,6 +6,8 @@ import StudentNavBar from "../../components/common/StudentNavBar";
 import apiClient from "../../api/client";
 import { currentRole } from "../../api/session";
 import { usePresence } from "../../api/presence";
+import UpcomingCard from "../../components/calendar/UpcomingCard";
+import ActiveToggle from "../../components/common/ActiveToggle";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, hasText } from "../../components/profile/profileUtils";
 
@@ -152,6 +154,7 @@ export default function AssociateProfilePage() {
                     Remove Photo
                   </button>
                 )}
+                <ActiveToggle />
                 <input ref={photoInput} type="file" accept="image/png,image/jpeg" className="hidden"
                   onChange={(event) => void uploadPhoto(event.target.files?.[0])} />
               </>
@@ -208,6 +211,7 @@ export default function AssociateProfilePage() {
               )}
             </>}
             side={<>
+              <UpcomingCard accountId={profile.userAccountId} mine={profile.mine} />
               <ProfileCard title="Works with">
                 {profile.worksWith.length === 0 && <p className="text-gray-600">Not on a professor's team yet.</p>}
                 <div className="flex flex-col gap-2">
