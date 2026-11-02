@@ -19,6 +19,7 @@ export function currentRole(): string {
 export function homeFor(role: string): string {
   if (role === "PARTNER") return "/partner-research";
   if (role === "PENDING_FACULTY") return "/pending-approval";
+  if (role === "ASSOCIATE") return "/associate-profile";
   if (role === "STUDENT") return "/my-profile";
   return "/faculty-profile";
 }

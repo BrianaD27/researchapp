@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
+import apiClient from "../../api/client";
+import { currentRole } from "../../api/session";
 
 const FacultyNavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -9,6 +11,20 @@ const FacultyNavBar = () => {
 
   const location = useLocation();
   const currentPath = location.pathname;
+
+  // Research Associates have their own profile page. Until a professor adds
+  // them to a team their account is view-only (no posting or reviewing).
+  const associate = currentRole() === "ASSOCIATE";
+  const profilePath = associate ? "/associate-profile" : "/faculty-profile";
+  const [noTeam, setNoTeam] = useState(false);
+  useEffect(() => {
+    if (!associate) return;
+    let active = true;
+    apiClient.get<{ workingFor: unknown[] }>("/associates/session")
+      .then(({ data }) => { if (active) setNoTeam(!data.workingFor || data.workingFor.length === 0); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [associate]);
 
   const navLinkClass = (path: string) =>
     `nav-link ${currentPath === path ? "text-vsu-orange font-bold border-b-2 border-vsu-orange" : ""}`;
@@ -20,7 +36,7 @@ const FacultyNavBar = () => {
   return (
     <div className=" flex items-center justify-between p-3 px-7 bg-white text-black drop-shadow-lg">
       {/* Logo and title go back to your own profile, like a home button. */}
-      <Link to="/faculty-profile" title="Go to my profile" aria-label="Go to my profile"
+      <Link to={profilePath} title="Go to my profile" aria-label="Go to my profile"
         className="flex items-center space-x-3 cursor-pointer">
         <img
           src="/src/assets/vsuLogo.png"
@@ -48,7 +64,7 @@ const FacultyNavBar = () => {
           </div>
         </li>
 
-        <li className="nav-item items-center flex">
+        {!noTeam && <li className="nav-item items-center flex">
           <div className="Dropdown flex items-center cursor-pointer text-sm lg:text-base ">
             <Link className={navLinkClass("/post-new")} to="/post-new">
               <div className="flex flex-row gap-2 items-center">
@@ -58,9 +74,9 @@ const FacultyNavBar = () => {
 
             </Link>
           </div>
-        </li>
+        </li>}
 
-        <li className="nav-item items-center flex">
+        {!noTeam && <li className="nav-item items-center flex">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer text-sm lg:text-base ">
               <Link
@@ -91,12 +107,12 @@ const FacultyNavBar = () => {
               </Link>
             </div>
           </div>
-        </li>
+        </li>}
 
         <li className="nav-item items-center flex text-sm lg:text-base ">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer">
-              <Link className={navLinkClass("/faculty-profile")} to="/faculty-profile">
+              <Link className={navLinkClass(profilePath)} to={profilePath}>
                 Profile
               </Link>
             </div>
@@ -128,16 +144,16 @@ const FacultyNavBar = () => {
               </Link>
             </div>
 
-            <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
+            {!noTeam && <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link
                 to="/post-new"
                 className={`px-4 py-2 w-full text-center ${currentPath === "/post-new" ? "text-vsu-orange font-bold" : ""}`}
               >
                 Post New
               </Link>
-            </div>
+            </div>}
 
-            <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
+            {!noTeam && <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <button
                 className={`Dropdown flex items-center cursor-pointer ${isOpportunitiesActive ? "text-vsu-orange font-bold" : ""}`}
                 onClick={() =>
@@ -151,9 +167,9 @@ const FacultyNavBar = () => {
                   className="w-10 h-auto"
                 />
               </button>
-            </div>
+            </div>}
 
-            {isOpportunitiesDropdownOpen && (
+            {!noTeam && isOpportunitiesDropdownOpen && (
               <div className="flex flex-col items-center w-full">
                 <Link
                   to="/faculty-view-all"
@@ -173,8 +189,8 @@ const FacultyNavBar = () => {
 
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link
-                className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-profile" ? "text-vsu-orange font-bold" : ""}`}
-                to="/faculty-profile"
+                className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === profilePath ? "text-vsu-orange font-bold" : ""}`}
+                to={profilePath}
               >
                 Profile
               </Link>

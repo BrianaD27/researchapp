@@ -35,6 +35,7 @@ import PartnerResearchPage from "./pages/partner/PartnerResearchPage.tsx";
 import AdminPartnersPage from "./pages/admin/AdminPartnersPage.tsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
 import PendingApprovalPage from "./pages/auth/PendingApprovalPage.tsx";
+import AssociateProfilePage from "./pages/associates/AssociateProfilePage.tsx";
 import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
 import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
@@ -102,6 +103,8 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/admin-partners" element={<AdminPartnersPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
         <Route path="/pending-approval" element={<PendingApprovalPage />} />
+        <Route path="/associate-profile" element={<AssociateProfilePage />} />
+        <Route path="/associate-profile/:id" element={<AssociateProfilePage />} />
         <Route path="/faculty-profile" element={<FacultyProfileViewPage />} />
         </Route>
       </Routes>

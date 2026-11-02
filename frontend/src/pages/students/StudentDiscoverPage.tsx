@@ -5,6 +5,7 @@ import apiClient from "../../api/client";
 import { fit, isRecommended, type FitStudent } from "../../api/match";
 import { usePresence } from "../../api/presence";
 import ActiveDot from "../../components/common/ActiveDot";
+import ResearchTeam from "../../components/common/ResearchTeam";
 
 interface Opportunity {
   id: number;
@@ -293,6 +294,7 @@ export default function StudentDiscoverPage() {
               {selected.professorId != null && <ActiveDot active={Boolean(online[selected.professorId])} />}
             </p>
             <p className="text-gray-600 mb-5">{selected.department}</p>
+            <div className="-mt-3 mb-5"><ResearchTeam professorId={selected.professorId} /></div>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 ["Status", selected.availability || "Not specified"],
