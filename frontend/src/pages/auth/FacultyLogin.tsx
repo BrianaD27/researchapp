@@ -154,14 +154,19 @@ const FacultyLogin = () => {
                 Forgot password?
               </Link>
             )}
-            {!needsCode && (
+            {error.includes("isn't verified") && (
               <Link to="/verify-email" className="text-blue-700 underline text-center">
-                Need a new activation link?
+                Send a new activation email
               </Link>
             )}
             {!needsCode && (
               <Link to="/FacultySignUp" className="text-blue-700 underline text-center">
-                New faculty? Request an account
+                Create a new account
+              </Link>
+            )}
+            {!needsCode && (
+              <Link to="/PartnerLogin" className="text-sm text-gray-600 underline text-center">
+                Partner school? Log in here
               </Link>
             )}
           </form>

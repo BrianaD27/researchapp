@@ -269,9 +269,9 @@ export default function StudentAccountPage({ register = false, partner = false }
                 </Link>
               )}
 
-              {!register && !needsCode && (
+              {!register && error.includes("isn't verified") && (
                 <Link className="text-blue-700 underline" to="/verify-email">
-                  Need a new activation link?
+                  Send a new activation email
                 </Link>
               )}
 
@@ -279,14 +279,8 @@ export default function StudentAccountPage({ register = false, partner = false }
                 className="text-blue-700 underline"
                 to={register ? loginPath : signUpPath}
               >
-                {register ? "Already have an account? Log in" : "Need an account? Sign up"}
+                {register ? "Already have an account? Log in" : "Create a new account"}
               </Link>
-
-              {!partner && !needsCode && (
-                <Link className="text-sm text-gray-600 underline" to="/PartnerLogin">
-                  From a VSU partner school? Log in here
-                </Link>
-              )}
             </form>
           )}
         </section>

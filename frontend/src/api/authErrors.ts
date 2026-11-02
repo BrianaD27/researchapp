@@ -16,7 +16,7 @@ export function authErrorMessage(caught: unknown, action: "login" | "register" |
       return "This account is temporarily locked after too many failed attempts. Try again in 15 minutes, or reset your password.";
     }
     if (/not verified/i.test(reason)) {
-      return "Your email isn't verified yet. Check your VSU inbox for the activation link, or use \"Need a new activation link?\" below.";
+      return "Your email isn't verified yet. Open the activation link we emailed you.";
     }
     if (/inactive/i.test(reason)) {
       return "This account is disabled. Contact an administrator.";
