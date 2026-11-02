@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +30,7 @@ public class MessageController {
 
     public record StartRequest(String kind, Long id) {}
     public record SendRequest(String body) {}
-    public record ReportRequest(String reason) {}
+    public record ReportRequest(String reason, boolean block) {}
     public record ShowActiveRequest(boolean show) {}
 
     private final MessageService service;
@@ -69,7 +70,19 @@ public class MessageController {
 
     @PostMapping("/messages/{id}/report")
     public ResponseEntity<Void> report(@PathVariable Long id, @RequestBody ReportRequest request) {
-        service.report(id, request.reason());
+        service.report(id, request.reason(), request.block());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/blocks/{accountId}")
+    public ResponseEntity<Void> block(@PathVariable Long accountId) {
+        service.block(accountId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/blocks/{accountId}")
+    public ResponseEntity<Void> unblock(@PathVariable Long accountId) {
+        service.unblock(accountId);
         return ResponseEntity.noContent().build();
     }
 

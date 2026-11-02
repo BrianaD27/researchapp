@@ -73,6 +73,7 @@ export default function TopBarLinks() {
       {session.role === "ADMIN" && <Link to="/admin-dashboard" className={linkClass}>Dashboard</Link>}
       {session.role === "ADMIN" && <Link to="/admin-users" className={linkClass}>Users</Link>}
       {session.role === "ADMIN" && <Link to="/admin-reports" className={linkClass}>Problem Reports</Link>}
+      {session.role === "ADMIN" && <Link to="/admin-conduct" className={linkClass}>Conduct Reports</Link>}
       {session.role === "ADMIN" && <Link to="/admin-partners" className={linkClass}>Partner Schools</Link>}
     </nav>
   );

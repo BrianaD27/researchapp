@@ -23,16 +23,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.vsu.researchapp.domain.model.AssociateProfile;
+import com.vsu.researchapp.domain.model.ConductReport;
 import com.vsu.researchapp.domain.model.DirectConversation;
 import com.vsu.researchapp.domain.model.DirectMessage;
+import com.vsu.researchapp.domain.model.MessageBlock;
 import com.vsu.researchapp.domain.model.MessagingPrefs;
 import com.vsu.researchapp.domain.model.Notification;
 import com.vsu.researchapp.domain.model.Professor;
 import com.vsu.researchapp.domain.model.Student;
 import com.vsu.researchapp.domain.model.UserAccount;
 import com.vsu.researchapp.domain.repositoryinterfaces.AssociateProfileRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.ConductReportRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.DirectConversationRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.DirectMessageRepository;
+import com.vsu.researchapp.domain.repositoryinterfaces.MessageBlockRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.MessagingPrefsRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.NotificationRepository;
 import com.vsu.researchapp.domain.repositoryinterfaces.UserAccountRepository;
@@ -46,8 +50,11 @@ import com.vsu.researchapp.infrastructure.security.CurrentUserService;
 // accounts can't message (SecurityConfig also blocks them from /api/messages).
 // - Only the two people in a conversation can read it. Admins have no access to
 //   other people's conversations; a reported message is copied into the report.
-// - Anyone can report a message they received; it goes to the admins as a
-//   problem report with the message and a little context.
+// - Anyone can report a message they received. It becomes a confidential
+//   conduct report for the admins (with the message and a little context); the
+//   reported person is never told who reported them.
+// - Anyone can block someone: the blocked person can't message them or find
+//   them in search.
 // - Limits: 60 messages per 10 minutes and 30 new conversations per day per person.
 // - Each new message raises the bell right away. Email is at most once per day per
 //   person, generic ("You have a new message waiting"), plus an 8 AM reminder.
@@ -60,11 +67,11 @@ public class MessageService {
     private static final int MAX_MESSAGES_PER_10_MIN = 60;
     private static final int MAX_NEW_CONVERSATIONS_PER_DAY = 30;
     private static final int SEARCH_LIMIT = 20;
-    public static final String REPORT_CATEGORY = "Inappropriate message";
+    private static final int MAX_REPORTS_PER_DAY = 10;
 
     public record ConversationDto(Long id, Long otherAccountId, String otherName, String otherDetail,
                                   boolean otherActive, String lastMessagePreview, LocalDateTime lastMessageAt,
-                                  long unread) {}
+                                  long unread, boolean blockedByMe) {}
 
     public record MessageDto(Long id, String senderName, boolean mine, String body, LocalDateTime createdAt) {}
 
@@ -84,14 +91,17 @@ public class MessageService {
     private final AssociateProfileRepository associateProfiles;
     private final CurrentUserService currentUser;
     private final PresenceService presence;
-    private final ProblemReportService problemReports;
+    private final ConductReportRepository conductReports;
+    private final MessageBlockRepository blocks;
+    private final NotificationService notificationService;
     private final emailService email;
 
     public MessageService(DirectConversationRepository conversations, DirectMessageRepository messages,
             MessagingPrefsRepository prefs, NotificationRepository notifications, UserAccountRepository accounts,
             ProfessorJpaRepository professors, StudentJpaRepository students,
             AssociateProfileRepository associateProfiles, CurrentUserService currentUser, PresenceService presence,
-            ProblemReportService problemReports, emailService email) {
+            ConductReportRepository conductReports, MessageBlockRepository blocks,
+            NotificationService notificationService, emailService email) {
         this.conversations = conversations;
         this.messages = messages;
         this.prefs = prefs;
@@ -102,7 +112,9 @@ public class MessageService {
         this.associateProfiles = associateProfiles;
         this.currentUser = currentUser;
         this.presence = presence;
-        this.problemReports = problemReports;
+        this.conductReports = conductReports;
+        this.blocks = blocks;
+        this.notificationService = notificationService;
         this.email = email;
     }
 
@@ -153,9 +165,11 @@ public class MessageService {
         if (q.length() < 2) return List.of();
         if (q.length() > 100) q = q.substring(0, 100);
         Map<Long, Who> names = directory();
+        Set<Long> blockedMe = new HashSet<>();
+        for (MessageBlock b : blocks.findByBlockedAccountId(me.getId())) blockedMe.add(b.getBlockerAccountId());
         List<PersonDto> out = new ArrayList<>();
         for (UserAccount a : accounts.findAll()) {
-            if (a.getId().equals(me.getId()) || !canMessage(a)) continue;
+            if (a.getId().equals(me.getId()) || !canMessage(a) || blockedMe.contains(a.getId())) continue;
             Who w = names.getOrDefault(a.getId(), fallback(a));
             String name = w.name().toLowerCase(Locale.ROOT);
             String username = a.getUsername() == null ? "" : a.getUsername().toLowerCase(Locale.ROOT);
@@ -219,6 +233,7 @@ public class MessageService {
         if (targetAccountId == null) throw bad("This person's profile isn't linked to an account yet");
         if (targetAccountId.equals(me.getId())) throw bad("You can't message yourself");
         UserAccount target = accounts.findById(targetAccountId).filter(this::canMessage)
+            .filter(t -> !blocks.existsByBlockerAccountIdAndBlockedAccountId(t.getId(), me.getId()))
             .orElseThrow(() -> notFound("This person can't receive messages"));
 
         DirectConversation c = existing(me.getId(), target.getId()).orElse(null);
@@ -250,7 +265,12 @@ public class MessageService {
                 "You're sending messages very fast. Wait a few minutes and try again.");
         }
         UserAccount other = other(me, c);
-        if (!canMessage(other)) throw bad("This person can't receive messages right now");
+        if (!canMessage(other) || blocks.existsByBlockerAccountIdAndBlockedAccountId(other.getId(), me.getId())) {
+            throw bad("You can't message this person.");
+        }
+        if (blocks.existsByBlockerAccountIdAndBlockedAccountId(me.getId(), other.getId())) {
+            throw bad("You blocked this person. Unblock them to send a message.");
+        }
 
         DirectMessage m = new DirectMessage();
         m.setConversationId(c.getId());
@@ -268,35 +288,74 @@ public class MessageService {
         return new MessageDto(m.getId(), myName, true, m.getBody(), m.getCreatedAt());
     }
 
-    // Report a message you received. The admins get a problem report with the
-    // message, who sent it, and the messages just before it.
+    // Report a message you received. It becomes a confidential conduct report
+    // with the message and the messages just before it. Optionally also blocks
+    // the sender.
     @Transactional
-    public void report(Long messageId, String reason) {
+    public void report(Long messageId, String reason, boolean alsoBlock) {
         UserAccount me = me();
         DirectMessage m = messages.findById(messageId).orElseThrow(() -> notFound("Message not found"));
         DirectConversation c = mine(me, m.getConversationId());
         if (m.getSenderAccountId().equals(me.getId())) throw bad("You can't report your own message");
-        UserAccount sender = accounts.findById(m.getSenderAccountId()).orElse(null);
-        String senderLabel = sender == null ? "unknown account"
-            : who(sender).name() + " (username " + sender.getUsername() + ", account #" + sender.getId() + ")";
+        if (conductReports.existsByReporterAccountIdAndMessageId(me.getId(), m.getId())) {
+            throw bad("You already reported this message. A VSU admin will review it.");
+        }
+        if (conductReports.countByReporterAccountIdAndCreatedAtAfter(me.getId(), LocalDateTime.now().minusDays(1))
+                >= MAX_REPORTS_PER_DAY) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                "You've sent several reports today. A VSU admin will review them.");
+        }
         DateTimeFormatter when = DateTimeFormatter.ofPattern("MMM d h:mm a", Locale.US);
-
         StringBuilder text = new StringBuilder();
-        text.append("Reported message from ").append(senderLabel).append(":\n\"")
-            .append(clip(m.getBody(), 800)).append("\"\n");
-        String why = reason == null ? "" : reason.trim();
-        text.append("Reason: ").append(why.isEmpty() ? "(none given)" : clip(why, 400)).append("\n");
-        text.append("Conversation #").append(c.getId()).append(", recent messages:\n");
         List<DirectMessage> context = new ArrayList<>(
             messages.findTop6ByConversationIdAndIdLessThanEqualOrderByIdDesc(c.getId(), m.getId()));
         Collections.reverse(context);
         for (DirectMessage x : context) {
             String from = x.getSenderAccountId().equals(me.getId()) ? "Reporter" : "Reported person";
             String at = x.getCreatedAt() == null ? "" : x.getCreatedAt().format(when);
-            text.append("- ").append(from).append(" (").append(at).append("): ")
-                .append(clip(x.getBody().replaceAll("\\s+", " "), 150)).append("\n");
+            text.append(from).append(" (").append(at).append("): ")
+                .append(clip(x.getBody().replaceAll("\\s+", " "), 200)).append("\n");
         }
-        problemReports.submit(REPORT_CATEGORY, clip(text.toString(), 2000), "/messages", null);
+        String why = reason == null ? "" : reason.trim();
+
+        ConductReport r = new ConductReport();
+        r.setReporterAccountId(me.getId());
+        r.setReportedAccountId(m.getSenderAccountId());
+        r.setConversationId(c.getId());
+        r.setMessageId(m.getId());
+        r.setMessageBody(clip(m.getBody(), 2000));
+        r.setContext(clip(text.toString(), 2000));
+        r.setReason(why.isEmpty() ? null : clip(why, 400));
+        r = conductReports.save(r);
+
+        if (alsoBlock) block(m.getSenderAccountId());
+
+        // Admins get a bell alert (and the usual email) with no message content in it.
+        String alert = "A message was reported and needs review (conduct report #" + r.getId() + ").";
+        for (UserAccount admin : accounts.findAll()) {
+            if (admin.isActive() && "ADMIN".equalsIgnoreCase(admin.getRole())) {
+                notificationService.notify(admin.getId(), "CONDUCT_REPORT", "New conduct report", alert, "/admin-conduct");
+            }
+        }
+    }
+
+    @Transactional
+    public void block(Long accountId) {
+        UserAccount me = me();
+        if (accountId == null || accountId.equals(me.getId())) throw bad("Pick someone to block");
+        if (accounts.findById(accountId).isEmpty()) throw notFound("Account not found");
+        if (!blocks.existsByBlockerAccountIdAndBlockedAccountId(me.getId(), accountId)) {
+            MessageBlock b = new MessageBlock();
+            b.setBlockerAccountId(me.getId());
+            b.setBlockedAccountId(accountId);
+            blocks.save(b);
+        }
+    }
+
+    @Transactional
+    public void unblock(Long accountId) {
+        UserAccount me = me();
+        blocks.findByBlockerAccountIdAndBlockedAccountId(me.getId(), accountId).ifPresent(blocks::delete);
     }
 
     // ---- daily reminder ----
@@ -363,7 +422,8 @@ public class MessageService {
         UserAccount other = accounts.findById(otherId).orElse(null);
         Who w = other == null ? new Who("Deleted account", null) : who(other);
         return new ConversationDto(c.getId(), otherId, w.name(), w.detail(), presence.isActive(otherId),
-            c.getLastMessagePreview(), c.getLastMessageAt(), unread(me.getId(), c));
+            c.getLastMessagePreview(), c.getLastMessageAt(), unread(me.getId(), c),
+            blocks.existsByBlockerAccountIdAndBlockedAccountId(me.getId(), otherId));
     }
 
     // Display name and a short description for one account.

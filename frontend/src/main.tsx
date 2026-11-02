@@ -37,6 +37,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
 import PendingApprovalPage from "./pages/auth/PendingApprovalPage.tsx";
 import AssociateProfilePage from "./pages/associates/AssociateProfilePage.tsx";
 import CalendarPage from "./pages/calendar/CalendarPage.tsx";
+import AdminConductPage from "./pages/admin/AdminConductPage.tsx";
 import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
 import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
@@ -99,6 +100,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/faculty-associates" element={<ProfessorAssociatesPage />} />
         <Route path="/admin-users" element={<AdminUsersPage />} />
         <Route path="/admin-reports" element={<AdminReportsPage />} />
+        <Route path="/admin-conduct" element={<AdminConductPage />} />
         <Route path="/report-problem" element={<ReportProblemPage />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/admin-partners" element={<AdminPartnersPage />} />

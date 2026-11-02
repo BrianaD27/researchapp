@@ -94,12 +94,6 @@ export default function UpcomingCard({ professorId, accountId, mine = false, com
       {data.items.length === 0
         ? <p className="text-gray-600">{mine ? "Nothing public in the next three weeks." : "Nothing posted for the next three weeks."}</p>
         : items}
-      {mine && (
-        <Link to="/calendar?add=1"
-          className="self-start border border-[#1B51A4] text-[#1B51A4] font-semibold rounded-lg px-4 py-2 hover:bg-blue-50">
-          + Add to calendar
-        </Link>
-      )}
     </section>
   );
 }

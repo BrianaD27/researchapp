@@ -10,6 +10,7 @@ export interface Conversation {
   lastMessagePreview: string | null;
   lastMessageAt: string | null;
   unread: number;
+  blockedByMe: boolean;
 }
 
 export interface ChatMessage {

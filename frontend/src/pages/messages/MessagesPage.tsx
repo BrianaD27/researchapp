@@ -31,6 +31,8 @@ export default function MessagesPage() {
   const [reporting, setReporting] = useState<number | null>(null);
   const [reason, setReason] = useState("");
   const [reportNote, setReportNote] = useState("");
+  const [alsoBlock, setAlsoBlock] = useState(false);
+  const [confirmBlock, setConfirmBlock] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const lastCount = useRef(0);
 
@@ -85,6 +87,8 @@ export default function MessagesPage() {
 
   function open(id: number) {
     setPicking(false);
+    setConfirmBlock(false);
+    setReportNote("");
     setDraft("");
     setThread(null);
     lastCount.current = 0;
@@ -160,12 +164,25 @@ export default function MessagesPage() {
 
   async function sendReport(messageId: number) {
     try {
-      await apiClient.post(`/messages/messages/${messageId}/report`, { reason });
+      await apiClient.post(`/messages/messages/${messageId}/report`, { reason, block: alsoBlock });
       setReporting(null);
       setReason("");
-      setReportNote("Thanks. The admins have been sent this message to review.");
+      setReportNote("Thank you for telling us. A VSU admin will review this privately.");
+      if (alsoBlock && openId) void loadThread(openId);
     } catch (caught) {
       setReportNote(messageProblem(caught, "The report was not sent."));
+    }
+  }
+
+  async function setBlocked(accountId: number, block: boolean) {
+    try {
+      if (block) await apiClient.post(`/messages/blocks/${accountId}`);
+      else await apiClient.delete(`/messages/blocks/${accountId}`);
+      setConfirmBlock(false);
+      setReportNote(block ? "Blocked. They can't message you or find you in search." : "Unblocked.");
+      if (openId) void loadThread(openId);
+    } catch (caught) {
+      setThreadError(messageProblem(caught, block ? "Could not block." : "Could not unblock."));
     }
   }
 
@@ -270,12 +287,29 @@ export default function MessagesPage() {
                 <p className="m-auto text-gray-600 p-5">Pick a conversation, or start a new one.</p>
               ) : (
                 <>
-                  <header className="border-b p-4">
-                    <h2 className="text-lg font-bold">{thread?.conversation.otherName ?? "Loading..."}</h2>
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                      {thread?.conversation.otherDetail && <span>{thread.conversation.otherDetail}</span>}
-                      <ActiveDot active={Boolean(thread?.conversation.otherActive)} />
+                  <header className="border-b p-4 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h2 className="text-lg font-bold">{thread?.conversation.otherName ?? "Loading..."}</h2>
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        {thread?.conversation.otherDetail && <span>{thread.conversation.otherDetail}</span>}
+                        <ActiveDot active={Boolean(thread?.conversation.otherActive)} />
+                      </div>
                     </div>
+                    {thread && (thread.conversation.blockedByMe ? (
+                      <button type="button" onClick={() => void setBlocked(thread.conversation.otherAccountId, false)}
+                        className="text-sm border rounded-lg px-3 py-1 cursor-pointer">Unblock</button>
+                    ) : confirmBlock ? (
+                      <span className="flex items-center gap-2 text-sm">
+                        Block {thread.conversation.otherName}?
+                        <button type="button" onClick={() => void setBlocked(thread.conversation.otherAccountId, true)}
+                          className="bg-red-700 text-white rounded px-3 py-1 cursor-pointer">Block</button>
+                        <button type="button" onClick={() => setConfirmBlock(false)}
+                          className="border rounded px-3 py-1 cursor-pointer">Cancel</button>
+                      </span>
+                    ) : (
+                      <button type="button" onClick={() => setConfirmBlock(true)}
+                        className="text-sm text-gray-600 underline cursor-pointer">Block</button>
+                    ))}
                   </header>
                   <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-gray-50">
                     {thread && thread.messages.length === 0 && (
@@ -289,17 +323,25 @@ export default function MessagesPage() {
                           {m.body}
                         </p>
                         {!m.mine && reporting !== m.id && (
-                          <button type="button" onClick={() => { setReporting(m.id); setReason(""); setReportNote(""); }}
+                          <button type="button" onClick={() => { setReporting(m.id); setReason(""); setReportNote(""); setAlsoBlock(false); }}
                             className="text-xs text-gray-500 underline mt-0.5 cursor-pointer">
                             Report
                           </button>
                         )}
                         {reporting === m.id && (
-                          <div className="mt-1 bg-white border border-red-300 rounded-lg p-2 flex flex-col gap-2 w-72 max-w-full">
-                            <span className="text-sm font-semibold">Report this message to the admins?</span>
+                          <div className="mt-1 bg-white border border-red-300 rounded-lg p-3 flex flex-col gap-2 w-80 max-w-full">
+                            <span className="text-sm font-semibold">Report this message</span>
+                            <span className="text-xs text-gray-600">
+                              A VSU admin will review it privately. The other person won't be told who reported it.
+                            </span>
                             <textarea rows={2} maxLength={400} value={reason} onChange={(event) => setReason(event.target.value)}
-                              placeholder="What's wrong with it? (optional)"
+                              placeholder="What happened? (optional)"
                               className="border border-gray-400 rounded p-1 text-sm resize-none" />
+                            <label className="flex items-center gap-2 text-sm">
+                              <input type="checkbox" checked={alsoBlock} onChange={(event) => setAlsoBlock(event.target.checked)} />
+                              Also block this person
+                            </label>
+                            <span className="text-xs text-gray-600">If you feel unsafe, contact VSU Police right away.</span>
                             <div className="flex gap-2">
                               <button type="button" onClick={() => void sendReport(m.id)}
                                 className="bg-red-700 text-white rounded px-3 py-1 text-sm cursor-pointer">Send report</button>
@@ -316,9 +358,12 @@ export default function MessagesPage() {
                     {reportNote && <p role="status" className="text-sm text-green-800 bg-green-50 rounded p-2">{reportNote}</p>}
                     {threadError && <p role="alert" className="text-red-700 text-sm">{threadError}</p>}
                     <div className="flex gap-2 items-end">
-                      <textarea rows={2} maxLength={MESSAGE_MAX} value={draft} disabled={sending || !thread}
+                      <textarea rows={2} maxLength={MESSAGE_MAX} value={draft}
+                        disabled={sending || !thread || thread.conversation.blockedByMe}
                         onChange={(event) => setDraft(event.target.value)} onKeyDown={onKey}
-                        placeholder="Write a message. Enter sends, Shift+Enter adds a line."
+                        placeholder={thread?.conversation.blockedByMe
+                          ? "You blocked this person. Unblock them to send a message."
+                          : "Write a message. Enter sends, Shift+Enter adds a line."}
                         className="flex-1 border border-gray-400 rounded-lg p-2 resize-none" />
                       <button type="submit" disabled={sending || !draft.trim()}
                         className="bg-blue-700 text-white font-semibold rounded-lg px-4 py-2 cursor-pointer disabled:opacity-50">
