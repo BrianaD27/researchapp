@@ -10,7 +10,9 @@ interface AssociateView {
   email: string | null;
   canPublish: boolean;
   canReview: boolean;
+  projectIds: number[];
 }
+interface ProjectOption { id: number; title: string }
 interface RemovalView {
   id: number;
   opportunityId: number;
@@ -33,6 +35,7 @@ interface TeamOverview {
   associates: AssociateView[];
   pendingRemovals: RemovalView[];
   activity: ActivityView[];
+  projects: ProjectOption[];
 }
 interface Context { admin: boolean; professorId: number | null; associate: boolean }
 interface Professor { id: number; name: string }
@@ -198,7 +201,7 @@ export default function ProfessorAssociatesPage() {
             {!team.associates.length && <p className="text-gray-600">No associates yet.</p>}
             <ul className="flex flex-col gap-3">
               {team.associates.map((item) => (
-                <li key={item.linkId} className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-3 justify-between">
+                <li key={item.linkId} className="border rounded-lg p-4 flex flex-col md:flex-row md:flex-wrap md:items-center gap-3 justify-between">
                   <div>
                     <p className="font-semibold">{item.username}</p>
                     {item.email && <p className="text-sm text-gray-600">{item.email}</p>}
@@ -228,6 +231,26 @@ export default function ProfessorAssociatesPage() {
                         onClick={() => setConfirmRemove(item.linkId)}>Remove</button>
                     )}
                   </div>
+                  {team.projects.length > 0 && (
+                    <fieldset className="w-full md:basis-full border-t border-gray-200 pt-3">
+                      <legend className="text-sm font-semibold">Works on</legend>
+                      <div className="flex flex-wrap gap-x-5 gap-y-2 mt-1">
+                        {team.projects.map((project) => (
+                          <label key={project.id} className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={item.projectIds.includes(project.id)} disabled={busy}
+                              onChange={(event) => {
+                                const next = event.target.checked
+                                  ? [...item.projectIds, project.id]
+                                  : item.projectIds.filter((id) => id !== project.id);
+                                void run(() => apiClient.put<TeamOverview>(`/associates/${item.linkId}/projects`,
+                                  { projectIds: next }), "Projects updated.");
+                              }} />
+                            {project.title}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
                 </li>
               ))}
             </ul>

@@ -1,5 +1,7 @@
 package com.vsu.researchapp.presentation.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,7 @@ public class AssociateController {
     public record AddAssociateRequest(String username, boolean canPublish, boolean canReview) {}
     public record PermissionsRequest(boolean canPublish, boolean canReview) {}
     public record RemovalRequestBody(Long opportunityId, String reason) {}
+    public record ProjectsRequest(List<Long> projectIds) {}
 
     private final AssociateService service;
 
@@ -47,6 +50,11 @@ public class AssociateController {
     @PutMapping("/{linkId}")
     public TeamOverview updatePermissions(@PathVariable Long linkId, @RequestBody PermissionsRequest body) {
         return service.updatePermissions(linkId, body.canPublish(), body.canReview());
+    }
+
+    @PutMapping("/{linkId}/projects")
+    public TeamOverview updateProjects(@PathVariable Long linkId, @RequestBody ProjectsRequest body) {
+        return service.updateProjects(linkId, body.projectIds());
     }
 
     @DeleteMapping("/{linkId}")

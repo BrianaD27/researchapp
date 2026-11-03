@@ -48,6 +48,9 @@ public class FacultyDashboardService {
 
     public record Activity(LocalDateTime at, String text) {}
 
+    // Someone on the team, with the projects they are on (for the project picker).
+    public record TeamMember(Long accountId, String name, String role, boolean onlineNow, List<Long> projectIds) {}
+
     public record Waiting(String studentName, String projectTitle, LocalDateTime appliedAt) {}
 
     public record Project(Long id, String title, String availability, LocalDate deadline, long applicants,
@@ -56,7 +59,7 @@ public class FacultyDashboardService {
     public record Dashboard(String greetingName, String professorName, boolean associate, boolean canSeeStudents,
                             Tiles tiles, List<Person> onlineNow, long activeThisWeek, long connectedPeople,
                             List<Occurrence> thisWeek, List<Activity> recent, List<Project> projects,
-                            List<Waiting> waiting, List<Person> team) {}
+                            List<Waiting> waiting, List<TeamMember> team) {}
 
     private final CurrentUserService currentUser;
     private final ProfessorJpaRepository professors;
@@ -135,6 +138,8 @@ public class FacultyDashboardService {
         List<Project> projects = new ArrayList<>();
         List<Activity> recent = new ArrayList<>();
         List<Waiting> waiting = new ArrayList<>();
+        Map<Long, String> acceptedNames = new LinkedHashMap<>();
+        Map<Long, List<Long>> acceptedProjects = new LinkedHashMap<>();
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
 
         for (ResearchOpportunity o : opps) {
@@ -158,6 +163,10 @@ public class FacultyDashboardService {
                     acc++;
                     if (a.getOpportunityStatus() != Application.OpportunityStatus.COMPLETED && s != null) {
                         working.add(s.getId());
+                        if (s.getUserAccountId() != null) {
+                            acceptedNames.putIfAbsent(s.getUserAccountId(), name(s.getName(), "Student"));
+                            acceptedProjects.computeIfAbsent(s.getUserAccountId(), k -> new ArrayList<>()).add(o.getId());
+                        }
                     }
                 }
                 if (s != null && s.getUserAccountId() != null) {
@@ -206,11 +215,21 @@ public class FacultyDashboardService {
             if (now || loggedInSince(p.accountId(), weekAgo)) activeWeek++;
         }
         if (!canSeeStudents) online.removeIf(p -> "Student".equals(p.role()));
-        List<Person> team = new ArrayList<>();
-        for (Person p : people) {
-            if ("Student".equals(p.role())) continue;
-            boolean now = presence.showActive(p.accountId()) && presence.isActive(p.accountId());
-            team.add(new Person(p.accountId(), p.name(), p.role(), p.detail(), now));
+        // The team: associates (with the projects the professor assigned them) and
+        // students accepted to a project. Students only for people allowed to see them.
+        List<TeamMember> team = new ArrayList<>();
+        for (AssociateLink l : links.findByProfessorIdOrderByIdAsc(professorId)) {
+            Long id = l.getAssociateUserAccountId();
+            if (id.equals(me.getId())) continue;
+            String n = people.stream().filter(p -> p.accountId().equals(id)).map(Person::name).findFirst().orElse("Associate");
+            team.add(new TeamMember(id, n, "Research Associate", onlineNow(id), List.copyOf(l.getProjectIds())));
+        }
+        if (canSeeStudents) {
+            for (Map.Entry<Long, String> e : acceptedNames.entrySet()) {
+                if (e.getKey().equals(me.getId())) continue;
+                team.add(new TeamMember(e.getKey(), e.getValue(), "Student", onlineNow(e.getKey()),
+                    List.copyOf(acceptedProjects.get(e.getKey()))));
+            }
         }
         waiting.sort(Comparator.comparing(Waiting::appliedAt, Comparator.nullsLast(Comparator.<LocalDateTime>naturalOrder())));
         if (waiting.size() > 6) waiting = new ArrayList<>(waiting.subList(0, 6));
@@ -224,6 +243,10 @@ public class FacultyDashboardService {
     // Same name as everywhere else: "Dr. Goodson" for faculty, the chosen name otherwise.
     private String greetingName(UserAccount me, boolean associate) {
         return greetings.nameFor(me);
+    }
+
+    private boolean onlineNow(Long accountId) {
+        return presence.showActive(accountId) && presence.isActive(accountId);
     }
 
     private boolean loggedInSince(Long accountId, LocalDateTime since) {

@@ -1,7 +1,9 @@
 package com.vsu.researchapp.application.service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -33,12 +35,15 @@ public class AssociateService {
 
     public record WorkingFor(Long linkId, Long professorId, String professorName, boolean canPublish, boolean canReview) {}
     public record SessionInfo(String username, String role, List<WorkingFor> workingFor) {}
-    public record AssociateView(Long linkId, Long userAccountId, String username, String email, boolean canPublish, boolean canReview) {}
+    public record AssociateView(Long linkId, Long userAccountId, String username, String email, boolean canPublish, boolean canReview,
+                                List<Long> projectIds) {}
+    public record ProjectOption(Long id, String title) {}
     public record RemovalView(Long id, Long opportunityId, String opportunityTitle, String requestedBy, String reason,
                               String status, String outcome, LocalDateTime createdAt) {}
     public record ActivityView(String actor, String action, String detail, LocalDateTime createdAt) {}
     public record TeamOverview(Long professorId, String professorName, List<AssociateView> associates,
-                               List<RemovalView> pendingRemovals, List<ActivityView> activity) {}
+                               List<RemovalView> pendingRemovals, List<ActivityView> activity,
+                               List<ProjectOption> projects) {}
 
     private final AssociateLinkRepository links;
     private final RemovalRequestRepository removals;
@@ -132,6 +137,28 @@ public class AssociateService {
         }
         link.setCanPublish(canPublish);
         link.setCanReview(canReview);
+        links.save(link);
+        return buildTeam(link.getProfessorId());
+    }
+
+    // The professor picks which of their own projects an associate works on.
+    @Transactional
+    public TeamOverview updateProjects(Long linkId, List<Long> projectIds) {
+        AssociateLink link = findLink(linkId);
+        requireOwnerOrAdmin(link.getProfessorId());
+        Set<Long> own = new HashSet<>();
+        for (ProjectOption p : projectOptions(link.getProfessorId())) own.add(p.id());
+        Set<Long> chosen = new HashSet<>();
+        if (projectIds != null) {
+            for (Long id : projectIds) {
+                if (id == null || !own.contains(id)) {
+                    throw new IllegalArgumentException("Pick from this professor's own projects.");
+                }
+                chosen.add(id);
+            }
+        }
+        link.getProjectIds().clear();
+        link.getProjectIds().addAll(chosen);
         links.save(link);
         return buildTeam(link.getProfessorId());
     }
@@ -239,7 +266,7 @@ public class AssociateService {
                 return new AssociateView(l.getId(), l.getAssociateUserAccountId(),
                     account == null ? "(deleted account)" : account.getUsername(),
                     account == null ? null : account.getEmail(),
-                    l.isCanPublish(), l.isCanReview());
+                    l.isCanPublish(), l.isCanReview(), List.copyOf(l.getProjectIds()));
             })
             .toList();
         List<RemovalView> pending = removals
@@ -249,7 +276,17 @@ public class AssociateService {
         List<ActivityView> recent = activityLog.findTop50ByProfessorIdOrderByCreatedAtDesc(professorId).stream()
             .map(a -> new ActivityView(a.getActorUsername(), a.getAction(), a.getDetail(), a.getCreatedAt()))
             .toList();
-        return new TeamOverview(professorId, professorName(professorId), associates, pending, recent);
+        return new TeamOverview(professorId, professorName(professorId), associates, pending, recent,
+            projectOptions(professorId));
+    }
+
+    private List<ProjectOption> projectOptions(Long professorId) {
+        return entityManager.createQuery(
+                "select o from ResearchOpportunity o where o.professor.id = :id order by lower(o.title)",
+                ResearchOpportunity.class)
+            .setParameter("id", professorId).getResultList().stream()
+            .map(o -> new ProjectOption(o.getId(), o.getTitle() == null || o.getTitle().isBlank() ? "Untitled project" : o.getTitle()))
+            .toList();
     }
 
     private RemovalView toView(RemovalRequest r) {

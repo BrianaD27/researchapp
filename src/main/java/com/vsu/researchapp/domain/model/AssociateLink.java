@@ -1,12 +1,18 @@
 package com.vsu.researchapp.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -42,6 +48,13 @@ public class AssociateLink {
     // See applicants, accept or decline them, and write mentor notes.
     @Column(nullable = false)
     private boolean canReview = true;
+
+    // Which of the professor's projects this associate works on. Only used to
+    // group the team on the dashboard; it does not change permissions.
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "associate_link_projects", joinColumns = @JoinColumn(name = "link_id"))
+    @Column(name = "opportunity_id", nullable = false)
+    private Set<Long> projectIds = new HashSet<>();
 
     private LocalDateTime createdAt;
 

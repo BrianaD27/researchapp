@@ -42,7 +42,15 @@ interface Dashboard {
     accepted: number;
   }[];
   waiting: { studentName: string; projectTitle: string; appliedAt: string | null }[];
-  team: Person[];
+  team: TeamMember[];
+}
+
+interface TeamMember {
+  accountId: number;
+  name: string;
+  role: string;
+  onlineNow: boolean;
+  projectIds: number[];
 }
 
 // Colored project icons, in the spirit of a project-management home page.
@@ -72,6 +80,7 @@ function ago(value: string) {
 export default function FacultyDashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState("");
+  const [teamProject, setTeamProject] = useState("all");
 
   useEffect(() => {
     let active = true;
@@ -86,6 +95,10 @@ export default function FacultyDashboardPage() {
   }, []);
 
   const now = new Date();
+  const team = data?.team ?? [];
+  const teamOnProject = teamProject === "all"
+    ? team
+    : team.filter((p) => p.projectIds.includes(Number(teamProject)));
   const card = "bg-white rounded-xl p-5 flex flex-col gap-3 shadow-sm";
   const tile = "bg-white rounded-xl p-4 flex flex-col gap-1 hover:ring-2 hover:ring-[#F29D38]";
 
@@ -283,8 +296,23 @@ export default function FacultyDashboardPage() {
                 {data.team.length > 0 && (
                   <section className={card}>
                     <h2 className="text-xl font-semibold">Your team</h2>
+                    {data.projects.length > 0 && (
+                      <label className="flex flex-col gap-1 text-sm">
+                        Project
+                        <select value={teamProject} onChange={(event) => setTeamProject(event.target.value)}
+                          className="border border-gray-400 rounded-lg px-2 py-1.5 cursor-pointer">
+                          <option value="all">All projects</option>
+                          {data.projects.map((p) => <option key={p.id} value={String(p.id)}>{p.title}</option>)}
+                        </select>
+                      </label>
+                    )}
+                    {teamOnProject.length === 0 && (
+                      <p className="text-sm text-gray-600">
+                        No one is on this project yet. Assign associates on the Research Associates page.
+                      </p>
+                    )}
                     <ul className="flex flex-col gap-2">
-                      {data.team.map((p) => (
+                      {teamOnProject.map((p) => (
                         <li key={p.accountId} className="flex items-center gap-3">
                           <span className="relative w-9 h-9 rounded-full bg-[#DCE6F5] text-[#1B51A4] font-bold flex items-center justify-center shrink-0">
                             {p.name.charAt(0).toUpperCase()}
