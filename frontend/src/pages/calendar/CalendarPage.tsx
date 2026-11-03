@@ -11,10 +11,12 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August",
   "September", "October", "November", "December"];
 
-// Last year through two years ahead (entries can be up to two years out).
+// Two years back through 2080 (or 10 years ahead, whichever is later).
 function yearOptions(shown: number): number[] {
   const now = new Date().getFullYear();
-  const years = [now - 1, now, now + 1, now + 2];
+  const last = Math.max(2080, now + 10);
+  const years: number[] = [];
+  for (let y = now - 2; y <= last; y++) years.push(y);
   return years.includes(shown) ? years : [...years, shown].sort((a, b) => a - b);
 }
 

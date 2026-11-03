@@ -300,8 +300,9 @@ public class CalendarService {
         if (title == null) throw bad("Add a title");
         if (in.startDate() == null) throw bad("Choose a date");
         LocalDate today = LocalDate.now();
-        if (in.startDate().isBefore(today.minusYears(1)) || in.startDate().isAfter(today.plusYears(2))) {
-            throw bad("Choose a date within the next two years");
+        LocalDate latest = LocalDate.of(Math.max(2080, today.getYear() + 10), 12, 31);
+        if (in.startDate().isBefore(today.minusYears(2)) || in.startDate().isAfter(latest)) {
+            throw bad("Choose a date between " + today.minusYears(2).getYear() + " and " + latest.getYear());
         }
         boolean away = in.away();
         LocalDate end = in.endDate();
