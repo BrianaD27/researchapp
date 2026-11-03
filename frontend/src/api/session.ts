@@ -21,5 +21,6 @@ export function homeFor(role: string): string {
   if (role === "PENDING_FACULTY") return "/pending-approval";
   if (role === "ASSOCIATE") return "/associate-profile";
   if (role === "STUDENT") return "/my-profile";
+  if (role === "PROFESSOR") return "/faculty-dashboard";
   return "/faculty-profile";
 }

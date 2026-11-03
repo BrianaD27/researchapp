@@ -8,6 +8,15 @@ import {
 } from "../../api/calendar";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August",
+  "September", "October", "November", "December"];
+
+// Last year through two years ahead (entries can be up to two years out).
+function yearOptions(shown: number): number[] {
+  const now = new Date().getFullYear();
+  const years = [now - 1, now, now + 1, now + 2];
+  return years.includes(shown) ? years : [...years, shown].sort((a, b) => a - b);
+}
 
 interface FormState {
   title: string;
@@ -383,7 +392,17 @@ export default function CalendarPage() {
               <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month"
                 className="px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer text-xl">&lsaquo;</button>
               <div className="flex items-center gap-3">
-                <h2 className="text-xl font-semibold">{monthName}</h2>
+                <h2 className="sr-only">{monthName}</h2>
+                <select aria-label="Month" value={month.getMonth()}
+                  onChange={(e) => setMonth(new Date(month.getFullYear(), Number(e.target.value), 1))}
+                  className="border border-gray-400 rounded-lg px-2 py-1 text-lg font-semibold cursor-pointer">
+                  {MONTHS.map((name, index) => <option key={name} value={index}>{name}</option>)}
+                </select>
+                <select aria-label="Year" value={month.getFullYear()}
+                  onChange={(e) => setMonth(new Date(Number(e.target.value), month.getMonth(), 1))}
+                  className="border border-gray-400 rounded-lg px-2 py-1 text-lg font-semibold cursor-pointer">
+                  {yearOptions(month.getFullYear()).map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
                 <button type="button" className="text-sm text-[#1B51A4] underline cursor-pointer"
                   onClick={() => { const d = new Date(); setMonth(new Date(d.getFullYear(), d.getMonth(), 1)); setSelected(today); }}>
                   Today

@@ -58,6 +58,14 @@ const FacultyNavBar = () => {
       <ul className="space-x-4 hidden md:flex">
         <li className="nav-item items-center flex">
           <div className="Dropdown text-sm lg:text-base flex items-center cursor-pointer">
+            <Link className={navLinkClass("/faculty-dashboard")} to="/faculty-dashboard">
+              My Dashboard
+            </Link>
+          </div>
+        </li>
+
+        <li className="nav-item items-center flex">
+          <div className="Dropdown text-sm lg:text-base flex items-center cursor-pointer">
             <Link className={navLinkClass("/discover-students")} to="/discover-students">
               Discover Students
             </Link>
@@ -143,6 +151,15 @@ const FacultyNavBar = () => {
       {isMobileMenuOpen && (
         <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-300 rounded shadow-lg">
           <div className="flex flex-col items-center">
+            <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
+              <Link
+                to="/faculty-dashboard"
+                className={`px-4 py-2 w-full text-center ${currentPath === "/faculty-dashboard" ? "text-vsu-orange font-bold" : ""}`}
+              >
+                My Dashboard
+              </Link>
+            </div>
+
             <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <Link
                 to="/discover-students"

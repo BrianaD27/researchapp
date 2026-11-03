@@ -38,6 +38,7 @@ import PendingApprovalPage from "./pages/auth/PendingApprovalPage.tsx";
 import AssociateProfilePage from "./pages/associates/AssociateProfilePage.tsx";
 import CalendarPage from "./pages/calendar/CalendarPage.tsx";
 import AdminConductPage from "./pages/admin/AdminConductPage.tsx";
+import FacultyDashboardPage from "./pages/professors/FacultyDashboardPage.tsx";
 import StudentProfilePage from "./pages/students/StudentProfilePage.tsx";
 import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.tsx";
 
@@ -107,6 +108,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
         <Route path="/pending-approval" element={<PendingApprovalPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/faculty-dashboard" element={<FacultyDashboardPage />} />
         <Route path="/associate-profile" element={<AssociateProfilePage />} />
         <Route path="/associate-profile/:id" element={<AssociateProfilePage />} />
         <Route path="/faculty-profile" element={<FacultyProfileViewPage />} />
