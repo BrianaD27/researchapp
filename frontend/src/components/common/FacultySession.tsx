@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
-import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import apiClient from "../../api/client";
 import NotificationBell from "./NotificationBell";
 import TopBarLinks from "./TopBarLinks";
-import ThemeToggle from "./ThemeToggle";
+import AccountMenu from "./AccountMenu";
 import MessagesLink from "./MessagesLink";
 
 function readSession(): { username: string; expires: number } | null {
@@ -49,7 +49,6 @@ function clearSession() {
 
 export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginPath?: string }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [valid, setValid] = useState(() => readSession() !== null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -147,20 +146,8 @@ export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginP
         {error && <p role="alert" className="text-red-700 text-sm">{error}</p>}
         <TopBarLinks />
         <MessagesLink />
-        <Link to="/report-problem" state={{ from: location.pathname }}
-          className="text-sm text-blue-700 font-semibold hover:underline">
-          Report a Problem
-        </Link>
         <NotificationBell />
-        <ThemeToggle />
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void logout()}
-          className="bg-red-700 text-white font-semibold rounded-lg px-4 py-2 cursor-pointer disabled:opacity-50"
-        >
-          {busy ? "Logging out..." : "Log Out"}
-        </button>
+        <AccountMenu busy={busy} onLogout={() => void logout()} />
       </div>
       <Outlet />
     </>

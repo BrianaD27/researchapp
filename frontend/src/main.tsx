@@ -1,4 +1,5 @@
 import FacultySession from "./components/common/FacultySession";
+import PublicThemeToggle from "./components/common/PublicThemeToggle";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -48,6 +49,7 @@ import FacultyProfileViewPage from "./pages/professors/FacultyProfileViewPage.ts
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
+      <PublicThemeToggle />
       <Routes>
         {/* Auth Routes */}
         <Route path="/" element={<IndexPage />} />

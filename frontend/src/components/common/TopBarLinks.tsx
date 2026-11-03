@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import apiClient from "../../api/client";
 
@@ -64,17 +64,50 @@ export default function TopBarLinks() {
     );
   }
 
-  if (session.role !== "PROFESSOR" && session.role !== "ADMIN") return null;
+  // Research Associates moved into the account menu; admins get one Admin menu.
+  if (session.role !== "ADMIN") return null;
+  return <AdminMenu linkClass={linkClass} />;
+}
+
+// One dropdown for the admin pages instead of five separate links.
+function AdminMenu({ linkClass }: { linkClass: string }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClick(event: MouseEvent) {
+      if (box.current && !box.current.contains(event.target as Node)) setOpen(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const item = "block px-4 py-2 text-sm hover:bg-gray-100";
   return (
-    <nav aria-label="Account tools" className="flex items-center gap-4 text-sm">
-      {(session.role === "PROFESSOR" || session.role === "ADMIN") && (
-        <Link to="/faculty-associates" className={linkClass}>Research Associates</Link>
+    <div ref={box} className="relative">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-haspopup="menu"
+        className={`${linkClass} text-sm cursor-pointer`}>
+        Admin
+        <span aria-hidden="true"
+          className={`inline-block w-2 h-2 ml-2 border-r-2 border-b-2 border-current ${open ? "-rotate-135 translate-y-0.5" : "rotate-45 -translate-y-0.5"}`} />
+      </button>
+      {open && (
+        <div role="menu" onClick={() => setOpen(false)} className="absolute right-0 mt-2 w-52 bg-white border border-gray-300 rounded-lg shadow-lg py-1 z-50">
+          <Link role="menuitem" to="/admin-dashboard" className={item}>Dashboard</Link>
+          <Link role="menuitem" to="/admin-users" className={item}>Users</Link>
+          <Link role="menuitem" to="/admin-reports" className={item}>Problem Reports</Link>
+          <Link role="menuitem" to="/admin-conduct" className={item}>Conduct Reports</Link>
+          <Link role="menuitem" to="/admin-partners" className={item}>Partner Schools</Link>
+        </div>
       )}
-      {session.role === "ADMIN" && <Link to="/admin-dashboard" className={linkClass}>Dashboard</Link>}
-      {session.role === "ADMIN" && <Link to="/admin-users" className={linkClass}>Users</Link>}
-      {session.role === "ADMIN" && <Link to="/admin-reports" className={linkClass}>Problem Reports</Link>}
-      {session.role === "ADMIN" && <Link to="/admin-conduct" className={linkClass}>Conduct Reports</Link>}
-      {session.role === "ADMIN" && <Link to="/admin-partners" className={linkClass}>Partner Schools</Link>}
-    </nav>
+    </div>
   );
 }

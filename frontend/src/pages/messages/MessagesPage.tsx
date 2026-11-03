@@ -5,6 +5,7 @@ import StudentNavBar from "../../components/common/StudentNavBar";
 import ActiveDot from "../../components/common/ActiveDot";
 import apiClient from "../../api/client";
 import { currentRole } from "../../api/session";
+import { announcePresenceChange } from "../../api/presence";
 import {
   MESSAGE_MAX, messageProblem, shortTime,
   type ChatMessage, type Conversation, type Person,
@@ -191,6 +192,7 @@ export default function MessagesPage() {
     try {
       const { data } = await apiClient.put<{ showActive: boolean }>("/messages/settings", { show });
       setShowActive(data.showActive);
+      announcePresenceChange();
     } catch {
       setShowActive(!show);
     }

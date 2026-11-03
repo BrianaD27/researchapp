@@ -30,7 +30,7 @@ const FacultyNavBar = () => {
     `nav-link ${currentPath === path ? "text-vsu-orange font-bold border-b-2 border-vsu-orange" : ""}`;
 
   // Active if on /my-opportunities OR any of its children
-  const opportunitiesPaths = ["/my-opportunities", "/faculty-view-all", "/faculty-applicants"];
+  const opportunitiesPaths = ["/my-opportunities", "/faculty-view-all", "/faculty-applicants", "/post-new"];
   const isOpportunitiesActive = opportunitiesPaths.includes(currentPath);
 
   return (
@@ -73,18 +73,6 @@ const FacultyNavBar = () => {
         </li>
 
         {!noTeam && <li className="nav-item items-center flex">
-          <div className="Dropdown flex items-center cursor-pointer text-sm lg:text-base ">
-            <Link className={navLinkClass("/post-new")} to="/post-new">
-              <div className="flex flex-row gap-2 items-center">
-                <p className="">Post New</p>
-                <p className="text-4xl mb-2 text-[#F29D38] font-light">+</p>
-              </div>
-
-            </Link>
-          </div>
-        </li>}
-
-        {!noTeam && <li className="nav-item items-center flex">
           <div className="Dropdown group">
             <div className="Dropdown flex items-center cursor-pointer text-sm lg:text-base ">
               <Link
@@ -112,6 +100,12 @@ const FacultyNavBar = () => {
                 className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/faculty-applicants" ? "text-vsu-orange font-bold" : ""}`}
               >
                 Applicants
+              </Link>
+              <Link
+                to="/post-new"
+                className={`hover:bg-gray-100 pr-4 pl-4 pt-2 pb-2 ${currentPath === "/post-new" ? "text-vsu-orange font-bold" : ""}`}
+              >
+                Post New +
               </Link>
             </div>
           </div>
@@ -170,15 +164,6 @@ const FacultyNavBar = () => {
             </div>
 
             {!noTeam && <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
-              <Link
-                to="/post-new"
-                className={`px-4 py-2 w-full text-center ${currentPath === "/post-new" ? "text-vsu-orange font-bold" : ""}`}
-              >
-                Post New
-              </Link>
-            </div>}
-
-            {!noTeam && <div className="w-full flex flex-col items-center hover:cursor-pointer hover:bg-gray-100">
               <button
                 className={`Dropdown flex items-center cursor-pointer ${isOpportunitiesActive ? "text-vsu-orange font-bold" : ""}`}
                 onClick={() =>
@@ -208,6 +193,13 @@ const FacultyNavBar = () => {
                   className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/faculty-applicants" ? "text-vsu-orange font-bold" : ""}`}
                 >
                   Applicants
+                </Link>
+
+                <Link
+                  to="/post-new"
+                  className={`px-4 py-2 w-full text-center hover:bg-gray-100 ${currentPath === "/post-new" ? "text-vsu-orange font-bold" : ""}`}
+                >
+                  Post New +
                 </Link>
               </div>
             )}

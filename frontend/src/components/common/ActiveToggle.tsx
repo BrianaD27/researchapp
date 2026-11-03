@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import apiClient from "../../api/client";
+import { announcePresenceChange } from "../../api/presence";
 
 // "Show when I'm active" switch for your own profile banner. Same setting as on
 // the Messages page: when it's off, nobody sees your green dot.
@@ -21,6 +22,9 @@ export default function ActiveToggle() {
     try {
       const { data } = await apiClient.put<{ showActive: boolean }>("/messages/settings", { show: next });
       setShow(data.showActive);
+      // Ping first so turning it back on shows the dot right away.
+      if (data.showActive) await apiClient.post("/messages/heartbeat").catch(() => undefined);
+      announcePresenceChange();
     } catch {
       // Leave the switch where it was if the save failed.
     } finally {

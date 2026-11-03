@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import apiClient from "./client";
 
+const PRESENCE_CHANGED = "researchapp:presence-changed";
+
+// Call after changing "Show when I'm active" so dots on this page update right away.
+export function announcePresenceChange() {
+  window.dispatchEvent(new Event(PRESENCE_CHANGED));
+}
+
 // Green "active now" dots for a list of people. Everyone signed in can see who
 // is online (unless that person turned off "Show when I'm active"). Checks once a minute.
 export function usePresence(kind: "students" | "professors" | "accounts", ids: number[]): Record<number, boolean> {
@@ -22,7 +29,13 @@ export function usePresence(kind: "students" | "professors" | "accounts", ids: n
     }
     const first = window.setTimeout(load, 0);
     const timer = window.setInterval(load, 60000);
-    return () => { active = false; window.clearTimeout(first); window.clearInterval(timer); };
+    window.addEventListener(PRESENCE_CHANGED, load);
+    return () => {
+      active = false;
+      window.clearTimeout(first);
+      window.clearInterval(timer);
+      window.removeEventListener(PRESENCE_CHANGED, load);
+    };
   }, [kind, key]);
 
   return online;
