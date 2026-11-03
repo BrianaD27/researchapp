@@ -405,10 +405,6 @@ export default function CalendarPage() {
                   className="border border-gray-400 rounded-lg px-2 py-1 text-lg font-semibold cursor-pointer">
                   {yearOptions(month.getFullYear()).map((y) => <option key={y} value={y}>{y}</option>)}
                 </select>
-                <button type="button" className="text-sm text-[#1B51A4] underline cursor-pointer"
-                  onClick={() => { const d = new Date(); setMonth(new Date(d.getFullYear(), d.getMonth(), 1)); setSelected(today); }}>
-                  Today
-                </button>
               </div>
               <button type="button" onClick={() => changeMonth(1)} aria-label="Next month"
                 className="px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer text-xl">&rsaquo;</button>

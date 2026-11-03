@@ -40,3 +40,10 @@ html.theme-dark [style*="repeating-linear-gradient"] {
 html.theme-dark :is(.border, .border-b, .border-t, .border-2):not([class*="border-red"]):not([class*="border-amber"]):not([class*="border-orange"]):not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-white"]):not([class*="border-gray-7"]):not([class*="border-gray-8"]):not([class*="border-black"]):not([class*="border-[#"]),
 html.theme-dark .divide-gray-200 > :not(:last-child) { border-color: #475569; }
 html.theme-dark .bg-black { background-color: #e2e8f0; }
+html.theme-dark input,
+html.theme-dark textarea { background-color: #1e293b; color: #f1f5f9; }
+html.theme-dark ::placeholder { color: #94a3b8; }
+/* Dark mode: the open dropdown list itself (Windows draws it separately). */
+html.theme-dark select { color-scheme: dark; background-color: #1e293b; color: #f1f5f9; }
+html.theme-dark select option { background-color: #1e293b !important; color: #f1f5f9 !important; }
+html.theme-dark select option:checked { background-color: #1e3a5f !important; color: #ffffff !important; }
