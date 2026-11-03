@@ -39,3 +39,4 @@ html.theme-dark [style*="repeating-linear-gradient"] {
 }
 html.theme-dark :is(.border, .border-b, .border-t, .border-2):not([class*="border-red"]):not([class*="border-amber"]):not([class*="border-orange"]):not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-white"]):not([class*="border-gray-7"]):not([class*="border-gray-8"]):not([class*="border-black"]):not([class*="border-[#"]),
 html.theme-dark .divide-gray-200 > :not(:last-child) { border-color: #475569; }
+html.theme-dark .bg-black { background-color: #e2e8f0; }

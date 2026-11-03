@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 const AuthNavBar = ({ hideSignUp = false }: { hideSignUp?: boolean }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -73,10 +74,15 @@ const AuthNavBar = ({ hideSignUp = false }: { hideSignUp?: boolean }) => {
             </div>
           </div>
         </li>
+
+        <li className="nav-item items-center flex">
+          <ThemeToggle />
+        </li>
       </ul>
 
       {/* Mobile Menu */}
-      <div className="md:hidden block">
+      <div className="md:hidden flex items-center gap-3">
+        <ThemeToggle />
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="flex flex-col items-center justify-center space-y-1 hover:cursor-pointer"
