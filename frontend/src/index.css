@@ -5,3 +5,37 @@
   --color-vsu-orange: #EE7623;
   --color-vsu-blue: #0047BA;
 }
+/* Dark mode. Turned on by adding "theme-dark" to <html> (see api/theme.ts).
+   These override the common light colors used across the app. */
+html.theme-dark { color-scheme: dark; }
+html.theme-dark body { background-color: #0f172a; color: #e2e8f0; }
+html.theme-dark .bg-white { background-color: #1e293b; }
+html.theme-dark .bg-gray-50 { background-color: #172033; }
+html.theme-dark .bg-gray-100,
+html.theme-dark .hover\:bg-gray-100:hover,
+html.theme-dark .hover\:bg-gray-50:hover { background-color: #273449; }
+html.theme-dark .bg-gray-200 { background-color: #334155; }
+html.theme-dark .bg-\[\#F4F6FA\],
+html.theme-dark .bg-\[\#ECEEF2\],
+html.theme-dark .bg-\[\#EEF3FB\] { background-color: #0f172a; }
+html.theme-dark .bg-\[\#E3F1FC\],
+html.theme-dark .bg-blue-50,
+html.theme-dark .hover\:bg-blue-50:hover { background-color: #1e3a5f; }
+html.theme-dark .text-black,
+html.theme-dark .text-gray-900,
+html.theme-dark .text-gray-800 { color: #f1f5f9; }
+html.theme-dark .text-gray-700 { color: #cbd5e1; }
+html.theme-dark .text-gray-600,
+html.theme-dark .text-gray-500 { color: #a3b1c6; }
+html.theme-dark .border-gray-200,
+html.theme-dark .border-gray-300,
+html.theme-dark .border-gray-400,
+html.theme-dark .border-\[\#DDE3EC\] { border-color: #475569; }
+html.theme-dark .text-\[\#1B51A4\],
+html.theme-dark .text-blue-700 { color: #93c5fd; }
+html.theme-dark img[alt="VSU Logo"] { background-color: #ffffff; border-radius: 6px; padding: 2px; }
+html.theme-dark [style*="repeating-linear-gradient"] {
+  background-image: repeating-linear-gradient(135deg, #334155 0 6px, #1e293b 6px 12px) !important;
+}
+html.theme-dark :is(.border, .border-b, .border-t, .border-2):not([class*="border-red"]):not([class*="border-amber"]):not([class*="border-orange"]):not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-white"]):not([class*="border-gray-7"]):not([class*="border-gray-8"]):not([class*="border-black"]):not([class*="border-[#"]),
+html.theme-dark .divide-gray-200 > :not(:last-child) { border-color: #475569; }

@@ -5,6 +5,7 @@ import StudentNavBar from "../../components/common/StudentNavBar";
 import apiClient from "../../api/client";
 import { usePresence } from "../../api/presence";
 import ActiveToggle from "../../components/common/ActiveToggle";
+import GreetingBar from "../../components/common/GreetingBar";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, formatDate, hasText } from "../../components/profile/profileUtils";
 
@@ -125,6 +126,7 @@ export default function StudentProfilePage() {
       )}
       {student && (
         <>
+          <GreetingBar className="max-w-6xl mx-auto px-6 py-5" />
           <ProfileHero
             name={student.name}
             photoUrl={student.profilePictureUrl}

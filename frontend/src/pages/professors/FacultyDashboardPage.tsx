@@ -3,10 +3,20 @@ import { isAxiosError } from "axios";
 import { Link } from "react-router-dom";
 import FacultyNavBar from "../../components/common/FacultyNavBar";
 import ActiveDot from "../../components/common/ActiveDot";
+import { timeOfDay } from "../../api/greeting";
 import apiClient from "../../api/client";
 import { AWAY_STYLE, colorStyle, dayLabel, timeRange, type Occurrence } from "../../api/calendar";
 
+interface Person {
+  accountId: number;
+  name: string;
+  role: string;
+  detail: string | null;
+  onlineNow: boolean;
+}
+
 interface Dashboard {
+  greetingName: string | null;
   professorName: string | null;
   associate: boolean;
   canSeeStudents: boolean;
@@ -17,7 +27,7 @@ interface Dashboard {
     closingThisWeek: number;
     studentsOnProjects: number;
   };
-  onlineNow: { accountId: number; name: string; role: string; detail: string | null; onlineNow: boolean }[];
+  onlineNow: Person[];
   activeThisWeek: number;
   connectedPeople: number;
   thisWeek: Occurrence[];
@@ -31,7 +41,14 @@ interface Dashboard {
     pending: number;
     accepted: number;
   }[];
+  waiting: { studentName: string; projectTitle: string; appliedAt: string | null }[];
+  team: Person[];
 }
+
+// Colored project icons, in the spirit of a project-management home page.
+const PROJECT_COLORS = ["bg-blue-600", "bg-teal-600", "bg-purple-600", "bg-orange-500", "bg-pink-600", "bg-amber-500"];
+
+
 
 function problem(caught: unknown, fallback: string) {
   if (isAxiosError(caught)) {
@@ -68,17 +85,38 @@ export default function FacultyDashboardPage() {
     return () => { active = false; window.clearInterval(timer); };
   }, []);
 
-  const card = "bg-white rounded-xl p-5 flex flex-col gap-3";
+  const now = new Date();
+  const card = "bg-white rounded-xl p-5 flex flex-col gap-3 shadow-sm";
   const tile = "bg-white rounded-xl p-4 flex flex-col gap-1 hover:ring-2 hover:ring-[#F29D38]";
 
   return (
     <div className="min-h-screen bg-[#F4F6FA]">
       <FacultyNavBar />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
-        <div>
-          <h1 className="text-3xl font-bold">My Dashboard</h1>
-          {data?.associate && data.professorName && (
-            <p className="text-gray-600">Working for {data.professorName}</p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-600">
+              {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold">
+              {timeOfDay(now.getHours())}{data?.greetingName ? `, ${data.greetingName}` : ""}
+            </h1>
+            {data?.associate && data.professorName && (
+              <p className="text-gray-600">Working for {data.professorName}</p>
+            )}
+          </div>
+          {data && (
+            <div className="flex flex-wrap gap-2 text-sm">
+              <span className="bg-white rounded-full px-3 py-1 shadow-sm">
+                {data.tiles.pendingApplications} waiting for review
+              </span>
+              <span className="bg-white rounded-full px-3 py-1 shadow-sm">
+                {data.tiles.unreadMessages} unread message{data.tiles.unreadMessages === 1 ? "" : "s"}
+              </span>
+              <span className="bg-white rounded-full px-3 py-1 shadow-sm">
+                {data.thisWeek.length} coming up
+              </span>
+            </div>
           )}
         </div>
         {error && <p role="alert" className="bg-red-50 text-red-700 rounded-lg p-3">{error}</p>}
@@ -120,6 +158,66 @@ export default function FacultyDashboardPage() {
               </Link>
             </section>
 
+            <div className="grid md:grid-cols-2 gap-6">
+              <section className={card}>
+                <div className="flex justify-between items-baseline gap-2">
+                  <h2 className="text-xl font-semibold">Needs your attention</h2>
+                  <Link to="/faculty-applicants" className="text-sm text-[#1B51A4] underline">All applicants</Link>
+                </div>
+                {!data.canSeeStudents && data.professorName && (
+                  <p className="text-gray-600">You don't have review permission for this professor's applicants.</p>
+                )}
+                {data.canSeeStudents && data.waiting.length === 0 && data.tiles.unreadMessages === 0 && (
+                  <p className="text-gray-600">You're all caught up.</p>
+                )}
+                <ul className="flex flex-col divide-y divide-gray-200">
+                  {data.tiles.unreadMessages > 0 && (
+                    <li className="py-2 flex justify-between gap-3">
+                      <span>{data.tiles.unreadMessages} unread message{data.tiles.unreadMessages === 1 ? "" : "s"}</span>
+                      <Link to="/messages" className="text-sm text-[#1B51A4] underline shrink-0">Open</Link>
+                    </li>
+                  )}
+                  {data.waiting.map((w, i) => (
+                    <li key={i} className="py-2 flex justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="font-semibold">{w.studentName}</span> applied to {w.projectTitle}
+                        {w.appliedAt && <span className="block text-xs text-gray-500">{ago(w.appliedAt)}</span>}
+                      </span>
+                      <Link to="/faculty-applicants" className="text-sm text-[#1B51A4] underline shrink-0">Review</Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className={card}>
+                <div className="flex justify-between items-baseline gap-2">
+                  <h2 className="text-xl font-semibold">Projects</h2>
+                  <Link to="/faculty-view-all" className="text-sm text-[#1B51A4] underline">View all</Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {!data.associate && (
+                    <Link to="/post-new" className="flex items-center gap-3 rounded-lg p-2 hover:bg-gray-100">
+                      <span className="w-10 h-10 rounded-lg border-2 border-dashed border-gray-400 flex items-center justify-center text-xl text-gray-600">+</span>
+                      <span className="font-semibold">Post new opportunity</span>
+                    </Link>
+                  )}
+                  {data.projects.slice(0, 7).map((p, i) => (
+                    <Link key={p.id} to="/faculty-view-all" className="flex items-center gap-3 rounded-lg p-2 hover:bg-gray-100 min-w-0">
+                      <span className={`w-10 h-10 rounded-lg ${PROJECT_COLORS[i % PROJECT_COLORS.length]} text-white font-bold flex items-center justify-center shrink-0`}>
+                        {p.title.charAt(0).toUpperCase()}
+                      </span>
+                      <span className="flex flex-col min-w-0">
+                        <span className="font-semibold truncate">{p.title}</span>
+                        <span className="text-xs text-gray-600">
+                          {p.pending > 0 ? `${p.pending} waiting` : p.availability || "Status not set"}
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            </div>
+
             <div className="flex flex-wrap gap-6 items-start">
               <div className="flex-[999_1_520px] min-w-0 flex flex-col gap-6">
                 <section className={card}>
@@ -150,7 +248,7 @@ export default function FacultyDashboardPage() {
 
                 {data.projects.length > 0 && (
                   <section className={card}>
-                    <h2 className="text-xl font-semibold">Your projects</h2>
+                    <h2 className="text-xl font-semibold">Project details</h2>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
@@ -182,6 +280,25 @@ export default function FacultyDashboardPage() {
               </div>
 
               <aside className="flex-[1_1_300px] min-w-0 flex flex-col gap-6">
+                {data.team.length > 0 && (
+                  <section className={card}>
+                    <h2 className="text-xl font-semibold">Your team</h2>
+                    <ul className="flex flex-col gap-2">
+                      {data.team.map((p) => (
+                        <li key={p.accountId} className="flex items-center gap-3">
+                          <span className="relative w-9 h-9 rounded-full bg-[#DCE6F5] text-[#1B51A4] font-bold flex items-center justify-center shrink-0">
+                            {p.name.charAt(0).toUpperCase()}
+                            {p.onlineNow && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />}
+                          </span>
+                          <span className="flex flex-col min-w-0">
+                            <span className="font-semibold truncate">{p.name}</span>
+                            <span className="text-xs text-gray-600">{p.role}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
                 {data.professorName && (
                   <section className={card}>
                     <h2 className="text-xl font-semibold">Who's active</h2>

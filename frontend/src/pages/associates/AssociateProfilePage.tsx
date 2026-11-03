@@ -9,6 +9,7 @@ import { usePresence } from "../../api/presence";
 import UpcomingCard from "../../components/calendar/UpcomingCard";
 import ActiveToggle from "../../components/common/ActiveToggle";
 import MessageButton from "../../components/common/MessageButton";
+import GreetingBar from "../../components/common/GreetingBar";
 import { Chip, ProfileCard, ProfileHero, ProfileLayout } from "../../components/profile/ProfileParts";
 import { actionClass, hasText } from "../../components/profile/profileUtils";
 
@@ -159,6 +160,7 @@ export default function AssociateProfilePage() {
       {error && <p role="alert" className="max-w-6xl mx-auto p-6 text-red-700">{error}</p>}
       {profile && (
         <>
+          {profile.mine && <GreetingBar className="max-w-6xl mx-auto px-6 py-5" />}
           <ProfileHero
             name={profile.name}
             photoUrl={profile.profilePictureUrl}

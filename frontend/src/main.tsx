@@ -2,6 +2,9 @@ import FacultySession from "./components/common/FacultySession";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import { applyTheme, savedTheme } from "./api/theme";
+
+applyTheme(savedTheme());
 
 import IndexPage from "./pages/IndexPage.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";

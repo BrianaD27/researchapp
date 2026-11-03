@@ -40,6 +40,11 @@ public class UserAccount {
     // those are treated as verified.
     private Boolean emailVerified;
 
+    // What the greeting calls this person, e.g. "Mr. Hughes" or "Jordan".
+    // Faculty are always greeted as "Dr. <last name>".
+    @Column(length = 60)
+    private String preferredName;
+
     // Password reuse prevention
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -170,6 +175,14 @@ public class UserAccount {
 
     public void setTwoFactorExpiry(LocalDateTime twoFactorExpiry) {
         this.twoFactorExpiry = twoFactorExpiry;
+    }
+
+    public String getPreferredName() {
+        return preferredName;
+    }
+
+    public void setPreferredName(String preferredName) {
+        this.preferredName = preferredName;
     }
 
     public Boolean getEmailVerified() {

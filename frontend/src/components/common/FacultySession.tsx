@@ -4,6 +4,7 @@ import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-d
 import apiClient from "../../api/client";
 import NotificationBell from "./NotificationBell";
 import TopBarLinks from "./TopBarLinks";
+import ThemeToggle from "./ThemeToggle";
 import MessagesLink from "./MessagesLink";
 
 function readSession(): { username: string; expires: number } | null {
@@ -151,6 +152,7 @@ export default function FacultySession({ loginPath = "/FacultyLogin" }: { loginP
           Report a Problem
         </Link>
         <NotificationBell />
+        <ThemeToggle />
         <button
           type="button"
           disabled={busy}

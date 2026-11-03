@@ -48,12 +48,15 @@ public class FacultyDashboardService {
 
     public record Activity(LocalDateTime at, String text) {}
 
+    public record Waiting(String studentName, String projectTitle, LocalDateTime appliedAt) {}
+
     public record Project(Long id, String title, String availability, LocalDate deadline, long applicants,
                           long pending, long accepted) {}
 
-    public record Dashboard(String professorName, boolean associate, boolean canSeeStudents, Tiles tiles,
-                            List<Person> onlineNow, long activeThisWeek, long connectedPeople,
-                            List<Occurrence> thisWeek, List<Activity> recent, List<Project> projects) {}
+    public record Dashboard(String greetingName, String professorName, boolean associate, boolean canSeeStudents,
+                            Tiles tiles, List<Person> onlineNow, long activeThisWeek, long connectedPeople,
+                            List<Occurrence> thisWeek, List<Activity> recent, List<Project> projects,
+                            List<Waiting> waiting, List<Person> team) {}
 
     private final CurrentUserService currentUser;
     private final ProfessorJpaRepository professors;
@@ -67,12 +70,14 @@ public class FacultyDashboardService {
     private final PresenceService presence;
     private final MessageService messages;
     private final CalendarService calendar;
+    private final GreetingService greetings;
 
     public FacultyDashboardService(CurrentUserService currentUser, ProfessorJpaRepository professors,
             ResearchOpportunityJpaRepository opportunities, ApplicationJpaRepository applications,
             AssociateLinkRepository links, AssociateProfileRepository associateProfiles,
             AssociateActivityRepository activity, LoginHistoryRepository logins, UserAccountRepository accounts,
-            PresenceService presence, MessageService messages, CalendarService calendar) {
+            PresenceService presence, MessageService messages, CalendarService calendar,
+            GreetingService greetings) {
         this.currentUser = currentUser;
         this.professors = professors;
         this.opportunities = opportunities;
@@ -85,6 +90,7 @@ public class FacultyDashboardService {
         this.presence = presence;
         this.messages = messages;
         this.calendar = calendar;
+        this.greetings = greetings;
     }
 
     @Transactional(readOnly = true)
@@ -111,9 +117,10 @@ public class FacultyDashboardService {
         LocalDate today = LocalDate.now();
         List<Occurrence> thisWeek = calendar.mine(today, today.plusDays(14)).occurrences();
         long unread = messages.unreadCount();
+        String greeting = greetingName(me, associate);
         if (professorId == null) {
-            return new Dashboard(null, associate, false, new Tiles(0, unread, 0, 0, 0), List.of(), 0, 0,
-                thisWeek, List.of(), List.of());
+            return new Dashboard(greeting, null, associate, false, new Tiles(0, unread, 0, 0, 0), List.of(), 0, 0,
+                thisWeek, List.of(), List.of(), List.of(), List.of());
         }
         Professor professor = professors.findById(professorId).orElse(null);
         String professorName = professor == null ? null : professor.getName();
@@ -127,6 +134,7 @@ public class FacultyDashboardService {
         java.util.Set<Long> working = new java.util.HashSet<>();
         List<Project> projects = new ArrayList<>();
         List<Activity> recent = new ArrayList<>();
+        List<Waiting> waiting = new ArrayList<>();
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
 
         for (ResearchOpportunity o : opps) {
@@ -139,7 +147,13 @@ public class FacultyDashboardService {
                 if (a.getOpportunityStatus() == Application.OpportunityStatus.BOOKMARKED) continue;
                 apps++;
                 Student s = a.getStudent();
-                if (a.getApplicationStatus() == Application.ApplicationStatus.PENDING) { pend++; pending++; }
+                if (a.getApplicationStatus() == Application.ApplicationStatus.PENDING) {
+                    pend++;
+                    pending++;
+                    if (canSeeStudents && s != null) {
+                        waiting.add(new Waiting(name(s.getName(), "A student"), o.getTitle(), a.getAppliedAt()));
+                    }
+                }
                 if (a.getApplicationStatus() == Application.ApplicationStatus.ACCEPTED) {
                     acc++;
                     if (a.getOpportunityStatus() != Application.OpportunityStatus.COMPLETED && s != null) {
@@ -192,11 +206,24 @@ public class FacultyDashboardService {
             if (now || loggedInSince(p.accountId(), weekAgo)) activeWeek++;
         }
         if (!canSeeStudents) online.removeIf(p -> "Student".equals(p.role()));
+        List<Person> team = new ArrayList<>();
+        for (Person p : people) {
+            if ("Student".equals(p.role())) continue;
+            boolean now = presence.showActive(p.accountId()) && presence.isActive(p.accountId());
+            team.add(new Person(p.accountId(), p.name(), p.role(), p.detail(), now));
+        }
+        waiting.sort(Comparator.comparing(Waiting::appliedAt, Comparator.nullsLast(Comparator.<LocalDateTime>naturalOrder())));
+        if (waiting.size() > 6) waiting = new ArrayList<>(waiting.subList(0, 6));
 
         Tiles tiles = new Tiles(pending, unread, open, closing, working.size());
         projects.sort(Comparator.comparing(Project::title, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
-        return new Dashboard(professorName, associate, canSeeStudents, tiles, online, activeWeek, people.size(),
-            thisWeek, canSeeStudents ? recent : List.of(), projects);
+        return new Dashboard(greeting, professorName, associate, canSeeStudents, tiles, online, activeWeek,
+            people.size(), thisWeek, canSeeStudents ? recent : List.of(), projects, waiting, team);
+    }
+
+    // Same name as everywhere else: "Dr. Goodson" for faculty, the chosen name otherwise.
+    private String greetingName(UserAccount me, boolean associate) {
+        return greetings.nameFor(me);
     }
 
     private boolean loggedInSince(Long accountId, LocalDateTime since) {
