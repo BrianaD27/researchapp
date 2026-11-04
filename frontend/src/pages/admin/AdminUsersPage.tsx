@@ -43,6 +43,7 @@ export default function AdminUsersPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [me, setMe] = useState("");
 
   async function refresh() {
     const { data } = await apiClient.get<AdminUser[]>("/v1/admin/users");
@@ -51,6 +52,9 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     let active = true;
+    apiClient.get<{ username: string }>("/associates/session")
+      .then(({ data }) => { if (active) setMe(data.username); })
+      .catch(() => undefined);
     apiClient.get<AdminUser[]>("/v1/admin/users")
       .then(({ data }) => { if (active) setUsers([...data].sort((a, b) => a.username.localeCompare(b.username))); })
       .catch((caught) => { if (active) setError(problem(caught, "Could not load users.")); })
@@ -139,7 +143,9 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="py-2">
                         <div className="flex gap-2 flex-wrap">
-                          {user.active ? (
+                          {user.active && user.username.toLowerCase() === me.toLowerCase() ? (
+                            <span className="text-sm text-gray-600">This is you</span>
+                          ) : user.active ? (
                             <button type="button" disabled={busy} className={`${button} border border-red-700 text-red-700`}
                               onClick={() => void act(() => apiClient.put(`/v1/admin/users/${encodeURIComponent(user.username)}/deactivate`),
                                 `${user.username} was deactivated and signed out.`)}>Deactivate</button>

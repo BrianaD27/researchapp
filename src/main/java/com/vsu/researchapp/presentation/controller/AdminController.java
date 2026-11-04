@@ -77,7 +77,13 @@ public class AdminController {
     @PutMapping("/users/{username}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deactivateUser(
-            @PathVariable String username) {
+            @PathVariable String username, java.security.Principal principal) {
+
+        // An admin switching off their own account would lock themselves out.
+        if (principal != null && principal.getName().equalsIgnoreCase(username)) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "You can't deactivate your own account. Ask another admin."));
+        }
 
         UserAccount user = userAccountService
             .setActiveStatus(username, false);
