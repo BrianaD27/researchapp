@@ -47,3 +47,21 @@ html.theme-dark ::placeholder { color: #94a3b8; }
 html.theme-dark select { color-scheme: dark; background-color: #1e293b; color: #f1f5f9; }
 html.theme-dark select option { background-color: #1e293b !important; color: #f1f5f9 !important; }
 html.theme-dark select option:checked { background-color: #1e3a5f !important; color: #ffffff !important; }
+/* Dark mode: light tinted boxes (fit, success, warning, error) become deep tints. */
+html.theme-dark .bg-green-50,
+html.theme-dark .bg-green-100 { background-color: #14352a; }
+html.theme-dark .bg-red-50,
+html.theme-dark .bg-red-100 { background-color: #3b1d24; }
+html.theme-dark .bg-orange-50,
+html.theme-dark .bg-amber-50,
+html.theme-dark .bg-amber-100 { background-color: #3a2a12; }
+html.theme-dark .bg-blue-100 { background-color: #1e3a5f; }
+html.theme-dark .text-green-700,
+html.theme-dark .text-green-800,
+html.theme-dark .text-green-900 { color: #86efac; }
+html.theme-dark .text-red-700,
+html.theme-dark .text-red-800 { color: #fca5a5; }
+html.theme-dark .text-amber-800,
+html.theme-dark .text-amber-900,
+html.theme-dark .text-orange-700 { color: #fcd34d; }
+html.theme-dark .text-blue-800 { color: #93c5fd; }
